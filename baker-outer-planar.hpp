@@ -6,6 +6,7 @@
 #include <boost/ref.hpp>
 #include <vector>
 #include <climits>
+#include <queue>
 
 #include <boost/graph/planar_face_traversal.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
@@ -67,13 +68,7 @@ struct tree_builder : public planar_face_traversal_visitor
             : faces(f), tree(t){ }
 
     void end_face() {
-        if(parent_it != -1)
-            std::rotate(tree[current_face].children.begin(),
-                        tree[current_face].children.begin()+parent_it,
-                        tree[current_face].children.end());
         current_face++;
-        parent_it = -1;
-        edge_it = 0;
     }
 
     void next_edge(Edge e)
@@ -88,17 +83,39 @@ struct tree_builder : public planar_face_traversal_visitor
                 int last = tree.size() - 1;
                 tree[current_face].children.push_back(last);
                 tree[last].parent = current_face;
-            } else if (tree[current_face].parent != neighbor && tree[neighbor].parent == -1) {
+            } else {
                 tree[current_face].children.push_back(neighbor);
-                tree[neighbor].parent = current_face;
-            } else if ((tree[current_face].parent == neighbor || tree[neighbor].parent > -1) && parent_it == -1) {
-                parent_it = edge_it;
             }
-
-            edge_it++;
         }
     }
 };
+
+template <typename Problem>
+void root_tree(std::vector<Problem> &tree, int root) {
+    std::queue<int> q;
+    q.push(root);
+
+    while(!q.empty()) {
+        int node = q.front();
+        q.pop();
+
+        int parent_it = 0;
+        auto child = tree[node].children.begin();
+        for(int i = 0; child != tree[node].children.end(); child++, i++) {
+            if(*child == tree[node].parent) {
+                tree[node].children.erase(child--);
+                parent_it = i;
+            } else {
+                q.push(*child);
+                tree[*child].parent = node;
+            }
+        }
+
+        std::rotate(tree[node].children.begin(),
+                    tree[node].children.begin()+parent_it,
+                    tree[node].children.end());
+    }
+}
 
 template <typename Problem>
 void calculate(std::vector<Problem> &tree, int root){
@@ -115,12 +132,6 @@ void calculate(std::vector<Problem> &tree, int root){
     }
 
     tree[root].adjust();
-
-//    std::cout << root << " result\n";
-//    for(auto j : tree[root].val) {
-//        std::cout << j << " ";
-//    }
-//    std::cout << "\n";
 }
 
 template <typename Problem>
@@ -132,6 +143,7 @@ int baker(Graph &g, std::vector<std::vector< graph_traits<Graph>::edge_descripto
 
     tree_builder<graph_traits<Graph>::edge_descriptor, Problem> tree_b(faces, tree);
     planar_face_traversal(g, &embedding[0], tree_b);
+    root_tree(tree, root);
 
     calculate(tree, root);
 

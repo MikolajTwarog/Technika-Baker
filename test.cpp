@@ -48,13 +48,15 @@ void get_embedding(Graph &g, std::vector<vec_t> &embedding) {
         std::cout << "Input graph is not planar" << std::endl;
 }
 
-void test(Graph &g) {
+void test(Graph &g, std::string name) {
+    std::cout << name << "\n";
     std::vector<vec_t> embedding(num_vertices(g));
     get_embedding(g, embedding);
     std::cout << "Independent set\nresult: " << baker<independent_set>(g, embedding, 1) << "\n";
     std::cout << "Vertex cover\nresult: " << baker<vertex_cover>(g, embedding, 1) << "\n";
-//    std::cout << "Dominating set\nresult: " << baker<dominating_set>(g, embedding, 1) << "\n";
+    std::cout << "Dominating set\nresult: " << baker<dominating_set>(g, embedding, 1) << "\n";
 //    std::cout << "Edge dominating set\nresult: " << baker<edge_dominating_set>(g, embedding, 1) << "\n";
+    std::cout << "\n";
 }
 
 int main(int argc, char** argv)
@@ -76,7 +78,6 @@ int main(int argc, char** argv)
     add_edge(3,5,g1);
     add_edge(6,8,g1);
 
-    test(g1);
 
     Graph g2(5);
     add_edge(0,1,g2);
@@ -87,8 +88,41 @@ int main(int argc, char** argv)
     add_edge(0,3,g2);
     add_edge(0,4,g2);
 
-    test(g2);
 
+    Graph g3(4);
+    add_edge(0,1,g3);
+    add_edge(1,2,g3);
+    add_edge(2,3,g3);
+    add_edge(3, 0, g3);
+
+
+    Graph g4(3);
+    add_edge(0,1,g4);
+    add_edge(1,2,g4);
+    add_edge(2,0,g4);
+
+    Graph g5(10);
+    add_edge(0,1,g5);
+    add_edge(1,2,g5);
+    add_edge(2,3,g5);
+    add_edge(3,4,g5);
+    add_edge(4,5,g5);
+    add_edge(5, 6,g5);
+    add_edge(6,7,g5);
+    add_edge(7,8,g5);
+    add_edge(8,9,g5);
+    add_edge(9, 0, g5);
+
+    add_edge(9, 3, g5);
+    add_edge(9, 6, g5);
+    add_edge(3, 6, g5);
+    add_edge(3, 5, g5);
+
+    test(g1, "3 6 3"); // 3 6 3
+    test(g2, "2 3 1"); // 2 3 1
+    test(g3, "kwadrat 2 2 2"); // 2 2 2
+    test(g4, "trójkąt 1 2 1"); // 1 2 1
+    test(g5, "5 5 3"); // 5 5 3
 
     return 0;
 }
