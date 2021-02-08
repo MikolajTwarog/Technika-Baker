@@ -55,11 +55,10 @@ void test(Graph &g, std::string name) {
     std::cout << "Independent set\nresult: " << baker<independent_set>(g, embedding, 1) << "\n";
     std::cout << "Vertex cover\nresult: " << baker<vertex_cover>(g, embedding, 1) << "\n";
     std::cout << "Dominating set\nresult: " << baker<dominating_set>(g, embedding, 1) << "\n";
-//    std::cout << "Edge dominating set\nresult: " << baker<edge_dominating_set>(g, embedding, 1) << "\n";
     std::cout << "\n";
 }
 
-int main(int argc, char** argv)
+void unit1()
 {
 
     Graph g1(9);
@@ -118,12 +117,10 @@ int main(int argc, char** argv)
     add_edge(3, 6, g5);
     add_edge(3, 5, g5);
 
-    test(g1, "3 6 3"); // 3 6 3
-    test(g2, "2 3 1"); // 2 3 1
-    test(g3, "kwadrat 2 2 2"); // 2 2 2
-    test(g4, "trójkąt 1 2 1"); // 1 2 1
-    test(g5, "5 5 3"); // 5 5 3
-
-    return 0;
+//    test(g1, "3 6 3"); // 3 6 3
+//    test(g2, "2 3 1"); // 2 3 1
+//    test(g3, "kwadrat 2 2 2"); // 2 2 2
+//    test(g4, "trójkąt 1 2 1"); // 1 2 1
+//    test(g5, "5 5 3"); // 5 5 3
 }
 

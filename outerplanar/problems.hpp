@@ -8,6 +8,7 @@
 struct node
 {
     int parent;
+    std::pair<int, int> label;
     std::vector<int> children;
     node(): parent(-1) {}
 };
