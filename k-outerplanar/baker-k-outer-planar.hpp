@@ -40,6 +40,9 @@ typedef adjacency_list
         >
         Graph;
 
+typedef std::vector<std::vector< graph_traits<Graph>::edge_descriptor > > PlanarEmbedding;
+typedef graph_traits<Graph>::edge_descriptor Edge;
+
 template <typename Edge>
 struct my_visitor : public planar_face_traversal_visitor
 {
@@ -78,8 +81,7 @@ struct tree_builder : public planar_face_traversal_visitor
     std::map<Edge, std::vector<int> > &faces;
     std::vector<Problem> &tree;
     int current_face = 0;
-    int parent_it = -1;
-    int edge_it = 0;
+    int last_vertex;
     Graph graph;
     PlanarEmbedding embedding;
 
@@ -88,6 +90,12 @@ struct tree_builder : public planar_face_traversal_visitor
 
     void end_face() {
         current_face++;
+    }
+
+    template <typename Vertex>
+    void next_vertex(Vertex v) {
+        tree[current_face].face.push_back(v);
+        last_vertex = v;
     }
 
     void next_edge(Edge e)
@@ -105,11 +113,11 @@ struct tree_builder : public planar_face_traversal_visitor
                 int last = tree.size() - 1;
                 tree[current_face].children.push_back(last);
                 tree[last].parent = current_face;
-                tree[last].label.first = e.m_source;
-                tree[last].label.second = e.m_target;
+                tree[last].label.first = last_vertex;
+                tree[last].label.second = last_vertex == e.m_source ? e.m_target : e.m_source;
 
-                if (e != *embedding[target(e, graph)].begin())
-                    std::swap(tree[last].label.first, tree[last].label.second);
+//                if (e != *embedding[target(e, graph)].begin())
+//                    std::swap(tree[last].label.first, tree[last].label.second);
             } else {
                 tree[current_face].children.push_back(neighbor);
             }
@@ -117,106 +125,71 @@ struct tree_builder : public planar_face_traversal_visitor
     }
 };
 
+template<typename Problem>
+class baker_impl {
 
+//    void root_tree_with_root(std::vector<Problem> &tree, int node, int root);
 
-template <typename Problem>
-void root_tree_2(std::vector<Problem> &tree, int node) {
-    if (tree[node].children.empty())
-        return;
+    Graph g;
+    PlanarEmbedding embedding;
+    std::vector<Problem> tree;
+    std::vector<int> vertex_level;
 
-    int parent_it = 0;
-    auto child = tree[node].children.begin();
-    for(int i = 0; child != tree[node].children.end(); child++, i++) {
-        if(*child == tree[node].parent) {
-            tree[node].children.erase(child--);
-            parent_it = i;
-        } else {
-            tree[*child].parent = node;
-            root_tree(tree, *child);
+    int name_levels() {
+        std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
+        std::vector<std::vector<int> > vertices_in_face;
+        my_visitor<Edge> my_vis(faces, vertices_in_face);
+        planar_face_traversal(g, &embedding.front(), my_vis);
+
+        for (int &v : vertex_level) {
+            v = -1;
         }
-    }
 
-    int last = tree[node].children.size() - 1;
+        Edge next_level_edge;
+        Edge current_edge;
+        int starting_v;
+        int current_v;
+        int current_egde_it;
 
-    std::rotate(tree[node].children.begin(),
-                tree[node].children.begin()+parent_it,
-                tree[node].children.end());
-
-    tree[node].label.first = tree[tree[node].children[0]].label.first;
-    tree[node].label.second = tree[tree[node].children[last]].label.second;
-}
-
-template <typename PlanarEmbedding, typename Edge>
-int get_edge_it(const PlanarEmbedding& embedding, Edge e, int v) {
-    for (int i = 0; i < embedding[v].size(); i++) {
-        if (embedding[v][i].m_source == e.m_source
-            && embedding[v][i].m_target == e.m_target) {
-            return i;
+        typename boost::graph_traits<Graph>::edge_iterator fi, fi_end;
+        for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
+            if (faces[*fi][0] == 0 || faces[*fi][1] == 0) {
+                next_level_edge = *fi;
+                current_edge = next_level_edge;
+                starting_v = next_level_edge.m_source;
+                current_v = next_level_edge.m_target;
+                vertex_level[current_v] = 0;
+                break;
+            }
         }
-    }
 
-    return -1;
-}
+        current_egde_it = get_edge_it(current_edge, current_v);
 
-template <typename PlanarEmbedding>
-void name_levels(Graph& g, const PlanarEmbedding& embedding, std::vector<int>& vertex_level, int k) {
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+        std::vector<int> current_level;
+        current_level.push_back(starting_v);
+        current_level.push_back(current_v);
 
-    std::map<Edge, std::vector<int> > faces;
-    std::vector<std::vector<int> > vertices_in_face;
-    my_visitor<Edge> my_vis(faces, vertices_in_face);
-    planar_face_traversal(g, &embedding.front(), my_vis);
+        for (int level = 0; ; level++) {
+            while (current_v != starting_v) {
+                Edge e = embedding[current_v][current_egde_it];
 
-    for (int & v : vertex_level) {
-        v = -1;
-    }
-
-    Edge next_level_edge;
-    Edge current_edge;
-    int starting_v;
-    int current_v;
-    int current_egde_it;
-
-    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
-    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
-        if (faces[*fi][0] == 0 || faces[*fi][1] == 0) {
-            next_level_edge = *fi;
-            current_edge = next_level_edge;
-            starting_v = next_level_edge.m_source;
-            current_v = next_level_edge.m_target;
-            vertex_level[current_v] = 0;
-            break;
-        }
-    }
-
-    current_egde_it = get_edge_it(embedding, current_edge, current_v);
-
-    std::vector<int> current_level;
-    current_level.push_back(starting_v);
-    current_level.push_back(current_v);
-
-    for (int level = 0; level < k; level++) {
-        while (current_v != starting_v) {
-            Edge e = embedding[current_v][current_egde_it];
-
-            for (int j = (current_egde_it + 1) % embedding[current_v].size(); j != current_egde_it;
-                j = (j + 1) % embedding[current_v].size()) {
-                Edge e_j = embedding[current_v][j];
-                if (vertex_level[source(e_j, g)] == -1
-                    || vertex_level[target(e_j, g)] == -1) {
-                    current_edge = e_j;
-                    break;
+                for (int j = (current_egde_it + 1) % embedding[current_v].size(); j != current_egde_it;
+                     j = (j + 1) % embedding[current_v].size()) {
+                    Edge e_j = embedding[current_v][j];
+                    if (vertex_level[source(e_j, g)] == -1
+                        || vertex_level[target(e_j, g)] == -1) {
+                        current_edge = e_j;
+                        break;
+                    }
                 }
+
+                current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
+                current_egde_it = get_edge_it(current_edge, current_v);
+
+                current_level.push_back(current_v);
+                vertex_level[current_v] = level;
             }
 
-            current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
-            current_egde_it = get_edge_it(embedding, current_edge, current_v);
-
-            current_level.push_back(current_v);
-            vertex_level[current_v] = level;
-        }
-
-        if (level < k - 1) {
             vertex_level[starting_v] = level;
 
             for (int v : current_level) {
@@ -229,7 +202,13 @@ void name_levels(Graph& g, const PlanarEmbedding& embedding, std::vector<int>& v
                 }
             }
 
-            current_egde_it = (get_edge_it(embedding, next_level_edge, starting_v) + 1) % embedding[starting_v].size();
+            if (vertex_level[next_level_edge.m_source] > -1
+                && vertex_level[next_level_edge.m_target] > -1) {
+                return level + 1;
+            }
+
+            current_egde_it =
+                    (get_edge_it(next_level_edge, starting_v) + 1) % embedding[starting_v].size();
             for (int j = (current_egde_it + 1) % embedding[starting_v].size(); j != current_egde_it;
                  j = (j + 1) % embedding[starting_v].size()) {
                 Edge e_j = embedding[starting_v][j];
@@ -247,181 +226,207 @@ void name_levels(Graph& g, const PlanarEmbedding& embedding, std::vector<int>& v
 
             vertex_level[current_v] = level + 1;
         }
+
+
     }
 
+    void tringulate() {
+        //TODO
+    }
 
+    int find_third(int one, int two) {
+        auto& one_edges = embedding[one];
+        auto& two_edges = embedding[two];
 
-}
+        int level = vertex_level[one];
 
-template <typename PlanarEmbedding>
-int check_for_component(const PlanarEmbedding& embedding, const std::vector<int>& face,
-                         const std::vector<int>& vertex_level) {
-    int level = vertex_level[face[0]];
+        if (one == two) {
+            for (auto e_i : one_edges) {
+                int target_i = e_i.m_source == one ? e_i.m_target : e_i.m_source;
 
-    for (int v : face) {
-        for (auto e : embedding[v]) {
-            int target = e.m_source == v ? e.m_target : e.m_source;
-            if (vertex_level[target] == level + 1) {
-                return target;
+                if (vertex_level[target_i] == level + 1) {
+                    return target_i;
+                }
             }
         }
+
+        for (auto e_i : one_edges) {
+            int target_i = e_i.m_source == one ? e_i.m_target : e_i.m_source;
+
+            if (vertex_level[target_i] == level -1) {
+                auto& target_i_edges = embedding[target_i];
+
+                for (auto e_j : target_i_edges) {
+                    int target_j = e_j.m_source == target_i ? e_j.m_target : e_j.m_source;
+                    if (target_j == two) {
+                        return target_i;
+                    }
+                }
+            }
+        }
+
+        return -1;
     }
 
-    return -1;
-}
+    void root_tree_2(std::vector<Problem> &t, int node) {
+        if (t[node].children.empty())
+            return;
 
-template <typename Problem, typename PlanarEmbedding>
-std::vector<Problem> build_tree(Graph &g, PlanarEmbedding &embedding, int v, const std::vector<int>& vertex_level) {
-    int level = vertex_level[v];
+        int parent_it = 0;
+        auto child = t[node].children.begin();
+        for (int i = 0; child != t[node].children.end(); child++, i++) {
+            if (*child == t[node].parent) {
+                t[node].children.erase(child--);
+                parent_it = i;
+            } else {
+                t[*child].parent = node;
+                root_tree_2(t, *child);
+            }
+        }
 
-    std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
-    std::vector<std::vector<int> > vertices_in_face;
-    my_visitor<graph_traits<Graph>::edge_descriptor> my_vis(faces, vertices_in_face);
-    level_face_traversal(g, embedding, my_vis, level, vertex_level);
-    std::vector<Problem> tree(my_vis.current_face);
+        int last = t[node].children.size() - 1;
 
-    tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, tree, g, embedding);
-    level_face_traversal(g, embedding, tree_b, level, vertex_level);
+        std::rotate(t[node].children.begin(),
+                    t[node].children.begin() + parent_it,
+                    t[node].children.end());
 
-    for (int i = 0; i < vertices_in_face.size(); i++) {
-        auto& face = vertices_in_face[i];
+        t[node].label.first = t[t[node].children[0]].label.first;
+        t[node].label.second = t[t[node].children[last]].label.second;
 
-        int v_in_c = check_for_component(embedding, face, vertex_level);
-        if (v_in_c > -1) {
-            tree[i].component_tree = build_tree<Problem>(g, embedding, v_in_c, vertex_level);
+        if (!t[node].component_tree.empty()) {
+            tringulate();
+            int v = find_third(t[node].label.first, t[node].label.second);
+            root_tree_with_root(t[node].component_tree, v);
         }
     }
 
-    return tree;
-}
+    void root_tree_with_root(std::vector<Problem> &t, int root) {
+        int node;
 
-template <typename Problem, typename PlanarEmbedding>
-int baker2(Graph &g, PlanarEmbedding &embedding, int k) {
-    std::vector<int> vertex_level(embedding.size());
-    name_levels(g, embedding, vertex_level, k);
-
-    int v = 0;
-
-    for (int i = 0; i < vertex_level.size(); i++) {
-        if (vertex_level[i] == 0){
-            v = i;
-            break;
+        for (int i = 0; i < t.size(); i++) {
+            for (int v : t[i].face) {
+                if (v == root) {
+                    node = i;
+                    break;
+                }
+            }
         }
+
+        root_tree_2(t, node);
+
+        auto &children = t[node].children;
+
+        for (int i = 0; i < children.size(); i++) {
+            int child = children[i];
+
+            if (t[child].label.first == root) {
+                std::rotate(t[node].children.begin(),
+                            t[node].children.begin() + i,
+                            t[node].children.end());
+                break;
+            }
+        }
+
+        t[node].label.first = root;
+        t[node].label.second = root;
     }
 
-    std::vector<Problem> tree = build_tree<Problem>(g, embedding, v, vertex_level);
+    template<typename Edge>
+    int get_edge_it(Edge e, int v) {
+        for (int i = 0; i < embedding[v].size(); i++) {
+            if (embedding[v][i].m_source == e.m_source
+                && embedding[v][i].m_target == e.m_target) {
+                return i;
+            }
+        }
 
-//    std::vector<Problem> tree(my_vis.current_face);
+        return -1;
+    }
 
 
+    int check_for_component(const std::vector<int> &face) {
+        int level = vertex_level[face[0]];
+
+        for (int v : face) {
+            for (auto e : embedding[v]) {
+                int target = e.m_source == v ? e.m_target : e.m_source;
+                if (vertex_level[target] == level + 1) {
+                    return target;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    std::vector<Problem> build_tree(int v) {
+        int level = vertex_level[v];
+
+        std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
+        std::vector<std::vector<int> > vertices_in_face;
+        my_visitor<Edge> my_vis(faces, vertices_in_face);
+        level_face_traversal(g, embedding, my_vis, level, vertex_level);
+        std::vector<Problem> t(my_vis.current_face);
+
+        tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
+        level_face_traversal(g, embedding, tree_b, level, vertex_level);
+
+        for (int i = 0; i < vertices_in_face.size(); i++) {
+            auto &face = vertices_in_face[i];
+
+            int v_in_c = check_for_component(face);
+            if (v_in_c > -1) {
+                t[i].component_tree = build_tree(v_in_c);
+            }
+        }
+
+        return t;
+    }
+
+public:
+    baker_impl(const Graph& arg_g): g(arg_g), embedding(num_vertices(arg_g)), vertex_level(num_vertices(arg_g)) {
+        property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
+        graph_traits<Graph>::edges_size_type edge_count = 0;
+        graph_traits<Graph>::edge_iterator ei, ei_end;
+        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+            put(e_index, *ei, edge_count++);
 
 
-//    for(auto v : embedding) {
-//        copy.emplace_back();
-//        for(auto e : v) {
-//            copy.back().push_back(e);
-//        }
-//    }
-//
-//    for(int level = 1; level <= k; level++) {
-////        property_map<Graph, edge_faces_t>::type faces = get(edge_faces_t(), g);
-////        std::vector<Edge> outer_face;
-////        my_visitor<Edge> my_vis(faces, outer_face);
-////        planar_face_traversal(g, &copy.front(), my_vis);
-////        std::vector<Problem> tree(my_vis.current_face);
-////
-////        for (Edge e : outer_face) {
-////            vertex_level[e.m_source] = level;
-////        }
-//
-//        int start = -1;
-//
-//        for (int i = 0; i < vertex_level.size(); i++) {
-//            if (vertex_level[i] == 0) {
-//                start = i;
-//                break;
-//            }
-//        }
-//
-//        if (start == -1)
-//            break;
-//
-//        int before = start;
-//
-//        int next = -1;
-//
-//        for (int i = 0; i < copy[start].size(); i++) {
-//            Edge nextnext = copy[start][i];
-//            if ((nextnext.m_source != start && vertex_level[nextnext.m_source] == 0)
-//                || (nextnext.m_target != start && vertex_level[nextnext.m_target] == 0)) {
-//                if (start == nextnext.m_target)
-//                    next = nextnext.m_source;
-//                else
-//                    next = nextnext.m_target;
-//                break;
-//            }
-//        }
-//
-//        if (next == -1) {
-//            vertex_level[start] = level;
-//            break;
-//        }
-//
-//        while (start != next) {
-//            vertex_level[next] = level;
-//
-//            for (int i = 0; i < copy[next].size(); i++) {
-//                if (copy[next][i].m_source == before || copy[next][i].m_target == before) {
-//                    before = next;
-//                    for (int j = (i + 1)%copy[next].size(); j != i; (j++)%copy[next].size()) {
-//                        Edge nextnext = copy[next][j];
-//                        if (vertex_level[nextnext.m_source] == 0 || vertex_level[nextnext.m_target] == 0) {
-//                            if (next == nextnext.m_target)
-//                                next = nextnext.m_source;
-//                            else
-//                                next = nextnext.m_target;
-//                        }
-////                        break;
-//                    }
-//
-////                    Edge nextnext = copy[next][(i+1)%copy[next].size()];
-////                    if (next == nextnext.m_target)
-////                        next = nextnext.m_source;
-////                    else
-////                        next = nextnext.m_target;
-//                    break;
-//                }
-//            }
-//
-////            std::cout << next << "\n";
-//        }
-//        vertex_level[start] = level;
-//
-////        int i = 0;
-////        for (auto v_it = copy.begin(); v_it != copy.end();) {
-////            if (vertex_level[i] == level) {
-////                v_it = copy.erase(v_it);
-////            } else {
-////                ++v_it;
-////
-////                for (auto e_it = v_it -> begin(); e_it != v_it -> end();) {
-////                    if (vertex_level[e_it -> m_source ]== level
-////                        || vertex_level[e_it -> m_target] == level) {
-////                        e_it = v_it -> erase(e_it);
-////                    } else {
-////                        ++e_it;
-////                    }
-////                }
-////            }
-////            i++;
-////        }
-//    }
+        if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
+                                         boyer_myrvold_params::embedding =
+                                                 &embedding[0]
+        )
+                )
+            std::cout << "Input graph is planar" << std::endl;
+        else
+            std::cout << "Input graph is not planar" << std::endl;
 
-//    for (auto i : vertex_level) {
-//        std::cout << i << "\n";
-//    }
+        int k = name_levels();
 
-    return 0;
+        int v = 0;
+
+        for (int i = 0; i < vertex_level.size(); i++) {
+            if (vertex_level[i] == 0) {
+                v = i;
+                break;
+            }
+        }
+
+        tree = build_tree(v);
+
+        root_tree_with_root(tree, 0);
+    }
+
+    int result() {
+        return 0;
+    }
+
+};
+
+template <typename Problem>
+int baker2(const Graph& g) {
+    baker_impl < Problem > b(g);
+    return b.result();
 }
 
 #define TECHNIKA_BAKER_BAKER_K_OUTER_PLANAR_HPP

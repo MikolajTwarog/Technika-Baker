@@ -10,6 +10,7 @@ struct node
     int parent;
     std::pair<int, int> label;
     std::vector<int> children;
+    std::vector<int> face;
     node(): parent(-1) {}
 };
 

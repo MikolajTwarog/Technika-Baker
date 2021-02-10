@@ -53,7 +53,7 @@ void test2(Graph &g, std::string name) {
     std::vector<vec_t> embedding(num_vertices(g));
     get_embedding(g, embedding);
 
-    std::cout << "Independent set\nresult: " << baker2<independent_set>(g, embedding, 2) << "\n";
+    std::cout << "Independent set\nresult: " << baker2<independent_set>(g) << "\n";
 }
 
 void unit2()
