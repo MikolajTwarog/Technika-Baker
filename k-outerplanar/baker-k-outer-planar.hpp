@@ -210,7 +210,8 @@ class baker_impl {
 
             current_egde_it =
                     (get_edge_it(next_level_edge, starting_v) + 1) % embedding[starting_v].size();
-            for (;;current_egde_it++) {
+            int temp = current_egde_it - 1;
+            for (;current_egde_it != temp;current_egde_it = (current_egde_it + 1) % embedding[starting_v].size())  {
                 Edge e_j = embedding[starting_v][current_egde_it];
                 if (vertex_level[source(e_j, g)] == -1
                     && vertex_level[target(e_j, g)] == -1) {
@@ -224,13 +225,15 @@ class baker_impl {
             current_level.push_back(starting_v);
             current_level.push_back(current_v);
 
+            current_egde_it = get_edge_it(current_edge, current_v);
+
             vertex_level[current_v] = level + 1;
         }
 
 
     }
 
-    void triangulate(std::vector<int>& face, std::vector<int>& component) {
+    void triangulate(std::vector<int>& face, std::vector<int>& component, int turn) {
         int level = vertex_level[face[0]];
         Edge connecting_e;
         int starting_v;
@@ -263,7 +266,7 @@ class baker_impl {
             int edge_it2 = get_edge_it(temp1, second);
 
             
-            edge_it = (edge_it - 1) % embedding[first].size();
+            edge_it = (edge_it + (1 * turn)) % embedding[first].size();
             connecting_e = embedding[first][edge_it];
             
             int target = connecting_e.m_source == first ? connecting_e.m_target : connecting_e.m_source;
@@ -271,8 +274,13 @@ class baker_impl {
             
             if (!boost::edge(second, target, g).second) {
                 add_edge(second, target, g);
-                embedding[second].emplace(embedding[second].begin() + edge_it2 + 1, second, target, nullptr);
                 int target_e_it = get_edge_it(temp2, target);
+                if (turn == -1) {
+                    edge_it2++;
+                } else {
+                    target_e_it++;
+                }
+                embedding[second].emplace(embedding[second].begin() + edge_it2, second, target, nullptr);
                 embedding[target].emplace(embedding[target].begin() + target_e_it, second, target, nullptr);
                 added_edges.emplace_back(second, target, nullptr);
             }
@@ -397,8 +405,8 @@ class baker_impl {
             }
             std::vector<int> component;
             get_component(component, check_for_component(face));
-            triangulate(face, component);
-            triangulate(component, face);
+            triangulate(face, component, -1);
+            triangulate(component, face, 1);
             int v = find_third(t[node].label.first, t[node].label.second);
             root_tree_with_root(t[node].component_tree, v);
         }
