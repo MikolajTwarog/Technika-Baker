@@ -72,6 +72,7 @@ void unit2()
     add_edge(4, 0, g6);
     add_edge(4, 1, g6);
     add_edge(5, 2, g6);
+    add_edge(1, 6, g6);
 
     test2(g6, "");
 
