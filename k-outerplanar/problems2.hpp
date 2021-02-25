@@ -7,20 +7,23 @@
 
 template <typename Problem>
 struct tree{
-    Problem* enclosing_face;
+    tree<Problem>* enclosing_tree;
+    int enclosing_face;
     std::vector<Problem> t;
     int root;
     int level;
 
-    tree():enclosing_face(nullptr){}
-    explicit tree(int size): t(size), enclosing_face(nullptr){}
-    explicit tree(int size, int l): level(l), enclosing_face(nullptr){
+    tree():enclosing_tree(nullptr){}
+    explicit tree(int size): t(size), enclosing_tree(nullptr){}
+    explicit tree(int size, int l): level(l), enclosing_tree(nullptr){
         for (int i = 0; i < size; i++) {
-            t.emplace_back(level);
+            t.emplace_back(l, this);
+//            t.back().my_tree = this;
         }
     }
     tree(const tree<Problem>& t2) {
         t = t2.t;
+        enclosing_tree = t2.enclosing_tree;
         enclosing_face = t2.enclosing_face;
         root = t2.root;
         level = t2.level;
@@ -32,6 +35,7 @@ struct tree{
 
     tree<Problem>& operator= (const tree<Problem>& t2) {
         t = t2.t;
+        enclosing_tree = t2.enclosing_tree;
         enclosing_face = t2.enclosing_face;
         root = t2.root;
         root = t2.root;
@@ -48,7 +52,8 @@ struct tree{
     }
 
     void emplace_back() {
-        t.emplace_back(level);
+        t.emplace_back(level, this);
+//        t.back().my_tree = this;
     }
 };
 
@@ -65,8 +70,7 @@ struct node
 
 struct independent_set : node
 {
-    tree<independent_set>* enclosing_tree;
-    int enclosing_face;
+    tree<independent_set>* my_tree;
     tree<independent_set> component_tree;
     std::vector<int> val;
     int level;
@@ -74,6 +78,13 @@ struct independent_set : node
     independent_set(){}
 
     independent_set(int l): level(l), val(1 << (l + 2)) {
+//        val.push_back(0);
+//        val.push_back(1);
+//        val.push_back(1);
+//        val.push_back(-INT_MAX);
+    }
+
+    independent_set(int l, tree<independent_set>* mt): level(l), val(1 << (l + 2)), my_tree(mt) {
 //        val.push_back(0);
 //        val.push_back(1);
 //        val.push_back(1);
@@ -89,6 +100,7 @@ struct independent_set : node
         face = two.face;
         val = two.val;
         component_tree = two.component_tree;
+        my_tree = two.my_tree;
         return *this;
     }
 
@@ -99,19 +111,19 @@ struct independent_set : node
     void get_left_boundary(std::vector<int>& lb) {
         lb.push_back(label.first);
 
-        if (enclosing_tree == nullptr)
+        if (my_tree->enclosing_tree == nullptr)
             return;
 
-        enclosing_tree->t[enclosing_tree->t[enclosing_face].children[LB]].get_left_boundary(lb);
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
     }
 
     void get_right_boundary(std::vector<int>& rb) {
         rb.push_back(label.second);
 
-        if (enclosing_tree == nullptr)
+        if (my_tree->enclosing_tree == nullptr)
             return;
 
-        enclosing_tree->t[enclosing_tree->t[enclosing_face].children[RB - 1]].get_left_boundary(rb);
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_left_boundary(rb);
     }
 
     void merge(independent_set &two) {
@@ -197,17 +209,17 @@ struct independent_set : node
 
     template<typename PlanarEmbedding>
     void create(PlanarEmbedding& embedding, int child_num) {
-        const std::vector<int>& children = enclosing_tree->t[enclosing_face].children;
+        const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
         std::vector<int> vertices;
 
         vertices.push_back(label.first);
         vertices.push_back(label.second);
 
         if (child_num < children.size()) {
-            independent_set& child = enclosing_tree->t[children[child_num]];
+            independent_set& child = my_tree->enclosing_tree->t[children[child_num]];
             child.get_left_boundary(vertices);
         } else {
-            independent_set& child = enclosing_tree->t[children[child_num - 1]];
+            independent_set& child = my_tree->enclosing_tree->t[children[child_num - 1]];
             child.get_right_boundary(vertices);
         }
 
