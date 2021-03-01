@@ -27,6 +27,12 @@ struct tree{
         enclosing_face = t2.enclosing_face;
         root = t2.root;
         level = t2.level;
+        for (auto& p : t) {
+            p.my_tree = this;
+            if (!p.component_tree.empty()) {
+                p.component_tree.enclosing_tree = this;
+            }
+        }
     }
 
     Problem& operator[] (int x) {
@@ -38,8 +44,13 @@ struct tree{
         enclosing_tree = t2.enclosing_tree;
         enclosing_face = t2.enclosing_face;
         root = t2.root;
-        root = t2.root;
         level = t2.level;
+        for (auto& p : t) {
+            p.my_tree = this;
+            if (!p.component_tree.empty()) {
+                p.component_tree.enclosing_tree = this;
+            }
+        }
         return *this;
     }
 
@@ -75,20 +86,37 @@ struct independent_set : node
     std::vector<int> val;
     int level;
 
-    independent_set(){}
+//    independent_set(){}
 
-    independent_set(int l): level(l), val(1 << (l + 2)) {
-//        val.push_back(0);
-//        val.push_back(1);
-//        val.push_back(1);
-//        val.push_back(-INT_MAX);
+    independent_set(int l): level(l), val(1 << (l * 2)) {
+        if(l == 1) {
+            val[0] = 0;
+            val[1] = 1;
+            val[2] = 1;
+            val[3] = -INT_MAX;
+        }
     }
 
-    independent_set(int l, tree<independent_set>* mt): level(l), val(1 << (l + 2)), my_tree(mt) {
-//        val.push_back(0);
-//        val.push_back(1);
-//        val.push_back(1);
-//        val.push_back(-INT_MAX);
+    independent_set(int l, tree<independent_set>* mt): level(l), val(1 << (l * 2)), my_tree(mt) {
+        if(l == 1) {
+            val[0] = 0;
+            val[1] = 1;
+            val[2] = 1;
+            val[3] = -INT_MAX;
+        }
+    }
+
+    independent_set(const independent_set& two): my_tree(two.my_tree) {
+        parent = two.parent;
+        label = two.label;
+        LB = two.LB;
+        RB = two.RB;
+        children = two.children;
+        face = two.face;
+        val = two.val;
+        component_tree = two.component_tree;
+        level = two.level;
+//        my_tree = two.my_tree;
     }
 
     independent_set& operator=(const independent_set& two) {
@@ -101,6 +129,7 @@ struct independent_set : node
         val = two.val;
         component_tree = two.component_tree;
         my_tree = two.my_tree;
+        level = two.level;
         return *this;
     }
 
@@ -126,8 +155,8 @@ struct independent_set : node
         my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_left_boundary(rb);
     }
 
-    void merge(independent_set &two) {
-        std::vector<int> copy(val);
+    void merge(std::vector<int>& one, std::vector<int>& two) {
+//        std::vector<int> copy(val);
 
         int count = 1 << level;
 
@@ -140,7 +169,7 @@ struct independent_set : node
                     }
 
                     val[u + (v << level)] = std::max(val[u + (v << level)],
-                                                     copy[u + (z << level)] + two.val[z + (u << level)] - ones);
+                                                     one[u + (z << level)] + two[z + (u << level)] - ones);
                 }
             }
         }
@@ -178,8 +207,9 @@ struct independent_set : node
         }
     }
 
-    independent_set extend(int z) {
-        int count = 1 << (level - 1);
+    template<typename Graph>
+    independent_set extend(int z, Graph& g) {
+        int count = 1 << level;
 
         independent_set res(level + 1);
 
@@ -189,17 +219,18 @@ struct independent_set : node
         get_left_boundary(lb);
         get_right_boundary(rb);
 
-        int l = *std::find(lb.begin(), lb.end(), z);
-        int r = *std::find(rb.begin(), rb.end(), z);
-
         for (int u = 0; u < count; u++) {
             for (int v = 0; v < count; v++) {
-                res.val[(u + (v << level)) << 1] = val[u + (v << level)];
+                int cur = (u << 1) + (v << ((2 * level) + 1));
+                res.val[cur] = val[u + (v << level)];
+                res.val[cur + (1 << (2 * level))] = -INT_MAX;
+                res.val[cur + 1] = -INT_MAX;
 
-                if (((1 << l) & u) > 0 || ((1 << r) & v) > 0) {
-                    res.val[((u + (v << level)) << 1) + 1] = -INT_MAX;
+                if (((u & 1) == 1 && boost::edge(lb[0], z, g).second)
+                    || ((v & 1) == 1 && boost::edge(rb[0], z, g).second)){
+                    res.val[cur + 1 + (1 << (2 * level))] = -INT_MAX;
                 } else {
-                    res.val[((u + (v << level)) << 1) + 1] = val[u + (v << level)] + 1;
+                    res.val[cur + 1 + (1 << (2 * level))] = val[u + (v << level)] + 1;
                 }
             }
         }
@@ -207,12 +238,21 @@ struct independent_set : node
         return res;
     }
 
-    template<typename PlanarEmbedding>
-    void create(PlanarEmbedding& embedding, int child_num) {
+    template<typename Graph>
+    void create(int child_num, Graph& g) {
         const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
         std::vector<int> vertices;
 
         vertices.push_back(label.first);
+
+        if (child_num < children.size()) {
+            independent_set& child = my_tree->enclosing_tree->t[children[child_num]];
+            child.get_left_boundary(vertices);
+        } else {
+            independent_set& child = my_tree->enclosing_tree->t[children[child_num - 1]];
+            child.get_right_boundary(vertices);
+        }
+
         vertices.push_back(label.second);
 
         if (child_num < children.size()) {
@@ -227,27 +267,35 @@ struct independent_set : node
 
         for (int i = 0; i < count; i++) {
             int ones = 0;
-            for (int j = 0; j < level; j++) {
+            for (int j = 0; j < vertices.size(); j++) {
                 ones += (i & (1 << j)) > 0;
             }
 
             val[i] = ones;
 
-            for (int j = 0; j < vertices.size(); j++) {
-                int v = vertices[j];
-
-                if (((1 << j) & i) == 0) {
-                    continue;
-                }
-
-                for (auto e : embedding[v]) {
-                    int neighbour = e.m_source == v ? e.m_target : e.m_source;
-                    int n_num = *std::find(vertices.begin(), vertices.end(), neighbour);
-
-                    if (((1 << n_num) & i) > 0) {
+            for (int v = 0; v < vertices.size(); v++) {
+                for (int w = v + 1; w < vertices.size(); w++) {
+                    if ((i & (1 << v)) > 0 && (i & (1 << w)) > 0 && boost::edge(vertices[v], vertices[w], g).second) {
                         val[i] = -INT_MAX;
-                        break;
                     }
+                }
+            }
+        }
+
+        count = 1 << (vertices.size() >> 1);
+
+        for (int u = 0; u < count; u++) {
+            for (int v = 0; v < count; v++) {
+                int cur = u + (v << (vertices.size() >> 1));
+
+                if ((u >> 1) == (v >> 1) && val[cur] > -INT_MAX) {
+                    int ones = 0;
+                    for (int j = 1; j < (vertices.size() >> 1); j++) {
+                        ones += (u & (1 << j)) > 0;
+                    }
+                    val[cur] -= ones;
+                } else {
+                    val[cur] = -INT_MAX;
                 }
             }
         }

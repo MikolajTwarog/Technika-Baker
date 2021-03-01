@@ -16,7 +16,7 @@
 template < typename Graph, typename Visitor >
 inline void level_face_traversal(
         const Graph& g, std::vector<std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
-        Visitor& visitor, int level, const std::vector<int>& vertex_level)
+        Visitor& visitor, int level, const std::vector<int>& vertex_level, const std::vector<int>& component)
 {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef typename boost::graph_traits<Graph>::edge_descriptor edge_t;
@@ -25,8 +25,9 @@ inline void level_face_traversal(
     std::map<edge_t, std::set<vertex_t> > visited;
 
     visitor.begin_traversal();
+    std::vector<edge_t> edges_cache;
 
-    for (int v = 0; v < embedding.size(); v++) {
+    for (int v : component) {
         if (vertex_level[v] != level)
             continue;
 
@@ -35,9 +36,10 @@ inline void level_face_traversal(
         for (int i = 0; i < edges.size(); i++) {
             edge_t e = edges[i];
             if (vertex_level[source(e, g)] != level
-                && vertex_level[target(e, g)] != level)
+                || vertex_level[target(e, g)] != level)
                 continue;
 
+            edges_cache.push_back(e);
             for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
                 edge_t e_j = edges[j];
                 if (vertex_level[source(e_j, g)] == level
@@ -49,17 +51,16 @@ inline void level_face_traversal(
         }
     }
 
-    std::vector<edge_t> edges_cache;
     std::vector<vertex_t> vertices_in_edge;
-    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
+//    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
 
-    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
-        edge_t e(*fi);
-        if (vertex_level[source(e, g)] == level
-            && vertex_level[target(e, g)] == level) {
-            edges_cache.push_back(e);
-        }
-    }
+//    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
+//        edge_t e(*fi);
+//        if (vertex_level[source(e, g)] == level
+//            && vertex_level[target(e, g)] == level) {
+//            edges_cache.push_back(e);
+//        }
+//    }
 
     for (auto e : edges_cache) {
 //            std::cout << e << "\n";

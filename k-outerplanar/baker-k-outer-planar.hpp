@@ -115,6 +115,7 @@ struct tree_builder : public planar_face_traversal_visitor
                 tree[last].parent = current_face;
                 tree[last].label.first = last_vertex;
                 tree[last].label.second = last_vertex == e.m_source ? e.m_target : e.m_source;
+//                tree[last].my_tree = &tree;
 
 //                if (e != *embedding[target(e, graph)].begin())
 //                    std::swap(tree[last].label.first, tree[last].label.second);
@@ -147,15 +148,23 @@ class baker_impl {
         }
 
         for (int v : vertices_in_face[0]) {
-            vertex_level[v] = 0;
+            vertex_level[v] = 1;
         }
 
         std::queue<Edge> next_level_edges;
 
-        for (int v : vertices_in_face[0]) {
+        for (int i = 0; i < vertices_in_face[0].size(); i++) {
+            int v = vertices_in_face[0][i];
+            int w = vertices_in_face[0][(i + 1) % vertices_in_face[0].size()];
             for (Edge e : embedding[v]) {
                 if (vertex_level[e.m_source] == -1 || vertex_level[e.m_target] == -1) {
                     next_level_edges.push(e);
+                }
+
+                if (e.m_source == w) {
+                    std::swap(e.m_source, e.m_target);
+                    int e_it = get_edge_it(e, w);
+                    std::swap(embedding[w][e_it].m_source, embedding[w][e_it].m_target);
                 }
             }
         }
@@ -180,7 +189,7 @@ class baker_impl {
 //            }
 //        }
 
-        int level = 0;
+        int level = 1;
         std::vector<int> current_level;
 //        current_level.push_back(starting_v);
 //        current_level.push_back(current_v);
@@ -244,11 +253,21 @@ class baker_impl {
 
             vertex_level[starting_v] = level;
 
-            for (int v : current_level) {
-                for (Edge e : embedding[v]) {
+            current_level.pop_back();
+
+            for (int i = 0; i < current_level.size(); i++) {
+                int v = current_level[i];
+                int w = current_level[(i+1) % current_level.size()];
+                for (Edge& e : embedding[v]) {
                     if (vertex_level[e.m_source] == -1
                         || vertex_level[e.m_target] == -1) {
                         next_level_edges.push(e);
+                    }
+
+                    if (e.m_source == w) {
+                        std::swap(e.m_source, e.m_target);
+                        int e_it = get_edge_it(e, w);
+                        std::swap(embedding[w][e_it].m_source, embedding[w][e_it].m_target);
                     }
                 }
             }
@@ -337,13 +356,13 @@ class baker_impl {
                     break;
                 }
             }
-            if (starting_v > -1)
+            if (starting_v_it > -1)
                 break;
         }
 
         std::rotate(face.begin(), face.begin() + starting_v_it, face.end());
 
-        for (int i = starting_v_it; i < face.size(); i++) {
+        for (int i = 0; i < face.size(); i++) {
             int first = face[i];
             int second = face[(i + 1) % face.size()];
 
@@ -482,21 +501,7 @@ class baker_impl {
         t[node].label.first = t[t[node].children[0]].label.first;
         t[node].label.second = t[t[node].children[last]].label.second;
 
-        if (!t[node].component_tree.empty()) {
-            std::vector<int> face;
-            for (int x : t[node].children) {
-                face.push_back(t[x].label.first);
-            }
-            if (t[t[node].children.back()].label.second != face[0]) {
-                face.push_back(t[t[node].children.back()].label.second);
-            }
-            std::vector<int> component;
-            get_component(component, check_for_component(face));
-            triangulate(face, component, -1);
-            triangulate(component, face, 1);
-            int v = find_third(t[node].label.first, t[node].label.second);
-            root_tree_with_root(t[node].component_tree, v);
-        }
+
     }
 
     void root_tree_with_root(::tree<Problem> &t, int root) {
@@ -530,6 +535,23 @@ class baker_impl {
 
         t[node].label.first = root;
         t[node].label.second = root;
+
+        if (!t[node].component_tree.empty()) {
+            std::vector<int> face;
+            for (int x : t[node].children) {
+                face.push_back(t[x].label.first);
+            }
+            if (t[t[node].children.back()].label.second != face[0]) {
+                face.push_back(t[t[node].children.back()].label.second);
+            }
+            std::vector<int> component;
+            get_component(component, check_for_component(face));
+//            std::reverse(component.begin(), component.end());
+            triangulate(face, component, -1);
+            triangulate(component, face, 1);
+            int v = find_third(t[node].label.first, t[node].label.second);
+            root_tree_with_root(t[node].component_tree, v);
+        }
     }
 
     template<typename Edge>
@@ -565,6 +587,19 @@ class baker_impl {
     std::vector<bool> visited;
 
     void get_component(std::vector<int>& component, int v) {
+        if (vertex_level[v] == 1) {
+            std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
+            std::vector<std::vector<int> > vertices_in_face;
+            my_visitor<Edge> my_vis(faces, vertices_in_face);
+            planar_face_traversal(g, &embedding.front(), my_vis);
+
+            for (int v : vertices_in_face[0]) {
+                component.push_back(v);
+            }
+
+            return;
+        }
+
         std::queue<int> q;
         q.push(v);
         int level = vertex_level[v];
@@ -633,19 +668,33 @@ class baker_impl {
             }
         }
 
+//        for (int i = 0, j = component.size() - 1; i < j; i++, j--) {
+//            std::swap(component[i], component[j]);
+//        }
     }
 
     ::tree<Problem> build_tree(int v) {
         int level = vertex_level[v];
 
+        std::vector<int> component;
+        get_component(component, v);
+
+        if (level > 1) {
+            std::reverse(component.begin(), component.end());
+        }
+
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
         my_visitor<Edge> my_vis(faces, vertices_in_face);
-        level_face_traversal(g, embedding, my_vis, level, vertex_level);
-        ::tree<Problem> t(my_vis.current_face, vertex_level[v]);
+        level_face_traversal(g, embedding, my_vis, level, vertex_level, component);
+        ::tree<Problem> t(my_vis.current_face, level);
+
+//        for (Problem p : t.t) {
+//            p.my_tree = &t;
+//        }
 
         tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
-        level_face_traversal(g, embedding, tree_b, level, vertex_level);
+        level_face_traversal(g, embedding, tree_b, level, vertex_level, component);
 
         for (int i = 1; i < vertices_in_face.size(); i++) {
             auto &face = vertices_in_face[i];
@@ -721,7 +770,7 @@ class baker_impl {
         }
     }
 
-    void table (::tree<Problem> t, int v) {
+    void table (::tree<Problem>& t, int v) {
         int level = t[v].level;
 
         if (!t[v].children.empty() && t[v].component_tree.empty()) {
@@ -730,7 +779,7 @@ class baker_impl {
 
             for(int i=1; i < t[v].children.size(); i++) {
                 table(t, t[v].children[i]);
-                t[v].merge(t[t[v].children[i]]);
+                t[v].merge(t[v].val, t[t[v].children[i]].val);
             }
 
             t[v].adjust();
@@ -741,9 +790,9 @@ class baker_impl {
             t[v].adjust();
         } else if (level > 0) {
             std::vector<int> z_table;
-            z_table.push_back(t[t.enclosing_tree->t[t.enclosing_face].children[0]].label.first);
+            z_table.push_back(t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[0]].label.first);
             for (int x : t.enclosing_tree->t[t.enclosing_face].children) {
-                z_table.push_back(t[x].label.second);
+                z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
 
             int p = t[v].RB;
@@ -754,21 +803,21 @@ class baker_impl {
                 }
             }
 
-            t[v].create(embedding, p);
+            t[v].create(p, g);
 
             int j = p - 1;
 
             while (j >= t[v].LB) {
-                Problem second = t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second);
-                t[v].merge(second); //trzeba zamienić kolejność
+                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g);
+                t[v].merge(second.val, t[v].val);
                 j--;
             }
 
             j = p;
 
             while (j < t[v].RB) {
-                Problem second = t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second);
-                t[v].merge(second);
+                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g);
+                t[v].merge(t[v].val, second.val);
                 j++;
             }
         }
@@ -798,7 +847,7 @@ public:
         int v = 0;
 
         for (int i = 0; i < vertex_level.size(); i++) {
-            if (vertex_level[i] == 0) {
+            if (vertex_level[i] == 1) {
                 v = i;
                 break;
             }
