@@ -273,70 +273,6 @@ class baker_impl {
             }
         }
         return level;
-//        current_egde_it = get_edge_it(current_edge, current_v);
-//
-//
-//        for (int level = 0; ; level++) {
-//            while (current_v != starting_v) {
-//                Edge e = embedding[current_v][current_egde_it];
-//
-//                for (int j = (current_egde_it + 1) % embedding[current_v].size(); j != current_egde_it;
-//                     j = (j + 1) % embedding[current_v].size()) {
-//                    Edge e_j = embedding[current_v][j];
-//                    if (vertex_level[source(e_j, g)] == -1
-//                        || vertex_level[target(e_j, g)] == -1) {
-//                        current_edge = e_j;
-//                        break;
-//                    }
-//                }
-//
-//                current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
-//                current_egde_it = get_edge_it(current_edge, current_v);
-//
-//                current_level.push_back(current_v);
-//                vertex_level[current_v] = level;
-//            }
-//
-//            vertex_level[starting_v] = level;
-//
-//            for (int v : current_level) {
-//                for (Edge e : embedding[v]) {
-//                    if (vertex_level[e.m_source] == -1
-//                        || vertex_level[e.m_target] == -1) {
-//                        next_level_edge = e;
-//                        starting_v = e.m_source == v ? e.m_target : e.m_source;
-//                    }
-//                }
-//            }
-//
-//            if (vertex_level[next_level_edge.m_source] > -1
-//                && vertex_level[next_level_edge.m_target] > -1) {
-//                return level + 1;
-//            }
-//
-//            current_egde_it =
-//                    (get_edge_it(next_level_edge, starting_v) + 1) % embedding[starting_v].size();
-//            int temp = current_egde_it - 1;
-//            for (;current_egde_it != temp;current_egde_it = (current_egde_it + 1) % embedding[starting_v].size())  {
-//                Edge e_j = embedding[starting_v][current_egde_it];
-//                if (vertex_level[source(e_j, g)] == -1
-//                    && vertex_level[target(e_j, g)] == -1) {
-//                    current_edge = e_j;
-//                    break;
-//                }
-//            }
-//            current_v = current_edge.m_source == starting_v ? current_edge.m_target : current_edge.m_source;
-//
-//            current_level.clear();
-//            current_level.push_back(starting_v);
-//            current_level.push_back(current_v);
-//
-//            current_egde_it = get_edge_it(current_edge, current_v);
-//
-//            vertex_level[current_v] = level + 1;
-//        }
-
-
     }
 
     void triangulate(std::vector<int>& face, std::vector<int>& component, int turn) {
@@ -716,26 +652,27 @@ class baker_impl {
         }
 
         for (int i : t[node].children) {
-            create_boudaries_rec(t, t[node].children[i]);
+            create_boudaries_rec(t, i);
         }
 
         t[node].LB = t[t[node].children[0]].LB;
         t[node].RB = t[t[node].children.back()].RB;
     }
 
-    void create_boudaries(::tree<Problem>& t, ::tree<Problem>& t2, Problem* f, int root) {
-        if (f != nullptr) {
+    void create_boudaries(::tree<Problem>& t, ::tree<Problem>& t2, int root) {
+        if (t.enclosing_tree != nullptr) {
+            Problem& f = t.enclosing_tree->t[t.enclosing_face];
             std::vector<int> y_table;
-            y_table.push_back(t2[f->children[0]].label.first);
+            y_table.push_back(t2[f.children[0]].label.first);
 
-            for (int v : f->children) {
+            for (int v : f.children) {
                 y_table.push_back(t2[v].label.second);
             }
 
             std::vector<int> leaves;
             get_leaves(t, leaves, root);
             t[leaves[0]].LB = 0;
-            t[leaves.back()].RB = f->children.size();
+            t[leaves.back()].RB = f.children.size();
 
             for (int j = 1; j < leaves.size(); j++) {
                 Problem& v = t[leaves[j]];
@@ -765,7 +702,7 @@ class baker_impl {
         for (int i = 1; i < t.size(); i++) {
             Problem& node = t[i];
             if (!node.component_tree.empty()) {
-                create_boudaries(node.component_tree, t, &node, node.component_tree.root);
+                create_boudaries(node.component_tree, t, node.component_tree.root);
             }
         }
     }
@@ -857,7 +794,7 @@ public:
 
         root_tree_with_root(tree, 0);
 
-        create_boudaries(tree, tree,nullptr, 1);
+        create_boudaries(tree, tree, 1);
 
         table(tree, 1);
     }

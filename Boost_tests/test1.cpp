@@ -7,8 +7,8 @@
 
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
-#include "problems.hpp"
-#include "baker-outer-planar.hpp"
+#include "../outerplanar/problems.hpp"
+#include "../outerplanar/baker-outer-planar.hpp"
 
 using namespace boost;
 
@@ -123,39 +123,39 @@ void unit1()
 //    test(g4, "trójkąt 1 2 1"); // 1 2 1
 //    test(g5, "5 5 3"); // 5 5 3
 }
-
-int find_dividing_point(Edge one, Edge two) {
-    int v;
-    if (one.m_source == two.m_source || one.m_source == two.m_target) {
-        v = one.m_source == two.m_source ? two.m_source : two.m_target;
-    } else {
-        v = one.m_target == two.m_source ? two.m_source : two.m_target;
-    }
-
-    int level = vertex_level[v];
-
-    int one_it = get_edge_it(one, v);
-    int two_it = get_edge_it(two, v);
-
-    auto& edges = embedding[v];
-
-    for (int i = one_it + 1; i < two_it; i++) {
-        Edge e = edges[i];
-        if (vertex_level[e.m_source] == level - 1 || vertex_level[e.m_target] == level -1) {
-            return vertex_level[e.m_source] == level - 1 ? e.m_source : e.m_target;
-        }
-    }
-
-    return -1;
-}
-
-void get_leaves(const std::vector<Problem>& t, std::vector<int>& leaves, int v) {
-    if (t[v].children.empty()) {
-        leaves.push_back(v);
-        return;
-    }
-
-    for (auto child : t[v].children) {
-        get_leaves(t, leaves, child);
-    }
-}
+//
+//int find_dividing_point(Edge one, Edge two) {
+//    int v;
+//    if (one.m_source == two.m_source || one.m_source == two.m_target) {
+//        v = one.m_source == two.m_source ? two.m_source : two.m_target;
+//    } else {
+//        v = one.m_target == two.m_source ? two.m_source : two.m_target;
+//    }
+//
+//    int level = vertex_level[v];
+//
+//    int one_it = get_edge_it(one, v);
+//    int two_it = get_edge_it(two, v);
+//
+//    auto& edges = embedding[v];
+//
+//    for (int i = one_it + 1; i < two_it; i++) {
+//        Edge e = edges[i];
+//        if (vertex_level[e.m_source] == level - 1 || vertex_level[e.m_target] == level -1) {
+//            return vertex_level[e.m_source] == level - 1 ? e.m_source : e.m_target;
+//        }
+//    }
+//
+//    return -1;
+//}
+//
+//void get_leaves(const std::vector<Problem>& t, std::vector<int>& leaves, int v) {
+//    if (t[v].children.empty()) {
+//        leaves.push_back(v);
+//        return;
+//    }
+//
+//    for (auto child : t[v].children) {
+//        get_leaves(t, leaves, child);
+//    }
+//}
