@@ -93,7 +93,7 @@ struct independent_set : node
             val[0] = 0;
             val[1] = 1;
             val[2] = 1;
-            val[3] = -INT_MAX;
+            val[3] = -INT16_MAX;
         }
     }
 
@@ -102,7 +102,7 @@ struct independent_set : node
             val[0] = 0;
             val[1] = 1;
             val[2] = 1;
-            val[3] = -INT_MAX;
+            val[3] = -INT16_MAX;
         }
     }
 
@@ -182,14 +182,14 @@ struct independent_set : node
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
                     val[((u << 1) + 1) + (((v << 1) + 1) << level)]--;
-                    val[((u << 1)) + (((v << 1) + 1) << level)] = -INT_MAX;
-                    val[((u << 1) + 1) + (((v << 1)) << level)] = -INT_MAX;
+                    val[((u << 1)) + (((v << 1) + 1) << level)] = -INT16_MAX;
+                    val[((u << 1) + 1) + (((v << 1)) << level)] = -INT16_MAX;
                 }
             }
         } else {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
-                    val[((u << 1) + 1) + (((v << 1) + 1) << level)] = -INT_MAX;
+                    val[((u << 1) + 1) + (((v << 1) + 1) << level)] = -INT16_MAX;
                 }
             }
         }
@@ -223,12 +223,12 @@ struct independent_set : node
             for (int v = 0; v < count; v++) {
                 int cur = (u << 1) + (v << ((2 * level) + 1));
                 res.val[cur] = val[u + (v << level)];
-                res.val[cur + (1 << (2 * level))] = -INT_MAX;
-                res.val[cur + 1] = -INT_MAX;
+                res.val[cur + (1 << (2 * level))] = -INT16_MAX;
+                res.val[cur + 1] = -INT16_MAX;
 
                 if (((u & 1) == 1 && boost::edge(lb[0], z, g).second)
                     || ((v & 1) == 1 && boost::edge(rb[0], z, g).second)){
-                    res.val[cur + 1 + (1 << (2 * level))] = -INT_MAX;
+                    res.val[cur + 1 + (1 << (2 * level))] = -INT16_MAX;
                 } else {
                     res.val[cur + 1 + (1 << (2 * level))] = val[u + (v << level)] + 1;
                 }
@@ -276,7 +276,7 @@ struct independent_set : node
             for (int v = 0; v < vertices.size(); v++) {
                 for (int w = v + 1; w < vertices.size(); w++) {
                     if ((i & (1 << v)) > 0 && (i & (1 << w)) > 0 && boost::edge(vertices[v], vertices[w], g).second) {
-                        val[i] = -INT_MAX;
+                        val[i] = -INT16_MAX;
                     }
                 }
             }
@@ -288,14 +288,14 @@ struct independent_set : node
             for (int v = 0; v < count; v++) {
                 int cur = u + (v << (vertices.size() >> 1));
 
-                if ((u >> 1) == (v >> 1) && val[cur] > -INT_MAX) {
+                if ((u >> 1) == (v >> 1) && val[cur] > -INT16_MAX) {
                     int ones = 0;
                     for (int j = 1; j < (vertices.size() >> 1); j++) {
                         ones += (u & (1 << j)) > 0;
                     }
                     val[cur] -= ones;
                 } else {
-                    val[cur] = -INT_MAX;
+                    val[cur] = -INT16_MAX;
                 }
             }
         }

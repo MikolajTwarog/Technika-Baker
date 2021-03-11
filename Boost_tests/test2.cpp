@@ -92,14 +92,6 @@ int independent_set_(Graph& g) {
     return mx;
 }
 
-struct edge_component_t
-{
-    enum
-    { num = 555 };
-    typedef edge_property_tag kind;
-} edge_component;
-
-
 BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(smiple)
     {

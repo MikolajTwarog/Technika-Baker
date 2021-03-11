@@ -87,11 +87,12 @@ struct tree_builder : public planar_face_traversal_visitor
     ::tree<Problem> &tree;
     int current_face = 0;
     int last_vertex;
+    int outer_face;
     Graph graph;
     PlanarEmbedding embedding;
 
-    tree_builder(std::map<Edge, std::vector<int> >& f, ::tree<Problem>& t, Graph& g, PlanarEmbedding& emb)
-            : faces(f), tree(t), graph(g), embedding(emb){ }
+    tree_builder(std::map<Edge, std::vector<int> >& f, ::tree<Problem>& t, Graph& g, PlanarEmbedding& emb, int outer)
+            : faces(f), tree(t), graph(g), embedding(emb), outer_face(outer){ }
 
     void end_face() {
         current_face++;
@@ -105,7 +106,7 @@ struct tree_builder : public planar_face_traversal_visitor
 
     void next_edge(Edge e)
     {
-        if(current_face > 0) {
+        if(current_face != outer_face) {
             int neighbor = faces[e][0] == current_face ? faces[e][1] : faces[e][0];
 
 //            std::cout << "\n" << e << "\n";
@@ -113,7 +114,7 @@ struct tree_builder : public planar_face_traversal_visitor
 //                std::cout << i << "\n";
 //            }
 
-            if (neighbor == 0) {
+            if (neighbor == outer_face) {
                 tree.emplace_back();
                 int last = tree.size() - 1;
                 tree[current_face].children.push_back(last);
@@ -640,14 +641,7 @@ class baker_impl {
 
     void get_component(std::vector<int>& component, int v) {
         if (vertex_level[v] == 1) {
-            std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
-            std::vector<std::vector<int> > vertices_in_face;
-            my_visitor<Edge> my_vis(faces, vertices_in_face);
-            planar_face_traversal(g, &embedding.front(), my_vis);
-
-            for (int v : vertices_in_face[0]) {
-                component.push_back(v);
-            }
+            find_outer_face(component);
 
             return;
         }
@@ -741,11 +735,15 @@ class baker_impl {
         level_face_traversal(g, embedding, my_vis, level, vertex_level, component);
         ::tree<Problem> t(my_vis.current_face, level);
 
-//        for (Problem p : t.t) {
-//            p.my_tree = &t;
-//        }
+        int outer = 0;
+        for (auto face : vertices_in_face) {
+            if (face == component) {
+                break;
+            }
+            outer++;
+        }
 
-        tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
+        tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding, outer);
         level_face_traversal(g, embedding, tree_b, level, vertex_level, component);
 
         for (int i = 1; i < vertices_in_face.size(); i++) {
