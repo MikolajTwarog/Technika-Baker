@@ -150,6 +150,8 @@ class baker_impl {
     };
 
 
+    //TRZEBA POPRAWIĆ
+    //nowy embedding może inna zewnetrzna sciane niz stary
     void find_outer_face(std::vector<int>& face) {
         typedef std::vector< std::vector< graph_traits< Graph >::edge_descriptor > >
                 embedding_storage_t;
@@ -860,7 +862,7 @@ class baker_impl {
 
             while (j >= t[v].LB) {
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g);
-                t[v].merge(second.val, t[v].val);
+                t[v].merge(t[v].val, second.val);
                 j--;
             }
 
@@ -868,7 +870,7 @@ class baker_impl {
 
             while (j < t[v].RB) {
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g);
-                t[v].merge(t[v].val, second.val);
+                t[v].merge(second.val, t[v].val);
                 j++;
             }
         }
@@ -914,7 +916,7 @@ public:
     }
 
     int result() {
-        return tree[0].val[0];
+        return tree[1].result();
     }
 
 };

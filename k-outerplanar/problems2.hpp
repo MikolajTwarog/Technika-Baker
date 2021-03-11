@@ -83,26 +83,18 @@ struct independent_set : node
 {
     tree<independent_set>* my_tree;
     tree<independent_set> component_tree;
-    std::vector<int> val;
+    std::vector< std::vector<int> > val;
     int level;
 
-//    independent_set(){}
+    independent_set(int l): independent_set(l, nullptr) {}
 
-    independent_set(int l): level(l), val(1 << (l * 2)) {
+    independent_set(int l, tree<independent_set>* mt):
+    level(l), val(1 << l,std::vector<int>(1 << l)), my_tree(mt) {
         if(l == 1) {
-            val[0] = 0;
-            val[1] = 1;
-            val[2] = 1;
-            val[3] = -INT16_MAX;
-        }
-    }
-
-    independent_set(int l, tree<independent_set>* mt): level(l), val(1 << (l * 2)), my_tree(mt) {
-        if(l == 1) {
-            val[0] = 0;
-            val[1] = 1;
-            val[2] = 1;
-            val[3] = -INT16_MAX;
+            val[0][0] = 0;
+            val[0][1] = 1;
+            val[1][0] = 1;
+            val[1][1] = -INT16_MAX;
         }
     }
 
@@ -155,21 +147,21 @@ struct independent_set : node
         my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_left_boundary(rb);
     }
 
-    void merge(std::vector<int>& one, std::vector<int>& two) {
+    void merge(std::vector< std::vector<int> > one, std::vector< std::vector<int> > two) {
 //        std::vector<int> copy(val);
 
         int count = 1 << level;
 
         for (int u = 0; u < count; u++){
             for (int v = 0; v < count; v++) {
+                val[u][v] = -INT16_MAX;
                 for (int z = 0; z < count; z++) {
                     int ones = 0;
                     for (int i = 0; i < level; i++) {
                         ones += (z & (1 << i)) > 0;
                     }
 
-                    val[u + (v << level)] = std::max(val[u + (v << level)],
-                                                     one[u + (z << level)] + two[z + (u << level)] - ones);
+                    val[u][v] = std::max(val[u][v], one[u][z] + two[z][v] - ones);
                 }
             }
         }
@@ -181,15 +173,15 @@ struct independent_set : node
         if(label.first == label.second) {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
-                    val[((u << 1) + 1) + (((v << 1) + 1) << level)]--;
-                    val[((u << 1)) + (((v << 1) + 1) << level)] = -INT16_MAX;
-                    val[((u << 1) + 1) + (((v << 1)) << level)] = -INT16_MAX;
+                    val[(u << 1) + 1][(v << 1) + 1]--;
+                    val[u << 1][(v << 1) + 1] = -INT16_MAX;
+                    val[(u << 1) + 1][v << 1] = -INT16_MAX;
                 }
             }
         } else {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
-                    val[((u << 1) + 1) + (((v << 1) + 1) << level)] = -INT16_MAX;
+                    val[(u << 1) + 1][(v << 1) + 1] = -INT16_MAX;
                 }
             }
         }
@@ -200,9 +192,7 @@ struct independent_set : node
 
         for (int u = 0; u < count; u++) {
             for (int v = 0; v < count; v++) {
-                val[u + (v << level)] =
-                        std::max(two.val[((u << 1) + 1) + (((v << 1) + 1) << level)],
-                                 two.val[(u << 1) + ((v << 1) << level)]);
+                val[u][v] = std::max(two.val[(u << 1) + 1][(v << 1) + 1], two.val[u << 1][v << 1]);
             }
         }
     }
@@ -221,16 +211,15 @@ struct independent_set : node
 
         for (int u = 0; u < count; u++) {
             for (int v = 0; v < count; v++) {
-                int cur = (u << 1) + (v << ((2 * level) + 1));
-                res.val[cur] = val[u + (v << level)];
-                res.val[cur + (1 << (2 * level))] = -INT16_MAX;
-                res.val[cur + 1] = -INT16_MAX;
+                res.val[u << 1][v << 1] = val[u][v];
+                res.val[u << 1][(v << 1) + 1]= -INT16_MAX;
+                res.val[(u << 1) + 1][v << 1] = -INT16_MAX;
 
                 if (((u & 1) == 1 && boost::edge(lb[0], z, g).second)
                     || ((v & 1) == 1 && boost::edge(rb[0], z, g).second)){
-                    res.val[cur + 1 + (1 << (2 * level))] = -INT16_MAX;
+                    res.val[(u << 1) + 1][(v << 1) + 1] = -INT16_MAX;
                 } else {
-                    res.val[cur + 1 + (1 << (2 * level))] = val[u + (v << level)] + 1;
+                    res.val[(u << 1) + 1][(v << 1) + 1] = val[u][v] + 1;
                 }
             }
         }
@@ -243,18 +232,6 @@ struct independent_set : node
         const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
         std::vector<int> vertices;
 
-        vertices.push_back(label.first);
-
-        if (child_num < children.size()) {
-            independent_set& child = my_tree->enclosing_tree->t[children[child_num]];
-            child.get_left_boundary(vertices);
-        } else {
-            independent_set& child = my_tree->enclosing_tree->t[children[child_num - 1]];
-            child.get_right_boundary(vertices);
-        }
-
-        vertices.push_back(label.second);
-
         if (child_num < children.size()) {
             independent_set& child = my_tree->enclosing_tree->t[children[child_num]];
             child.get_left_boundary(vertices);
@@ -265,44 +242,45 @@ struct independent_set : node
 
         int count = 1 << vertices.size();
 
+        for (int u = 0; u < (count << 1); u++) {
+            for (int v = 0; v < (count << 1); v++) {
+                val[u][v] = -INT16_MAX;
+            }
+        }
+
         for (int i = 0; i < count; i++) {
+
+            bool bad = false;
+            for (int v = 0; v < vertices.size() - 1; v++) {
+                if (((i >> v) & 1) && ((i >> (v + 1)) & 1)) {
+                    bad = true;
+                    break;
+                }
+            }
+
+            if (bad) {
+                continue;
+            }
+
             int ones = 0;
             for (int j = 0; j < vertices.size(); j++) {
                 ones += (i & (1 << j)) > 0;
             }
 
-            val[i] = ones;
+            val[i << 1][i << 1] = ones;
 
-            for (int v = 0; v < vertices.size(); v++) {
-                for (int w = v + 1; w < vertices.size(); w++) {
-                    if ((i & (1 << v)) > 0 && (i & (1 << w)) > 0 && boost::edge(vertices[v], vertices[w], g).second) {
-                        val[i] = -INT16_MAX;
-                    }
-                }
+            if ((i & 1) == 0 || !boost::edge(vertices[0], label.first, g).second) {
+                val[(i << 1) + 1][i << 1] = ones + 1;
             }
-        }
 
-        count = 1 << (vertices.size() >> 1);
-
-        for (int u = 0; u < count; u++) {
-            for (int v = 0; v < count; v++) {
-                int cur = u + (v << (vertices.size() >> 1));
-
-                if ((u >> 1) == (v >> 1) && val[cur] > -INT16_MAX) {
-                    int ones = 0;
-                    for (int j = 1; j < (vertices.size() >> 1); j++) {
-                        ones += (u & (1 << j)) > 0;
-                    }
-                    val[cur] -= ones;
-                } else {
-                    val[cur] = -INT16_MAX;
-                }
+            if ((i & 1) == 0 || !boost::edge(vertices[0], label.second, g).second) {
+                val[i << 1][(i << 1) + 1] = ones + 1;
             }
         }
     }
 
     int result() {
-        return std::max(val[0], val[3]);
+        return std::max(val[0][0], val[1][1]);
     }
 };
 
