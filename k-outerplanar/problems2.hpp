@@ -5,6 +5,8 @@
 #ifndef TECHNIKA_BAKER_PROBLEMS_HPP
 #define TECHNIKA_BAKER_PROBLEMS_HPP
 
+#include "../utils/level_face_traversal.h"
+
 template <typename Problem>
 struct tree{
     tree<Problem>* enclosing_tree;
@@ -199,7 +201,7 @@ struct independent_set : node
     }
 
     template<typename Graph>
-    independent_set extend(int z, Graph& g) {
+    independent_set extend(int z, Graph& g, std::set<std::pair<int, int> >& ae) {
         int count = 1 << level;
 
         independent_set res(level + 1);
@@ -216,8 +218,8 @@ struct independent_set : node
                 res.val[u << 1][(v << 1) + 1]= -INT16_MAX;
                 res.val[(u << 1) + 1][v << 1] = -INT16_MAX;
 
-                if (((u & 1) == 1 && boost::edge(lb[0], z, g).second)
-                    || ((v & 1) == 1 && boost::edge(rb[0], z, g).second)){
+                if (((u & 1) == 1 && check_for_edge(lb[0], z, g, ae))
+                    || ((v & 1) == 1 && check_for_edge(rb[0], z, g, ae))){
                     res.val[(u << 1) + 1][(v << 1) + 1] = -INT16_MAX;
                 } else {
                     res.val[(u << 1) + 1][(v << 1) + 1] = val[u][v] + 1;
@@ -229,7 +231,7 @@ struct independent_set : node
     }
 
     template<typename Graph>
-    void create(int child_num, Graph& g) {
+    void create(int child_num, Graph& g, std::set<std::pair<int, int> >& ae) {
         const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
         std::vector<int> vertices;
 
@@ -270,11 +272,11 @@ struct independent_set : node
 
             val[i << 1][i << 1] = ones;
 
-            if ((i & 1) == 0 || !boost::edge(vertices[0], label.first, g).second) {
+            if ((i & 1) == 0 || !check_for_edge(vertices[0], label.first, g,  ae)) {
                 val[(i << 1) + 1][i << 1] = ones + 1;
             }
 
-            if ((i & 1) == 0 || !boost::edge(vertices[0], label.second, g).second) {
+            if ((i & 1) == 0 || !check_for_edge(vertices[0], label.second, g, ae)) {
                 val[i << 1][(i << 1) + 1] = ones + 1;
             }
         }

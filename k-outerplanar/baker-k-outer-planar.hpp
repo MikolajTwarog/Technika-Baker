@@ -140,7 +140,7 @@ class baker_impl {
     PlanarEmbedding embedding;
     ::tree<Problem> tree;
     std::vector<int> vertex_level;
-    std::vector<Edge> added_edges;
+    std::set< std::pair<int, int> > added_edges;
 
     struct coord_t
     {
@@ -461,7 +461,7 @@ class baker_impl {
             int edge_it2 = get_edge_it(temp1, second);
 
             
-            edge_it = (edge_it + (1 * turn)) % embedding[first].size();
+            edge_it = (edge_it + (1 * turn) + embedding[first].size()) % embedding[first].size();
             connecting_e = embedding[first][edge_it];
             
             int target = connecting_e.m_source == first ? connecting_e.m_target : connecting_e.m_source;
@@ -477,7 +477,7 @@ class baker_impl {
                 }
                 embedding[second].emplace(embedding[second].begin() + edge_it2, second, target, nullptr);
                 embedding[target].emplace(embedding[target].begin() + target_e_it, second, target, nullptr);
-                added_edges.emplace_back(second, target, nullptr);
+                added_edges.emplace(second, target);
             }
         }
 
@@ -636,7 +636,7 @@ class baker_impl {
             std::vector<int> component;
             get_component(component, check_for_component(face));
 //            std::reverse(component.begin(), component.end());
-            triangulate(face, component, -1);
+            triangulate(face, component, 1);
             triangulate(component, face, 1);
             int v = find_third(t[node].label.first, t[node].label.second);
             root_tree_with_root(t[node].component_tree, v);
@@ -903,18 +903,18 @@ class baker_impl {
 
             int p = t[v].RB;
             for (int i = t[v].LB; i < t[v].RB; i++) {
-                if (boost::edge(t[v].label.second, z_table[i], g).second) {
+                if (check_for_edge(t[v].label.second, z_table[i], g, added_edges)) {
                     p = i;
                     break;
                 }
             }
 
-            t[v].create(p, g);
+            t[v].create(p, g, added_edges);
 
             int j = p - 1;
 
             while (j >= t[v].LB) {
-                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g);
+                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g, added_edges);
                 t[v].merge(t[v].val, second.val);
                 j--;
             }
@@ -922,7 +922,7 @@ class baker_impl {
             j = p;
 
             while (j < t[v].RB) {
-                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g);
+                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g, added_edges);
                 t[v].merge(second.val, t[v].val);
                 j++;
             }

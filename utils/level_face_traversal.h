@@ -92,4 +92,16 @@ inline void level_face_traversal(
     }
 }
 
+template<typename Graph>
+bool check_for_edge(int x, int y, Graph& g, std::set<std::pair<int, int> >& added_edges) {
+    std::pair<int, int> e(x, y);
+    if (!boost::edge(x, y, g).second || added_edges.find(e) != added_edges.end()) {
+        return false;
+    }
+
+    std::swap(e.first, e.second);
+
+    return added_edges.find(e) == added_edges.end();
+}
+
 #endif //TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_H
