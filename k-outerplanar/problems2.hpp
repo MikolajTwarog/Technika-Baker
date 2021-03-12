@@ -11,6 +11,7 @@ struct tree{
     int enclosing_face;
     std::vector<Problem> t;
     int root;
+    int outer_face;
     int level;
 
     tree():enclosing_tree(nullptr){}

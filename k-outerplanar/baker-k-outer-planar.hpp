@@ -87,12 +87,11 @@ struct tree_builder : public planar_face_traversal_visitor
     ::tree<Problem> &tree;
     int current_face = 0;
     int last_vertex;
-    int outer_face;
     Graph graph;
     PlanarEmbedding embedding;
 
-    tree_builder(std::map<Edge, std::vector<int> >& f, ::tree<Problem>& t, Graph& g, PlanarEmbedding& emb, int outer)
-            : faces(f), tree(t), graph(g), embedding(emb), outer_face(outer){ }
+    tree_builder(std::map<Edge, std::vector<int> >& f, ::tree<Problem>& t, Graph& g, PlanarEmbedding& emb)
+            : faces(f), tree(t), graph(g), embedding(emb){ }
 
     void end_face() {
         current_face++;
@@ -106,7 +105,7 @@ struct tree_builder : public planar_face_traversal_visitor
 
     void next_edge(Edge e)
     {
-        if(current_face != outer_face) {
+        if(current_face != tree.outer_face) {
             int neighbor = faces[e][0] == current_face ? faces[e][1] : faces[e][0];
 
 //            std::cout << "\n" << e << "\n";
@@ -114,7 +113,7 @@ struct tree_builder : public planar_face_traversal_visitor
 //                std::cout << i << "\n";
 //            }
 
-            if (neighbor == outer_face) {
+            if (neighbor == tree.outer_face) {
                 tree.emplace_back();
                 int last = tree.size() - 1;
                 tree[current_face].children.push_back(last);
@@ -152,104 +151,133 @@ class baker_impl {
 
     //TRZEBA POPRAWIĆ
     //nowy embedding może inna zewnetrzna sciane niz stary
-    void find_outer_face(std::vector<int>& face) {
-        typedef std::vector< std::vector< graph_traits< Graph >::edge_descriptor > >
-                embedding_storage_t;
-        typedef boost::iterator_property_map< embedding_storage_t::iterator,
-                property_map< Graph, vertex_index_t >::type >
-                embedding_t;
+    void find_outer_face(std::vector<int>& outer_face) {
+//        typedef std::vector< std::vector< graph_traits< Graph >::edge_descriptor > >
+//                embedding_storage_t;
+//        typedef boost::iterator_property_map< embedding_storage_t::iterator,
+//                property_map< Graph, vertex_index_t >::type >
+//                embedding_t;
+//
+//        Graph g_copy(g);
+//
+//        make_maximal_planar(g_copy, &embedding[0]);
+//
+//        embedding_storage_t embedding_storage(num_vertices(g));
+//        embedding_t embedding_copy(embedding_storage.begin(), get(vertex_index, g));
+//
+//        boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g_copy,
+//                                     boyer_myrvold_params::embedding = embedding_copy);
+//
+//        std::vector< graph_traits< Graph >::vertex_descriptor > ordering;
+//        planar_canonical_ordering(g_copy, embedding_copy, std::back_inserter(ordering));
+//        typedef std::vector< coord_t > straight_line_drawing_storage_t;
+//        typedef boost::iterator_property_map<
+//                typename straight_line_drawing_storage_t::iterator,
+//                property_map< Graph, vertex_index_t >::type >
+//                straight_line_drawing_t;
+//
+//        straight_line_drawing_storage_t straight_line_drawing_storage(
+//                num_vertices(g));
+//        straight_line_drawing_t straight_line_drawing(
+//                straight_line_drawing_storage.begin(), get(vertex_index, g_copy));
+//
+//        chrobak_payne_straight_line_drawing(
+//                g_copy, embedding_copy, ordering.begin(), ordering.end(), straight_line_drawing);
+//
+//        auto vertexI = get(vertex_index, g_copy);
+//        int left_v;
+//        int max_left = INT_MAX;
+//        graph_traits< Graph >::vertex_iterator vi, vi_end;
+//        std::vector<coord_t> coords(num_vertices(g));
+//
+//        for (boost::tie(vi, vi_end) = vertices(g_copy); vi != vi_end; ++vi) {
+//            coord_t coord(get(straight_line_drawing, *vi));
+//            coords[vertexI[*vi]] = coord;
+//            if (coord.x < max_left) {
+//                max_left = coord.x;
+//                left_v = vertexI[*vi];
+//            }
+//        }
+//
+//        coord_t left_v_coord = coords[left_v];
+//        Edge outer_edge;
+//        double biggest_cot = INT_MAX;
+//        int current_v;
+//
+//        for (Edge e : embedding[left_v]) {
+//            int neighbour = e.m_source == left_v ? e.m_target : e.m_source;
+//            coord_t n_coord = coords[neighbour];
+//            coord_t vec;
+//            vec.x = n_coord.x - left_v_coord.x;
+//            vec.y = n_coord.y - left_v_coord.y;
+//
+//            if (vec.x == 0) {
+//                if (vec.y > 0) {
+//                    outer_edge = e;
+//                    break;
+//                }
+//                continue;
+//            }
+//
+//            double cot = vec.y / vec.x;
+//
+//            if (cot < biggest_cot) {
+//                outer_edge = e;
+//                biggest_cot = cot;
+//                current_v = neighbour;
+//            }
+//        }
+//
+//        int current_edge_it = get_edge_it(outer_edge, current_v);
+//        Edge current_edge = outer_edge;
+//
+//        face.push_back(current_v);
+//
+//        while (current_v != left_v) {
+////            for (int j = (current_edge_it + 1) % embedding[current_v].size(); j != current_edge_it;
+////                j = (j + 1) % embedding[current_v].size()) {
+////                Edge e_j = embedding[current_v][j];
+////                if (!visited[e_j.m_source] || !visited[e_j.m_target]) {
+////                    current_edge = e_j;
+////                    break;
+////                }
+////            }
+//            current_edge = embedding[current_v][(current_edge_it + 1) % embedding[current_v].size()];
+//
+//            current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
+//            current_edge_it = get_edge_it(current_edge, current_v);
+//
+//            face.push_back(current_v);
+//        }
+        std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
+        std::vector<std::vector<int> > vertices_in_face;
+        my_visitor<Edge> my_vis(faces, vertices_in_face);
+        planar_face_traversal(g, &embedding.front(), my_vis);
 
-        Graph g_copy(g);
+        for (const auto& face : vertices_in_face) {
+            Edge current_e;
+            Edge next_e(face[0], face[1], nullptr);
 
-        make_maximal_planar(g_copy, &embedding[0]);
+            bool res = true;
+            for (int i = 1; i < face.size() - 1; i++) {
+                current_e = next_e;
+                next_e.m_source = face[i];
+                next_e.m_target = face[i + 1];
 
-        embedding_storage_t embedding_storage(num_vertices(g));
-        embedding_t embedding_copy(embedding_storage.begin(), get(vertex_index, g));
-
-        boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g_copy,
-                                     boyer_myrvold_params::embedding = embedding_copy);
-
-        std::vector< graph_traits< Graph >::vertex_descriptor > ordering;
-        planar_canonical_ordering(g_copy, embedding_copy, std::back_inserter(ordering));
-        typedef std::vector< coord_t > straight_line_drawing_storage_t;
-        typedef boost::iterator_property_map<
-                typename straight_line_drawing_storage_t::iterator,
-                property_map< Graph, vertex_index_t >::type >
-                straight_line_drawing_t;
-
-        straight_line_drawing_storage_t straight_line_drawing_storage(
-                num_vertices(g));
-        straight_line_drawing_t straight_line_drawing(
-                straight_line_drawing_storage.begin(), get(vertex_index, g_copy));
-
-        chrobak_payne_straight_line_drawing(
-                g_copy, embedding_copy, ordering.begin(), ordering.end(), straight_line_drawing);
-
-        auto vertexI = get(vertex_index, g_copy);
-        int left_v;
-        int max_left = INT_MAX;
-        graph_traits< Graph >::vertex_iterator vi, vi_end;
-        std::vector<coord_t> coords(num_vertices(g));
-
-        for (boost::tie(vi, vi_end) = vertices(g_copy); vi != vi_end; ++vi) {
-            coord_t coord(get(straight_line_drawing, *vi));
-            coords[vertexI[*vi]] = coord;
-            if (coord.x < max_left) {
-                max_left = coord.x;
-                left_v = vertexI[*vi];
-            }
-        }
-
-        coord_t left_v_coord = coords[left_v];
-        Edge outer_edge;
-        double biggest_cot = INT_MAX;
-        int current_v;
-
-        for (Edge e : embedding[left_v]) {
-            int neighbour = e.m_source == left_v ? e.m_target : e.m_source;
-            coord_t n_coord = coords[neighbour];
-            coord_t vec;
-            vec.x = n_coord.x - left_v_coord.x;
-            vec.y = n_coord.y - left_v_coord.y;
-
-            if (vec.x == 0) {
-                if (vec.y > 0) {
-                    outer_edge = e;
+                int dis = (get_edge_it(current_e, face[i]) - get_edge_it(next_e, face[i])) % embedding[face[i]].size();
+                if (dis != -1 && dis != embedding[face[i]].size() - 1) {
+                    res = false;
                     break;
                 }
-                continue;
+
             }
 
-            double cot = vec.y / vec.x;
-
-            if (cot < biggest_cot) {
-                outer_edge = e;
-                biggest_cot = cot;
-                current_v = neighbour;
-            }
-        }
-
-        int current_edge_it = get_edge_it(outer_edge, current_v);
-        Edge current_edge = outer_edge;
-
-        face.push_back(current_v);
-
-        std::vector<bool> visited(num_vertices(g));
-
-        while (current_v != left_v) {
-            for (int j = (current_edge_it + 1) % embedding[current_v].size(); j != current_edge_it;
-                j = (j + 1) % embedding[current_v].size()) {
-                Edge e_j = embedding[current_v][j];
-                if (!visited[e_j.m_source] || !visited[e_j.m_target]) {
-                    current_edge = e_j;
-                    break;
+            if (res) {
+                for (int v : face) {
+                    outer_face.push_back(v);
                 }
+                return;
             }
-
-            current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
-            current_edge_it = get_edge_it(current_edge, current_v);
-
-            face.push_back(current_v);
         }
     }
 
@@ -333,15 +361,21 @@ class baker_impl {
             current_egde_it = get_edge_it(next_level_edge, starting_v);
 
             vertex_level[starting_v] = level;
+            bool res = false;
             for (int j = (current_egde_it + 1) % embedding[starting_v].size(); j != current_egde_it;
                  j = (j + 1) % embedding[starting_v].size()) {
                 Edge e_j = embedding[starting_v][j];
                 if (vertex_level[e_j.m_source] == -1
                     || vertex_level[e_j.m_target] == -1) {
                     current_edge = e_j;
+                    res = true;
                     break;
                 }
             }
+            if (!res) {
+                continue;
+            }
+
             vertex_level[starting_v] = -1;
 
             current_v = current_edge.m_source == starting_v ? current_edge.m_target : current_edge.m_source;
@@ -684,6 +718,7 @@ class baker_impl {
 
         Edge current_e;
         int current_v;
+        bool res = false;
 
         auto &edges = embedding[starting_v];
         for (int i = (connecting_e_it - 1 + + edges.size()) % edges.size(); i != connecting_e_it;
@@ -694,8 +729,12 @@ class baker_impl {
             if (vertex_level[neighbour] == level) {
                 current_e = e;
                 current_v = neighbour;
+                res = true;
                 break;
             }
+        }
+        if (!res) {
+            return;
         }
 
         while (current_v != starting_v) {
@@ -727,9 +766,9 @@ class baker_impl {
         std::vector<int> component;
         get_component(component, v);
 
-        if (level > 1) {
+//        if (level > 1) {
             std::reverse(component.begin(), component.end());
-        }
+//        }
 
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
@@ -738,14 +777,28 @@ class baker_impl {
         ::tree<Problem> t(my_vis.current_face, level);
 
         int outer = 0;
-        for (auto face : vertices_in_face) {
+        for (auto& face : vertices_in_face) {
+            int start = -1;
+            for (int i = 0; i < face.size(); i++) {
+                if (face[i] == component[0]) {
+                    start = i;
+                    break;
+                }
+            }
+            if (start == -1) {
+                continue;
+            }
+
+            std::rotate(face.begin(), face.begin() + start, face.end());
+
             if (face == component) {
                 break;
             }
             outer++;
         }
 
-        tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding, outer);
+        t.outer_face = outer;
+        tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
         level_face_traversal(g, embedding, tree_b, level, vertex_level, component);
 
         for (int i = 1; i < vertices_in_face.size(); i++) {
@@ -815,7 +868,7 @@ class baker_impl {
             }
         }
 
-        for (int i = 1; i < t.size(); i++) {
+        for (int i = 0; i < t.size(); i++) {
             Problem& node = t[i];
             if (!node.component_tree.empty()) {
                 create_boudaries(node.component_tree, t, node.component_tree.root);
@@ -841,7 +894,7 @@ class baker_impl {
             table(ct, ct.root);
             t[v].contract(ct[ct.root]);
             t[v].adjust();
-        } else if (level > 0) {
+        } else if (level > 1) {
             std::vector<int> z_table;
             z_table.push_back(t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[0]].label.first);
             for (int x : t.enclosing_tree->t[t.enclosing_face].children) {
