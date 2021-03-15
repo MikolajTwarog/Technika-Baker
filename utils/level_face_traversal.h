@@ -52,18 +52,8 @@ inline void level_face_traversal(
     }
 
     std::vector<vertex_t> vertices_in_edge;
-//    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
-
-//    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
-//        edge_t e(*fi);
-//        if (vertex_level[source(e, g)] == level
-//            && vertex_level[target(e, g)] == level) {
-//            edges_cache.push_back(e);
-//        }
-//    }
 
     for (auto e : edges_cache) {
-//            std::cout << e << "\n";
 
         vertices_in_edge.clear();
         vertices_in_edge.push_back(source(e, g));
