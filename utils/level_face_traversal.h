@@ -94,4 +94,18 @@ bool check_for_edge(int x, int y, Graph& g, std::set<std::pair<int, int> >& adde
     return added_edges.find(e) == added_edges.end();
 }
 
+template<typename Edge>
+int get_edge_it(Edge e, int v, std::vector< std::vector<Edge> >& emb) {
+    for (int i = 0; i < emb[v].size(); i++) {
+        if ((emb[v][i].m_source == e.m_source
+             && emb[v][i].m_target == e.m_target)
+            || (emb[v][i].m_source == e.m_target
+                && emb[v][i].m_target == e.m_source)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 #endif //TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_H
