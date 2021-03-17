@@ -15,7 +15,7 @@
 
 template < typename Graph, typename Visitor >
 inline void level_face_traversal(
-        const Graph& g, std::vector<std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
+        const Graph& g, std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
         Visitor& visitor, int level, const std::vector<int>& vertex_level, const std::vector<int>& component)
 {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
@@ -31,7 +31,7 @@ inline void level_face_traversal(
         if (vertex_level[v] != level)
             continue;
 
-        auto edges = embedding[v];
+        auto& edges = embedding[v];
 
         for (int i = 0; i < edges.size(); i++) {
             edge_t e = edges[i];

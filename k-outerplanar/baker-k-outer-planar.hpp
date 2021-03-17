@@ -565,6 +565,122 @@ class baker_impl {
         }
     }
 
+    std::vector<bool> visited;
+
+    void get_component(std::vector<int>& component, int v) {
+        if (vertex_level[v] == 1) {
+            find_outer_face(component);
+
+            return;
+        }
+
+        std::queue<int> q;
+        q.push(v);
+        int level = vertex_level[v];
+        int starting_v = -1;
+        int connecting_e_it = -1;
+
+        while (!q.empty()) {
+            int current_v = q.front();
+            q.pop();
+//            component.push_back(current_v);
+
+            for (int i = 0; i < embedding[current_v].size(); i++) {
+                Edge e = embedding[current_v][i];
+                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                if (!visited[neighbour] && vertex_level[neighbour] == level){
+                    q.push(neighbour);
+                    visited[neighbour] = true;
+                }
+
+                if (vertex_level[neighbour] == level - 1) {
+                    starting_v = current_v;
+                    connecting_e_it = i;
+                    break;
+                }
+            }
+
+            if (starting_v > -1) {
+                break;
+            }
+        }
+
+        component.push_back(starting_v);
+
+        Edge current_e;
+        int current_v;
+        bool res = false;
+
+        auto &edges = embedding[starting_v];
+        for (int i = (connecting_e_it - 1 + + edges.size()) % edges.size(); i != connecting_e_it;
+             i = (i - 1 + + edges.size()) % edges.size()) {
+            Edge e = edges[i];
+            int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
+
+            if (vertex_level[neighbour] == level) {
+                current_e = e;
+                current_v = neighbour;
+                res = true;
+                break;
+            }
+        }
+        if (!res) {
+            return;
+        }
+
+        while (current_v != starting_v) {
+            component.push_back(current_v);
+
+            int current_e_it = get_edge_it(current_e, current_v);
+            auto& edges2 = embedding[current_v];
+            int i = (current_e_it - 1 + edges2.size()) % edges2.size();
+            for (;i != current_e_it; i = (i - 1 + edges2.size()) % edges2.size()) {
+                Edge e = edges2[i];
+                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                if (vertex_level[neighbour] == level) {
+                    current_e = e;
+                    current_v = neighbour;
+                    break;
+                }
+            }
+        }
+
+//        for (int i = 0, j = component.size() - 1; i < j; i++, j--) {
+//            std::swap(component[i], component[j]);
+//        }
+    }
+
+    int check_for_component(const std::vector<int> &face) {
+        int level = vertex_level[face[0]];
+
+        for (int v : face) {
+            for (auto e : embedding[v]) {
+                int target = e.m_source == v ? e.m_target : e.m_source;
+                if (vertex_level[target] == level + 1) {
+                    return target;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    template<typename Edge>
+    int get_edge_it(Edge e, int v) {
+        for (int i = 0; i < embedding[v].size(); i++) {
+            if ((embedding[v][i].m_source == e.m_source
+                 && embedding[v][i].m_target == e.m_target)
+                || (embedding[v][i].m_source == e.m_target
+                    && embedding[v][i].m_target == e.m_source)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     void root_tree_2(::tree<Problem> &t, int node) {
         if (t[node].children.empty())
             return;
@@ -589,8 +705,6 @@ class baker_impl {
 
         t[node].label.first = t[t[node].children[0]].label.first;
         t[node].label.second = t[t[node].children[last]].label.second;
-
-
     }
 
     void root_tree_with_root(::tree<Problem> &t, int root) {
@@ -643,137 +757,20 @@ class baker_impl {
         }
     }
 
-    template<typename Edge>
-    int get_edge_it(Edge e, int v) {
-        for (int i = 0; i < embedding[v].size(); i++) {
-            if ((embedding[v][i].m_source == e.m_source
-                && embedding[v][i].m_target == e.m_target)
-                || (embedding[v][i].m_source == e.m_target
-                    && embedding[v][i].m_target == e.m_source)) {
-                return i;
-            }
-        }
+    ::tree<Problem> build_tree(std::vector<int> component, std::map<int, std::vector<Edge> > emb) {
+        int level = vertex_level[component[0]];
 
-        return -1;
-    }
-
-
-    int check_for_component(const std::vector<int> &face) {
-        int level = vertex_level[face[0]];
-
-        for (int v : face) {
-            for (auto e : embedding[v]) {
-                int target = e.m_source == v ? e.m_target : e.m_source;
-                if (vertex_level[target] == level + 1) {
-                    return target;
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    std::vector<bool> visited;
-
-    void get_component(std::vector<int>& component, int v) {
-        if (vertex_level[v] == 1) {
-            find_outer_face(component);
-
-            return;
-        }
-
-        std::queue<int> q;
-        q.push(v);
-        int level = vertex_level[v];
-        int starting_v = -1;
-        int connecting_e_it = -1;
-
-        while (!q.empty()) {
-            int current_v = q.front();
-            q.pop();
-//            component.push_back(current_v);
-
-            for (int i = 0; i < embedding[current_v].size(); i++) {
-                Edge e = embedding[current_v][i];
-                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
-
-                if (!visited[neighbour] && vertex_level[neighbour] == level){
-                    q.push(neighbour);
-                    visited[neighbour] = true;
-                }
-                
-                if (vertex_level[neighbour] == level - 1) {
-                    starting_v = current_v;
-                    connecting_e_it = i;
-                    break;
-                }
-            }
-            
-            if (starting_v > -1) {
-                break;
-            }
-        }
-
-        component.push_back(starting_v);
-
-        Edge current_e;
-        int current_v;
-        bool res = false;
-
-        auto &edges = embedding[starting_v];
-        for (int i = (connecting_e_it - 1 + + edges.size()) % edges.size(); i != connecting_e_it;
-            i = (i - 1 + + edges.size()) % edges.size()) {
-            Edge e = edges[i];
-            int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
-
-            if (vertex_level[neighbour] == level) {
-                current_e = e;
-                current_v = neighbour;
-                res = true;
-                break;
-            }
-        }
-        if (!res) {
-            return;
-        }
-
-        while (current_v != starting_v) {
-            component.push_back(current_v);
-
-            int current_e_it = get_edge_it(current_e, current_v);
-            auto& edges2 = embedding[current_v];
-            int i = (current_e_it - 1 + edges2.size()) % edges2.size();
-            for (;i != current_e_it; i = (i - 1 + edges2.size()) % edges2.size()) {
-                Edge e = edges2[i];
-                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
-
-                if (vertex_level[neighbour] == level) {
-                    current_e = e;
-                    current_v = neighbour;
-                    break;
-                }
-            }
-        }
-
-//        for (int i = 0, j = component.size() - 1; i < j; i++, j--) {
-//            std::swap(component[i], component[j]);
-//        }
-    }
-
-    ::tree<Problem> build_tree(int v) {
-        int level = vertex_level[v];
-
-        std::vector<int> component;
-        get_component(component, v);
+//        std::vector<int> component;
+//        get_component(component, v);
 
 //        if (level > 1) {
-            std::reverse(component.begin(), component.end());
+//            std::reverse(component.begin(), component.end());
 //        }
 
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
         my_visitor<Edge> my_vis(faces, vertices_in_face);
-        level_face_traversal(g, embedding, my_vis, level, vertex_level, component);
+        level_face_traversal(g, emb, my_vis, level, vertex_level, component);
         ::tree<Problem> t(my_vis.current_face, level);
 
         int outer = 0;
@@ -799,20 +796,127 @@ class baker_impl {
 
         t.outer_face = outer;
         tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
-        level_face_traversal(g, embedding, tree_b, level, vertex_level, component);
+        level_face_traversal(g, emb, tree_b, level, vertex_level, component);
 
         for (int i = 1; i < vertices_in_face.size(); i++) {
             auto &face = vertices_in_face[i];
 
             int v_in_c = check_for_component(face);
             if (v_in_c > -1) {
-                t[i].component_tree = build_tree(v_in_c);
+                std::vector<int> c;
+                get_component(c, v_in_c);
+//                t[i].component_tree = build_tree_with_dividing_points(c);
                 t[i].component_tree.enclosing_tree = &t;
                 t[i].component_tree.enclosing_face = i;
             }
         }
 
         return t;
+    }
+
+    ::tree<Problem> build_tree_with_dividing_points(std::vector<int> component, int root) {
+        int level = vertex_level[component[0]];
+
+        std::set<int> vis;
+        Graph g_temp;
+        for (int v : component) {
+            if (vis.find(v) != vis.end()) {
+                continue;
+            }
+
+            for (Edge e : embedding[v]) {
+                int target = e.m_source == v ? e.m_target : e.m_source;
+                if (vertex_level[target] == level && v < target) {
+                    add_edge(e.m_source, e.m_target, g_temp);
+                }
+            }
+
+            vis.insert(v);
+        }
+
+        auto bicomp = get(edge_index, g_temp);
+        int bi_num = biconnected_components(g_temp, bicomp);
+        std::vector< ::tree<Problem> > trees(bi_num);
+        std::vector< std::set<int> > bicomps(bi_num);
+
+        std::map<std::pair<int, int>, int> bi_map;
+        graph_traits<Graph>::edge_iterator ei, ei_end;
+        for(boost::tie(ei, ei_end) = edges(g_temp); ei != ei_end; ++ei) {
+            bicomps[bicomp[*ei]].insert(ei->m_source);
+            bicomps[bicomp[*ei]].insert(ei->m_target);
+            bi_map[std::pair<int, int>(ei->m_source, ei->m_target)] = bicomp[*ei];
+            bi_map[std::pair<int, int>(ei->m_target, ei->m_source)] = bicomp[*ei];
+        }
+
+        for (int i = 0; i < bi_num; i++) {
+            std::map<int, std::vector<Edge> > emb;
+            for (int v : bicomps[i]) {
+                for (Edge e : embedding[v]) {
+                    if (bi_map[std::pair<int, int>(e.m_source, e.m_target)] == i) {
+                        emb[v].push_back(e);
+                    }
+                }
+            }
+            trees[i] = build_tree(std::vector<int>(bicomps[i].begin(), bicomps[i].end()), emb);
+        }
+
+        std::vector<int> art_points;
+        articulation_points(g, std::back_inserter(art_points));
+
+        std::map<int, std::vector<int> > art_to_bicomp;
+        std::map<int, std::vector<int> > bicomp_to_art;
+
+        for (int a : art_points) {
+            for (int i = 0; i < bicomps.size(); i++) {
+                if (bicomps[i].find(a) != bicomps[i].end()) {
+                    art_to_bicomp[a].push_back(i);
+                    bicomp_to_art[i].push_back(a);
+                }
+            }
+        }
+
+        int main_bicomp = 0;
+        for (int i = 0; i < bicomps.size(); i++) {
+            if (bicomps[i].find(root) != bicomps[i].end()) {
+                main_bicomp = i;
+                break;
+            }
+        }
+
+        root_tree_with_root(trees[main_bicomp], root);
+
+        std::vector<int> merged(bi_num);
+        for (int i = 0; i < bi_num; i++) {
+            merged[i] = i;
+        }
+
+        std::queue<int> q;
+        q.push(main_bicomp);
+
+        while(!q.empty()) {
+            int cur_bicomp = q.front();
+            q.pop();
+
+            for (int a : bicomp_to_art[cur_bicomp]) {
+                for (int b : art_to_bicomp[a]) {
+                    if (merged[b] == b && b != main_bicomp) {
+                        q.push(b);
+                        root_tree_with_root(trees[b], a);
+
+                        int target = cur_bicomp;
+                        while (target != merged[target]) {
+                            merged[target] = merged[merged[target]];
+                            target = merged[target];
+                        }
+
+                        merged[b] = target;
+                        trees[target].merge(trees[b]);
+                    }
+                }
+            }
+        }
+
+        return trees[main_bicomp];
     }
 
     void create_boudaries_rec(::tree<Problem>& t, int node) {
@@ -959,9 +1063,11 @@ public:
             }
         }
 
-        tree = build_tree(v);
+        std::vector<int> face;
+        find_outer_face(face);
+        build_tree_with_dividing_points(face, 0);
 
-        root_tree_with_root(tree, 0);
+//        root_tree_with_root(tree, 0);
 
         create_boudaries(tree, tree, 1);
 

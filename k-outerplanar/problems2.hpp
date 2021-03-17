@@ -57,6 +57,44 @@ struct tree{
         return *this;
     }
 
+    void merge(tree<Problem>& t2) {
+        int s = size();
+        for (int i = 0; i < t2.size(); i++) {
+            t.push_back(t2[i]);
+            t.back().my_tree = this;
+
+            for (int& c : t.back().children) {
+                c += s;
+            }
+
+            t.back().parent += s;
+        }
+
+        int target = 0;
+        int t2_v_root = t2[t2.root].label.first;
+
+        for (int i = 0; i < s; i++) {
+            if (i == outer_face) {
+                continue;
+            }
+            if (std::find(t[i].face.begin(), t[i].face.end(), t2_v_root) != t[i].face.end()) {
+                target = i;
+                break;
+            }
+        }
+
+        int child_num = 0;
+        for (int i = 0; i < t[target].children.size(); i++) {
+            if (t[t[target].children[i]].label.second == t2_v_root) {
+                child_num = i;
+                break;
+            }
+        }
+
+        t[target].children.insert(t[target].children.begin() + child_num + 1, s + t2.root);
+        t[s + t2.root].parent = target;
+    }
+
     int size() {
         return t.size();
     }

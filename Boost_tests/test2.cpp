@@ -132,6 +132,18 @@ BOOST_AUTO_TEST_SUITE(kouter)
     //    test2(g7, "");
     }
 
+    BOOST_AUTO_TEST_CASE(two_bicomps) {
+        Graph g;
+        add_edge(0, 1, g);
+        add_edge(1, 2, g);
+        add_edge(2, 0, g);
+        add_edge(2, 3, g);
+        add_edge(3, 4, g);
+        add_edge(4, 2, g);
+
+        baker2<independent_set>(g);
+    }
+
     BOOST_AUTO_TEST_CASE(four_vertices) {
         file_reader f("4vertices");
 //        std::string s = get_current_dir_name();
