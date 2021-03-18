@@ -142,113 +142,7 @@ class baker_impl {
     std::vector<int> vertex_level;
     std::set< std::pair<int, int> > added_edges;
 
-    struct coord_t
-    {
-        std::size_t x;
-        std::size_t y;
-    };
-
-
-    //TRZEBA POPRAWIĆ
-    //nowy embedding może inna zewnetrzna sciane niz stary
     void find_outer_face(std::vector<int>& outer_face) {
-//        typedef std::vector< std::vector< graph_traits< Graph >::edge_descriptor > >
-//                embedding_storage_t;
-//        typedef boost::iterator_property_map< embedding_storage_t::iterator,
-//                property_map< Graph, vertex_index_t >::type >
-//                embedding_t;
-//
-//        Graph g_copy(g);
-//
-//        make_maximal_planar(g_copy, &embedding[0]);
-//
-//        embedding_storage_t embedding_storage(num_vertices(g));
-//        embedding_t embedding_copy(embedding_storage.begin(), get(vertex_index, g));
-//
-//        boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g_copy,
-//                                     boyer_myrvold_params::embedding = embedding_copy);
-//
-//        std::vector< graph_traits< Graph >::vertex_descriptor > ordering;
-//        planar_canonical_ordering(g_copy, embedding_copy, std::back_inserter(ordering));
-//        typedef std::vector< coord_t > straight_line_drawing_storage_t;
-//        typedef boost::iterator_property_map<
-//                typename straight_line_drawing_storage_t::iterator,
-//                property_map< Graph, vertex_index_t >::type >
-//                straight_line_drawing_t;
-//
-//        straight_line_drawing_storage_t straight_line_drawing_storage(
-//                num_vertices(g));
-//        straight_line_drawing_t straight_line_drawing(
-//                straight_line_drawing_storage.begin(), get(vertex_index, g_copy));
-//
-//        chrobak_payne_straight_line_drawing(
-//                g_copy, embedding_copy, ordering.begin(), ordering.end(), straight_line_drawing);
-//
-//        auto vertexI = get(vertex_index, g_copy);
-//        int left_v;
-//        int max_left = INT_MAX;
-//        graph_traits< Graph >::vertex_iterator vi, vi_end;
-//        std::vector<coord_t> coords(num_vertices(g));
-//
-//        for (boost::tie(vi, vi_end) = vertices(g_copy); vi != vi_end; ++vi) {
-//            coord_t coord(get(straight_line_drawing, *vi));
-//            coords[vertexI[*vi]] = coord;
-//            if (coord.x < max_left) {
-//                max_left = coord.x;
-//                left_v = vertexI[*vi];
-//            }
-//        }
-//
-//        coord_t left_v_coord = coords[left_v];
-//        Edge outer_edge;
-//        double biggest_cot = INT_MAX;
-//        int current_v;
-//
-//        for (Edge e : embedding[left_v]) {
-//            int neighbour = e.m_source == left_v ? e.m_target : e.m_source;
-//            coord_t n_coord = coords[neighbour];
-//            coord_t vec;
-//            vec.x = n_coord.x - left_v_coord.x;
-//            vec.y = n_coord.y - left_v_coord.y;
-//
-//            if (vec.x == 0) {
-//                if (vec.y > 0) {
-//                    outer_edge = e;
-//                    break;
-//                }
-//                continue;
-//            }
-//
-//            double cot = vec.y / vec.x;
-//
-//            if (cot < biggest_cot) {
-//                outer_edge = e;
-//                biggest_cot = cot;
-//                current_v = neighbour;
-//            }
-//        }
-//
-//        int current_edge_it = get_edge_it(outer_edge, current_v);
-//        Edge current_edge = outer_edge;
-//
-//        face.push_back(current_v);
-//
-//        while (current_v != left_v) {
-////            for (int j = (current_edge_it + 1) % embedding[current_v].size(); j != current_edge_it;
-////                j = (j + 1) % embedding[current_v].size()) {
-////                Edge e_j = embedding[current_v][j];
-////                if (!visited[e_j.m_source] || !visited[e_j.m_target]) {
-////                    current_edge = e_j;
-////                    break;
-////                }
-////            }
-//            current_edge = embedding[current_v][(current_edge_it + 1) % embedding[current_v].size()];
-//
-//            current_v = current_edge.m_source == current_v ? current_edge.m_target : current_edge.m_source;
-//            current_edge_it = get_edge_it(current_edge, current_v);
-//
-//            face.push_back(current_v);
-//        }
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
         my_visitor<Edge> my_vis(faces, vertices_in_face);
@@ -264,8 +158,9 @@ class baker_impl {
                 next_e.m_source = face[i];
                 next_e.m_target = face[i + 1];
 
-                int dis = (get_edge_it(current_e, face[i]) - get_edge_it(next_e, face[i])) % embedding[face[i]].size();
-                if (dis != -1 && dis != embedding[face[i]].size() - 1) {
+                int dis = (get_edge_it(next_e, face[i]) - get_edge_it(current_e, face[i])
+                        + embedding[face[i]].size()) % embedding[face[i]].size();
+                if (dis != 1 && dis != embedding[face[i]].size() - 1) {
                     res = false;
                     break;
                 }
@@ -855,6 +750,17 @@ class baker_impl {
             c[bi_map[std::pair<int, int>(curr, next)]].push_back(curr);
         }
 
+        for (auto& bic : c) {
+            if (bic.size() == 2) {
+                add_edge(bic[0], bic[1], g);
+                Edge e(bic[0], bic[1], nullptr);
+                int it = get_edge_it(e, bic[0]);
+                embedding[bic[0]].insert(embedding[bic[0]].begin() + it, e);
+                it = get_edge_it(e, bic[1]);
+                embedding[bic[1]].insert(embedding[bic[1]].begin() + it, e);
+            }
+        }
+
         for (int i = 0; i < bi_num; i++) {
             std::map<int, std::vector<Edge> > emb;
             for (int v : bicomps[i]) {
@@ -1096,7 +1002,7 @@ public:
 
         std::vector<int> face;
         find_outer_face(face);
-        tree = build_tree_with_dividing_points(face, 2);
+        tree = build_tree_with_dividing_points(face, v);
 
         create_boudaries(tree, tree, tree.root);
 

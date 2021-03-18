@@ -136,6 +136,12 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 4);
     }
 
+    BOOST_AUTO_TEST_CASE(bridge) {
+        Graph g;
+        add_edge(0, 1, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 1);
+    }
+
     BOOST_AUTO_TEST_CASE(four_vertices) {
         file_reader f("4vertices");
 //        std::string s = get_current_dir_name();
@@ -143,11 +149,11 @@ BOOST_AUTO_TEST_SUITE(kouter)
         Graph g;
         int i = 0;
         while(f.next_graph(g)) {
-            if (biconnected_components(g, get(edge_index, g)) == 1) {
+//            if (biconnected_components(g, get(edge_index, g)) == 1) {
                 int result = baker2<independent_set>(g);
                 int expected = independent_set_(g);
                 BOOST_CHECK_EQUAL(result, expected);
-            }
+//            }
             g.clear();
             i++;
         }
