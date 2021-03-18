@@ -95,6 +95,22 @@ struct tree{
         t[s + t2.root].parent = target;
     }
 
+    void remove_outer_face() {
+        for (auto& p : t) {
+            for (int& child : p.children) {
+                if (child > outer_face) {
+                    child--;
+                }
+            }
+        }
+
+        t.erase(t.begin() + outer_face);
+
+        if (root > outer_face) {
+            root--;
+        }
+    }
+
     int size() {
         return t.size();
     }

@@ -111,25 +111,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
         add_edge(4, 0, g6);
         add_edge(4, 1, g6);
         add_edge(5, 2, g6);
-    //    add_edge(1, 6, g6);
 
-        baker2<independent_set>(g6);
-
-    //    Graph g7(5);
-    //    add_edge(0,1,g7);
-    //    add_edge(1,2,g7);
-    //    add_edge(2,3,g7);
-    //    add_edge(3, 0, g7);
-    //
-    //    add_edge(4, 0, g7);
-    //    add_edge(4, 1, g7);
-    //    add_edge(4, 2, g7);
-    //    add_edge(4, 3, g7);
-    //
-    //    add_edge(0, 5, g7);
-    //    add_edge(1,5, g7);
-    //
-    //    test2(g7, "");
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g6), 3);
     }
 
     BOOST_AUTO_TEST_CASE(two_bicomps) {
@@ -141,7 +124,16 @@ BOOST_AUTO_TEST_SUITE(kouter)
         add_edge(3, 4, g);
         add_edge(4, 2, g);
 
-        baker2<independent_set>(g);
+        add_edge(5, 6, g);
+        add_edge(6, 7, g);
+        add_edge(7, 8, g);
+        add_edge(8, 5, g);
+
+        add_edge(0, 5, g);
+        add_edge(1, 6, g);
+        add_edge(2, 7, g);
+
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 4);
     }
 
     BOOST_AUTO_TEST_CASE(four_vertices) {

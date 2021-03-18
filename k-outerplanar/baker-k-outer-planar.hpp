@@ -613,8 +613,8 @@ class baker_impl {
         bool res = false;
 
         auto &edges = embedding[starting_v];
-        for (int i = (connecting_e_it - 1 + + edges.size()) % edges.size(); i != connecting_e_it;
-             i = (i - 1 + + edges.size()) % edges.size()) {
+        for (int i = (connecting_e_it + 1) % edges.size(); i != connecting_e_it;
+             i = (i + 1) % edges.size()) {
             Edge e = edges[i];
             int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
 
@@ -647,17 +647,20 @@ class baker_impl {
             }
         }
 
-//        for (int i = 0, j = component.size() - 1; i < j; i++, j--) {
-//            std::swap(component[i], component[j]);
-//        }
     }
 
     int check_for_component(const std::vector<int> &face) {
         int level = vertex_level[face[0]];
 
-        for (int v : face) {
-            for (auto e : embedding[v]) {
-                int target = e.m_source == v ? e.m_target : e.m_source;
+        int prev = face.size() - 1, curr = 0, next = 1;
+
+        for (; curr < face.size(); prev = (prev + 1) % face.size(), curr++, next = (next + 1) % face.size()) {
+            int one = get_edge_it(Edge(face[prev], face[curr], nullptr), face[curr]);
+            int two = get_edge_it(Edge(face[curr], face[next], nullptr), face[curr]);
+            for (int i = (two + 1) % embedding[face[curr]].size(); i != one;
+            i = (i + 1) % embedding[face[curr]].size()) {
+                Edge e = embedding[face[curr]][i];
+                int target = e.m_source == face[curr] ? e.m_target : e.m_source;
                 if (vertex_level[target] == level + 1) {
                     return target;
                 }
@@ -739,33 +742,28 @@ class baker_impl {
         t[node].label.first = root;
         t[node].label.second = root;
 
-        if (!t[node].component_tree.empty()) {
-            std::vector<int> face;
-            for (int x : t[node].children) {
-                face.push_back(t[x].label.first);
-            }
-            if (t[t[node].children.back()].label.second != face[0]) {
-                face.push_back(t[t[node].children.back()].label.second);
-            }
-            std::vector<int> component;
-            get_component(component, check_for_component(face));
-//            std::reverse(component.begin(), component.end());
-            triangulate(face, component, 1);
-            triangulate(component, face, 1);
-            int v = find_third(t[node].label.first, t[node].label.second);
-            root_tree_with_root(t[node].component_tree, v);
-        }
+//        if (!t[node].component_tree.empty()) {
+//            std::vector<int> face;
+//            for (int x : t[node].children) {
+//                face.push_back(t[x].label.first);
+//            }
+//            if (t[t[node].children.back()].label.second != face[0]) {
+//                face.push_back(t[t[node].children.back()].label.second);
+//            }
+//            std::vector<int> component;
+//            get_component(component, check_for_component(face));
+////            std::reverse(component.begin(), component.end());
+//            triangulate(face, component, 1);
+//            triangulate(component, face, 1);
+//            int v = find_third(t[node].label.first, t[node].label.second);
+//            root_tree_with_root(t[node].component_tree, v);
+//        }
     }
 
     ::tree<Problem> build_tree(std::vector<int> component, std::map<int, std::vector<Edge> > emb) {
         int level = vertex_level[component[0]];
 
-//        std::vector<int> component;
-//        get_component(component, v);
-
-//        if (level > 1) {
-//            std::reverse(component.begin(), component.end());
-//        }
+        std::reverse(component.begin(), component.end());
 
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
@@ -798,18 +796,20 @@ class baker_impl {
         tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
         level_face_traversal(g, emb, tree_b, level, vertex_level, component);
 
-        for (int i = 1; i < vertices_in_face.size(); i++) {
-            auto &face = vertices_in_face[i];
+        t.remove_outer_face();
 
-            int v_in_c = check_for_component(face);
-            if (v_in_c > -1) {
-                std::vector<int> c;
-                get_component(c, v_in_c);
-//                t[i].component_tree = build_tree_with_dividing_points(c);
-                t[i].component_tree.enclosing_tree = &t;
-                t[i].component_tree.enclosing_face = i;
-            }
-        }
+//        for (int i = 1; i < vertices_in_face.size(); i++) {
+//            auto &face = vertices_in_face[i];
+//
+//            int v_in_c = check_for_component(face);
+//            if (v_in_c > -1) {
+//                std::vector<int> c;
+//                get_component(c, v_in_c);
+////                t[i].component_tree = build_tree_with_dividing_points(c);
+//                t[i].component_tree.enclosing_tree = &t;
+//                t[i].component_tree.enclosing_face = i;
+//            }
+//        }
 
         return t;
     }
@@ -848,6 +848,13 @@ class baker_impl {
             bi_map[std::pair<int, int>(ei->m_target, ei->m_source)] = bicomp[*ei];
         }
 
+        std::vector< std::vector<int> > c(bi_num);
+        for (int i = 0; i < component.size(); i++) {
+            int curr = component[i];
+            int next = component[(i + 1) % component.size()];
+            c[bi_map[std::pair<int, int>(curr, next)]].push_back(curr);
+        }
+
         for (int i = 0; i < bi_num; i++) {
             std::map<int, std::vector<Edge> > emb;
             for (int v : bicomps[i]) {
@@ -857,7 +864,8 @@ class baker_impl {
                     }
                 }
             }
-            trees[i] = build_tree(std::vector<int>(bicomps[i].begin(), bicomps[i].end()), emb);
+
+            trees[i] = build_tree(c[i], emb);
         }
 
         std::vector<int> art_points;
@@ -913,6 +921,29 @@ class baker_impl {
                         trees[target].merge(trees[b]);
                     }
                 }
+            }
+        }
+
+
+        for (int i = 0; i < trees[main_bicomp].size(); i++) {
+            auto& t = trees[main_bicomp][i];
+
+            if (t.children.empty()) {
+                continue;
+            }
+
+            auto& face = t.face;
+
+            int v_in_c = check_for_component(face);
+            if (v_in_c > -1) {
+                std::vector<int> c;
+                get_component(c, v_in_c);
+                triangulate(face, c, 1);
+                triangulate(c, face, -1);
+                int v = find_third(t.label.first, t.label.second);
+                t.component_tree = build_tree_with_dividing_points(c, v);
+                t.component_tree.enclosing_tree = &trees[main_bicomp];
+                t.component_tree.enclosing_face = i;
             }
         }
 
@@ -1007,7 +1038,7 @@ class baker_impl {
 
             int p = t[v].RB;
             for (int i = t[v].LB; i < t[v].RB; i++) {
-                if (check_for_edge(t[v].label.second, z_table[i], g, added_edges)) {
+                if (check_for_edge(t[v].label.first, z_table[i], g, added_edges)) {
                     p = i;
                     break;
                 }
@@ -1019,7 +1050,7 @@ class baker_impl {
 
             while (j >= t[v].LB) {
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g, added_edges);
-                t[v].merge(t[v].val, second.val);
+                t[v].merge(second.val, t[v].val);
                 j--;
             }
 
@@ -1027,7 +1058,7 @@ class baker_impl {
 
             while (j < t[v].RB) {
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g, added_edges);
-                t[v].merge(second.val, t[v].val);
+                t[v].merge(t[v].val, second.val);
                 j++;
             }
         }
@@ -1065,17 +1096,15 @@ public:
 
         std::vector<int> face;
         find_outer_face(face);
-        build_tree_with_dividing_points(face, 0);
+        tree = build_tree_with_dividing_points(face, 2);
 
-//        root_tree_with_root(tree, 0);
+        create_boudaries(tree, tree, tree.root);
 
-        create_boudaries(tree, tree, 1);
-
-        table(tree, 1);
+        table(tree, tree.root);
     }
 
     int result() {
-        return tree[1].result();
+        return tree[tree.root].result();
     }
 
 };
