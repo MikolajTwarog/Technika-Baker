@@ -636,23 +636,6 @@ class baker_impl {
 
         t[node].label.first = root;
         t[node].label.second = root;
-
-//        if (!t[node].component_tree.empty()) {
-//            std::vector<int> face;
-//            for (int x : t[node].children) {
-//                face.push_back(t[x].label.first);
-//            }
-//            if (t[t[node].children.back()].label.second != face[0]) {
-//                face.push_back(t[t[node].children.back()].label.second);
-//            }
-//            std::vector<int> component;
-//            get_component(component, check_for_component(face));
-////            std::reverse(component.begin(), component.end());
-//            triangulate(face, component, 1);
-//            triangulate(component, face, 1);
-//            int v = find_third(t[node].label.first, t[node].label.second);
-//            root_tree_with_root(t[node].component_tree, v);
-//        }
     }
 
     ::tree<Problem> build_tree(std::vector<int> component, std::map<int, std::vector<Edge> > emb) {
@@ -693,24 +676,19 @@ class baker_impl {
 
         t.remove_outer_face();
 
-//        for (int i = 1; i < vertices_in_face.size(); i++) {
-//            auto &face = vertices_in_face[i];
-//
-//            int v_in_c = check_for_component(face);
-//            if (v_in_c > -1) {
-//                std::vector<int> c;
-//                get_component(c, v_in_c);
-////                t[i].component_tree = build_tree_with_dividing_points(c);
-//                t[i].component_tree.enclosing_tree = &t;
-//                t[i].component_tree.enclosing_face = i;
-//            }
-//        }
-
         return t;
     }
 
     ::tree<Problem> build_tree_with_dividing_points(std::vector<int> component, int root) {
         int level = vertex_level[component[0]];
+
+        if (component.size() == 1) {
+            ::tree<Problem> t(1, level);
+            t[0].label.first = component[0];
+            t[0].label.second = component[0];
+            t.root = 0;
+            return t;
+        }
 
         std::set<int> vis;
         Graph g_temp;
@@ -732,25 +710,25 @@ class baker_impl {
         auto bicomp = get(edge_index, g_temp);
         int bi_num = biconnected_components(g_temp, bicomp);
         std::vector< ::tree<Problem> > trees(bi_num);
-        std::vector< std::set<int> > bicomps(bi_num);
+        std::vector< std::set<int> > v_in_bicomps(bi_num);
 
         std::map<std::pair<int, int>, int> bi_map;
         graph_traits<Graph>::edge_iterator ei, ei_end;
         for(boost::tie(ei, ei_end) = edges(g_temp); ei != ei_end; ++ei) {
-            bicomps[bicomp[*ei]].insert(ei->m_source);
-            bicomps[bicomp[*ei]].insert(ei->m_target);
+            v_in_bicomps[bicomp[*ei]].insert(ei->m_source);
+            v_in_bicomps[bicomp[*ei]].insert(ei->m_target);
             bi_map[std::pair<int, int>(ei->m_source, ei->m_target)] = bicomp[*ei];
             bi_map[std::pair<int, int>(ei->m_target, ei->m_source)] = bicomp[*ei];
         }
 
-        std::vector< std::vector<int> > c(bi_num);
+        std::vector< std::vector<int> > bicomps(bi_num);
         for (int i = 0; i < component.size(); i++) {
             int curr = component[i];
             int next = component[(i + 1) % component.size()];
-            c[bi_map[std::pair<int, int>(curr, next)]].push_back(curr);
+            bicomps[bi_map[std::pair<int, int>(curr, next)]].push_back(curr);
         }
 
-        for (auto& bic : c) {
+        for (auto& bic : bicomps) {
             if (bic.size() == 2) {
                 add_edge(bic[0], bic[1], g);
                 Edge e(bic[0], bic[1], nullptr);
@@ -763,7 +741,7 @@ class baker_impl {
 
         for (int i = 0; i < bi_num; i++) {
             std::map<int, std::vector<Edge> > emb;
-            for (int v : bicomps[i]) {
+            for (int v : v_in_bicomps[i]) {
                 for (Edge e : embedding[v]) {
                     if (bi_map[std::pair<int, int>(e.m_source, e.m_target)] == i) {
                         emb[v].push_back(e);
@@ -771,7 +749,7 @@ class baker_impl {
                 }
             }
 
-            trees[i] = build_tree(c[i], emb);
+            trees[i] = build_tree(bicomps[i], emb);
         }
 
         std::vector<int> art_points;
@@ -781,8 +759,8 @@ class baker_impl {
         std::map<int, std::vector<int> > bicomp_to_art;
 
         for (int a : art_points) {
-            for (int i = 0; i < bicomps.size(); i++) {
-                if (bicomps[i].find(a) != bicomps[i].end()) {
+            for (int i = 0; i < v_in_bicomps.size(); i++) {
+                if (v_in_bicomps[i].find(a) != v_in_bicomps[i].end()) {
                     art_to_bicomp[a].push_back(i);
                     bicomp_to_art[i].push_back(a);
                 }
@@ -790,8 +768,8 @@ class baker_impl {
         }
 
         int main_bicomp = 0;
-        for (int i = 0; i < bicomps.size(); i++) {
-            if (bicomps[i].find(root) != bicomps[i].end()) {
+        for (int i = 0; i < v_in_bicomps.size(); i++) {
+            if (v_in_bicomps[i].find(root) != v_in_bicomps[i].end()) {
                 main_bicomp = i;
                 break;
             }
