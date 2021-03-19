@@ -333,6 +333,11 @@ struct independent_set : node
             if ((i & 1) == 0 || !check_for_edge(vertices[0], label.second, g, ae)) {
                 val[i << 1][(i << 1) + 1] = ones + 1;
             }
+
+            if ((i & 1) == 0 || (!check_for_edge(vertices[0], label.second, g, ae)
+            && !check_for_edge(vertices[0], label.first, g,  ae))) {
+                val[(i << 1) + 1][(i << 1) + 1] = ones + 2;
+            }
         }
     }
 

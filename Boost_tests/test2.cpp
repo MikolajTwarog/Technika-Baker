@@ -153,12 +153,43 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 1);
     }
 
+//    5 9
+//    0 1  0 2  0 3  0 4  1 2  1 3  1 4  2 3  3 4
+    BOOST_AUTO_TEST_CASE(five) {
+        Graph g;
+        add_edge(0, 1, g);
+        add_edge(0, 2, g);
+        add_edge(0, 3, g);
+        add_edge(0, 4, g);
+        add_edge(1, 2, g);
+        add_edge(1, 3, g);
+        add_edge(1, 4, g);
+        add_edge(2, 3, g);
+        add_edge(3, 4, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 2);
+    }
+
     BOOST_AUTO_TEST_CASE(four_vertices) {
         file_reader f("4vertices");
 //        std::string s = get_current_dir_name();
 
         Graph g;
         while(f.next_graph(g)) {
+            int result = baker2<independent_set>(g);
+            int expected = independent_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+            g.clear();
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(five_vertices) {
+        file_reader f("5vertices");
+//        std::string s = get_current_dir_name();
+
+        Graph g;
+        int i = 0;
+        while(f.next_graph(g)) {
+            std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);

@@ -530,6 +530,7 @@ class baker_impl {
             int current_e_it = get_edge_it(current_e, current_v);
             auto& edges2 = embedding[current_v];
             int i = (current_e_it - 1 + edges2.size()) % edges2.size();
+            res = false;
             for (;i != current_e_it; i = (i - 1 + edges2.size()) % edges2.size()) {
                 Edge e = edges2[i];
                 int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
@@ -537,7 +538,18 @@ class baker_impl {
                 if (vertex_level[neighbour] == level) {
                     current_e = e;
                     current_v = neighbour;
+                    res = true;
                     break;
+                }
+            }
+
+            if (res == false) {
+                Edge e = edges2[current_e_it];
+                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                if (vertex_level[neighbour] == level) {
+                    current_e = e;
+                    current_v = neighbour;
                 }
             }
         }
@@ -545,6 +557,10 @@ class baker_impl {
     }
 
     int check_for_component(const std::vector<int> &face) {
+        if (face.size() == 2) {
+            return -1;
+        }
+
         int level = vertex_level[face[0]];
 
         int prev = face.size() - 1, curr = 0, next = 1;
@@ -922,17 +938,19 @@ class baker_impl {
 
             int p = t[v].RB;
             for (int i = t[v].LB; i < t[v].RB; i++) {
-                if (check_for_edge(t[v].label.first, z_table[i], g, added_edges)) {
+                if (check_for_edge(t[v].label.second, z_table[i], g, added_edges)) {
                     p = i;
                     break;
                 }
             }
 
             t[v].create(p, g, added_edges);
+            t[v].adjust();
 
             int j = p - 1;
 
             while (j >= t[v].LB) {
+                table(*t.enclosing_tree, t.enclosing_tree->t[t.enclosing_face].children[j]);
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g, added_edges);
                 t[v].merge(second.val, t[v].val);
                 j--;
@@ -941,6 +959,7 @@ class baker_impl {
             j = p;
 
             while (j < t[v].RB) {
+                table(*t.enclosing_tree, t.enclosing_tree->t[t.enclosing_face].children[j]);
                 Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g, added_edges);
                 t[v].merge(t[v].val, second.val);
                 j++;
