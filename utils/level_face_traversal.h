@@ -15,7 +15,7 @@
 
 template < typename Graph, typename Visitor >
 inline void level_face_traversal(
-        const Graph& g, std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
+        std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
         Visitor& visitor, int level, const std::vector<int>& vertex_level, const std::vector<int>& component)
 {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
@@ -35,15 +35,15 @@ inline void level_face_traversal(
 
         for (int i = 0; i < edges.size(); i++) {
             edge_t e = edges[i];
-            if (vertex_level[source(e, g)] != level
-                || vertex_level[target(e, g)] != level)
+            if (vertex_level[e.m_source] != level
+                || vertex_level[e.m_target] != level)
                 continue;
 
             edges_cache.push_back(e);
             for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
                 edge_t e_j = edges[j];
-                if (vertex_level[source(e_j, g)] == level
-                    && vertex_level[target(e_j, g)] == level) {
+                if (vertex_level[e_j.m_source] == level
+                    && vertex_level[e_j.m_target] == level) {
                     next_edge[e][v] = e_j;
                 }
             }
@@ -56,8 +56,8 @@ inline void level_face_traversal(
 
 //    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
 //        edge_t e(*fi);
-//        if (vertex_level[source(e, g)] == level
-//            && vertex_level[target(e, g)] == level) {
+//        if (vertex_level[e.m_source] == level
+//            && vertex_level[e.m_target] == level) {
 //            edges_cache.push_back(e);
 //        }
 //    }
@@ -66,8 +66,8 @@ inline void level_face_traversal(
 //            std::cout << e << "\n";
 
         vertices_in_edge.clear();
-        vertices_in_edge.push_back(source(e, g));
-        vertices_in_edge.push_back(target(e,g));
+        vertices_in_edge.push_back(e.m_source);
+        vertices_in_edge.push_back(e.m_target);
 
         for (auto v : vertices_in_edge) {
             std::set<vertex_t>& e_visited = visited[e];
@@ -82,7 +82,7 @@ inline void level_face_traversal(
                 visitor.next_vertex(v);
                 visitor.next_edge(e);
                 visited[e].insert(v);
-                v = source(e, g) == v ? target(e, g) : source(e, g);
+                v = e.m_source == v ? e.m_target : e.m_source;
                 e = next_edge[e][v];
             }
 

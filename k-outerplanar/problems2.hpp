@@ -85,13 +85,17 @@ struct tree{
 
         int child_num = 0;
         for (int i = 0; i < t[target].children.size(); i++) {
-            if (t[t[target].children[i]].label.second == t2_v_root) {
+            if (t[t[target].children[i]].label.first == t2_v_root) {
                 child_num = i;
+                break;
+            }
+            if (t[t[target].children[i]].label.second == t2_v_root) {
+                child_num = i + 1;
                 break;
             }
         }
 
-        t[target].children.insert(t[target].children.begin() + child_num + 1, s + t2.root);
+        t[target].children.insert(t[target].children.begin() + child_num, s + t2.root);
         t[s + t2.root].parent = target;
     }
 
@@ -224,7 +228,8 @@ struct independent_set : node
         }
     }
 
-    void adjust() {
+    template<typename Graph>
+    void adjust(Graph& g, std::set<std::pair<int, int> >& ae) {
         int count = 1 << (level - 1);
 
         if(label.first == label.second) {
@@ -235,7 +240,8 @@ struct independent_set : node
                     val[(u << 1) + 1][v << 1] = -INT16_MAX;
                 }
             }
-        } else {
+        }
+        if (check_for_edge(label.first, label.second, g, ae)) {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
                     val[(u << 1) + 1][(v << 1) + 1] = -INT16_MAX;

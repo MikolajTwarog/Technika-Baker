@@ -328,6 +328,7 @@ class baker_impl {
         Edge connecting_e;
         int starting_v;
         int starting_v_it = -1;
+        int c_v;
         
         for (int i = 0; i < face.size(); i++) {
             int v = face[i];
@@ -337,6 +338,7 @@ class baker_impl {
                     connecting_e = e;
                     starting_v = v;
                     starting_v_it = i;
+                    c_v = neighbour;
                     break;
                 }
             }
@@ -345,6 +347,67 @@ class baker_impl {
         }
 
         std::rotate(face.begin(), face.begin() + starting_v_it, face.end());
+//        std::rotate(component.begin(), std::find(component.begin(), component.end(), c_v), component.end());
+//
+//        int face_it = 0;
+//        int comp_it = 1;
+//        int curr_e_it_face = get_edge_it(connecting_e, starting_v);
+//        int curr_e_it_comp = get_edge_it(connecting_e, c_v);
+//
+//        while (face_it < face.size() && comp_it < component.size()) {
+//            bool res = false;
+//            int comp_curr = component[comp_it];
+//            int face_curr = face[face_it];
+//            int last = -1;
+//
+//            for (int i = curr_e_it_comp; i != (curr_e_it_comp + 1) % embedding[comp_curr].size();
+//            i = (i - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()) {
+//                Edge& e = embedding[comp_curr][i];
+//                int neighbour = e.m_source == comp_curr ? e.m_target : e.m_source;
+//                if (vertex_level[neighbour] == level && neighbour != face_curr) {
+//                    res = true;
+//                    last = neighbour;
+//                    break;
+//                }
+//            }
+//
+//            if (res)  {
+//                for (int i = face_it + 1; ; i++) {
+//                    if (face[i] == last) {
+//                        face_it = i;
+//                        curr_e_it_face = get_edge_it(Edge(last, comp_curr, nullptr), last);
+//                        comp_it++;
+//                        curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
+//                        break;
+//                    }
+//
+//                    Edge e(face[i - 1], face[i], nullptr);
+//                    int e_it = get_edge_it(e, face[i]);
+//                    embedding[face[i]].insert(embedding[face[i]].begin() + e_it + 1,
+//                                              Edge(face[i], comp_curr, nullptr));
+//                    embedding[comp_curr].insert(embedding[comp_curr].begin() +
+//                    ((curr_e_it_comp - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()),
+//                    Edge(face[i], comp_curr, nullptr));
+//
+//                    added_edges.emplace(face[i], comp_curr);
+//
+//                    add_edge(face[i], comp_curr, g);
+//                }
+//            } else {
+//                embedding[face_curr].insert(embedding[face_curr].begin() + curr_e_it_face,
+//                                            Edge(face_curr, comp_curr,nullptr));
+//                embedding[comp_curr].insert(embedding[comp_curr].begin() +
+//                                            ((curr_e_it_comp - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()),
+//                                            Edge(face_curr, comp_curr, nullptr));
+//
+//                added_edges.emplace(face_curr, comp_curr);
+//
+//                add_edge(face_curr, comp_curr, g);
+//
+//                comp_it++;
+//                curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
+//            }
+//        }
 
         for (int i = 0; i < face.size(); i++) {
             int first = face[i];
@@ -355,13 +418,13 @@ class baker_impl {
             int edge_it = get_edge_it(temp1, first);
             int edge_it2 = get_edge_it(temp1, second);
 
-            
+
             edge_it = (edge_it + (1 * turn) + embedding[first].size()) % embedding[first].size();
             connecting_e = embedding[first][edge_it];
-            
+
             int target = connecting_e.m_source == first ? connecting_e.m_target : connecting_e.m_source;
             Edge temp2(first, target, nullptr);
-            
+
             if (!boost::edge(second, target, g).second) {
                 add_edge(second, target, g);
                 int target_e_it = get_edge_it(temp2, target);
@@ -375,14 +438,6 @@ class baker_impl {
                 added_edges.emplace(second, target);
             }
         }
-
-//        for (int i = 0; i < component.size(); i++) {
-//            int v = component[i];
-//            int prior = component[(i - 1) % component.size()];
-//            int next = component[(i + 1) % component.size()];
-//            
-//            
-//        }
     }
 
     int find_third(int one, int two) {
@@ -404,7 +459,7 @@ class baker_impl {
         for (auto e_i : one_edges) {
             int target_i = e_i.m_source == one ? e_i.m_target : e_i.m_source;
 
-            if (vertex_level[target_i] == level -1) {
+            if (vertex_level[target_i] == level + 1) {
                 auto& target_i_edges = embedding[target_i];
 
                 for (auto e_j : target_i_edges) {
@@ -462,78 +517,50 @@ class baker_impl {
 
     std::vector<bool> visited;
 
-    void get_component(std::vector<int>& component, int v) {
-        if (vertex_level[v] == 1) {
-            find_outer_face(component);
+    void get_component(std::vector< std::vector<int> >& components, std::map<int, int>& vis,
+                       std::vector< std::pair<int, int> >& v_in_c) {
+        if (vertex_level[v_in_c[0].first] == 1) {
+            find_outer_face(components[0]);
 
             return;
         }
 
-        std::queue<int> q;
-        q.push(v);
-        int level = vertex_level[v];
-        int starting_v = -1;
-        int connecting_e_it = -1;
+        int comp_num = 0;
 
-        while (!q.empty()) {
-            int current_v = q.front();
-            q.pop();
-//            component.push_back(current_v);
+        for (int c = 0; c < v_in_c.size(); c++) {
+            if (vis.find(v_in_c[c].first) != vis.end()) {
+                continue;
+            }
+            components.emplace_back();
 
-            for (int i = 0; i < embedding[current_v].size(); i++) {
-                Edge e = embedding[current_v][i];
-                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+            int v = v_in_c[c].first;
 
-                if (!visited[neighbour] && vertex_level[neighbour] == level){
-                    q.push(neighbour);
-                    visited[neighbour] = true;
-                }
+            int level = vertex_level[v];
+            int starting_v = v;
+            int connecting_e_it = -1;
+
+            for (int i = 0; i < embedding[v].size(); i++) {
+                Edge e = embedding[v][i];
+                int neighbour = e.m_source == v ? e.m_target : e.m_source;
 
                 if (vertex_level[neighbour] == level - 1) {
-                    starting_v = current_v;
                     connecting_e_it = i;
                     break;
                 }
             }
 
-            if (starting_v > -1) {
-                break;
-            }
-        }
+            vis[starting_v] = comp_num;
+            components.back().push_back(starting_v);
 
-        component.push_back(starting_v);
+            Edge current_e;
+            int current_v;
+            bool res = false;
 
-        Edge current_e;
-        int current_v;
-        bool res = false;
-
-        auto &edges = embedding[starting_v];
-        for (int i = (connecting_e_it + 1) % edges.size(); i != connecting_e_it;
-             i = (i + 1) % edges.size()) {
-            Edge e = edges[i];
-            int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
-
-            if (vertex_level[neighbour] == level) {
-                current_e = e;
-                current_v = neighbour;
-                res = true;
-                break;
-            }
-        }
-        if (!res) {
-            return;
-        }
-
-        while (current_v != starting_v) {
-            component.push_back(current_v);
-
-            int current_e_it = get_edge_it(current_e, current_v);
-            auto& edges2 = embedding[current_v];
-            int i = (current_e_it - 1 + edges2.size()) % edges2.size();
-            res = false;
-            for (;i != current_e_it; i = (i - 1 + edges2.size()) % edges2.size()) {
-                Edge e = edges2[i];
-                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+            auto &edges = embedding[starting_v];
+            for (int i = (connecting_e_it + 1) % edges.size(); i != connecting_e_it;
+                 i = (i + 1) % edges.size()) {
+                Edge e = edges[i];
+                int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
 
                 if (vertex_level[neighbour] == level) {
                     current_e = e;
@@ -542,23 +569,72 @@ class baker_impl {
                     break;
                 }
             }
+            if (!res) {
+                comp_num++;
+                continue;
+            }
 
-            if (res == false) {
-                Edge e = edges2[current_e_it];
-                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+            while (current_v != starting_v) {
+                vis[current_v] = comp_num;
+                components.back().push_back(current_v);
 
-                if (vertex_level[neighbour] == level) {
-                    current_e = e;
-                    current_v = neighbour;
+                int current_e_it = get_edge_it(current_e, current_v);
+                auto &edges2 = embedding[current_v];
+                int i = (current_e_it - 1 + edges2.size()) % edges2.size();
+                res = false;
+                for (; i != current_e_it; i = (i - 1 + edges2.size()) % edges2.size()) {
+                    Edge e = edges2[i];
+                    int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                    if (vertex_level[neighbour] == level) {
+                        current_e = e;
+                        current_v = neighbour;
+                        res = true;
+                        break;
+                    }
+                }
+
+                if (res == false) {
+                    Edge e = edges2[current_e_it];
+                    int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                    if (vertex_level[neighbour] == level) {
+                        current_e = e;
+                        current_v = neighbour;
+                    }
                 }
             }
-        }
 
+            comp_num++;
+        }
     }
 
-    int check_for_component(const std::vector<int> &face) {
+    void make_connected(std::vector< std::vector<int> >& components, std::map<int, int>& vis,
+                        std::vector< std::pair<int, int> >& v_in_c) {
+        for (int i = 0; i < v_in_c.size(); i++) {
+            int curr = v_in_c[i].first;
+            int curr_con = v_in_c[i].second;
+            int next = v_in_c[(i + 1) % v_in_c.size()].first;
+            int next_con = v_in_c[(i + 1) % v_in_c.size()].second;
+
+            if (vis[curr] == vis[next] || edge(curr, next, g).second) {
+                continue;
+            }
+
+            added_edges.insert(std::pair<int, int>(curr, next));
+            add_edge(curr, next, g);
+
+            embedding[curr].insert(embedding[curr].begin() + get_edge_it(Edge(curr, curr_con, nullptr), curr),
+                                   Edge(curr, next, &i));
+
+            embedding[next].insert(embedding[next].begin() + get_edge_it(Edge(next, next_con, nullptr), next) + 1,
+                                   Edge(curr, next,&i));
+        }
+    }
+
+    void check_for_components(const std::vector<int> &face, std::vector< std::pair<int, int> >& out) {
         if (face.size() == 2) {
-            return -1;
+            return;
         }
 
         int level = vertex_level[face[0]];
@@ -572,13 +648,14 @@ class baker_impl {
             i = (i + 1) % embedding[face[curr]].size()) {
                 Edge e = embedding[face[curr]][i];
                 int target = e.m_source == face[curr] ? e.m_target : e.m_source;
-                if (vertex_level[target] == level + 1) {
-                    return target;
+                if (vertex_level[target] == level + 1 &&
+                (out.empty() || (out.back().first != target && out.front().first != target))) {
+                    out.emplace_back(target, face[curr]);
                 }
             }
         }
 
-        return -1;
+        return;
     }
 
     template<typename Edge>
@@ -662,7 +739,7 @@ class baker_impl {
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
         my_visitor<Edge> my_vis(faces, vertices_in_face);
-        level_face_traversal(g, emb, my_vis, level, vertex_level, component);
+        level_face_traversal<Graph>(emb, my_vis, level, vertex_level, component);
         ::tree<Problem> t(my_vis.current_face, level);
 
         int outer = 0;
@@ -688,7 +765,7 @@ class baker_impl {
 
         t.outer_face = outer;
         tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
-        level_face_traversal(g, emb, tree_b, level, vertex_level, component);
+        level_face_traversal<Graph>(emb, tree_b, level, vertex_level, component);
 
         t.remove_outer_face();
 
@@ -834,14 +911,24 @@ class baker_impl {
 
             auto& face = t.face;
 
-            int v_in_c = check_for_component(face);
-            if (v_in_c > -1) {
-                std::vector<int> c;
-                get_component(c, v_in_c);
-                triangulate(face, c, 1);
-                triangulate(c, face, -1);
+            std::vector< std::pair<int, int> > v_in_c;
+            check_for_components(face, v_in_c);
+            if (!v_in_c.empty()) {
+                std::vector< std::vector<int> > components;
+                std::map<int, int> v_to_c;
+                get_component(components, v_to_c, v_in_c);
+
+                if (components.size() > 1) {
+                    make_connected(components, v_to_c, v_in_c);
+                    components.clear();
+                    v_to_c.clear();
+                    get_component(components, v_to_c, v_in_c);
+                }
+
+                triangulate(face, components[0], 1);
+                triangulate(components[0], face, -1);
                 int v = find_third(t.label.first, t.label.second);
-                t.component_tree = build_tree_with_dividing_points(c, v);
+                t.component_tree = build_tree_with_dividing_points(components[0], v);
                 t.component_tree.enclosing_tree = &trees[main_bicomp];
                 t.component_tree.enclosing_face = i;
             }
@@ -923,12 +1010,12 @@ class baker_impl {
                 t[v].merge(t[v].val, t[t[v].children[i]].val);
             }
 
-            t[v].adjust();
+            t[v].adjust(g, added_edges);
         } else if (!t[v].children.empty() && !t[v].component_tree.empty()) {
             auto& ct = t[v].component_tree;
             table(ct, ct.root);
             t[v].contract(ct[ct.root]);
-            t[v].adjust();
+            t[v].adjust(g, added_edges);
         } else if (level > 1) {
             std::vector<int> z_table;
             z_table.push_back(t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[0]].label.first);
@@ -936,16 +1023,16 @@ class baker_impl {
                 z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
 
-            int p = t[v].RB;
-            for (int i = t[v].LB; i < t[v].RB; i++) {
-                if (check_for_edge(t[v].label.second, z_table[i], g, added_edges)) {
+            int p = t[v].LB;
+            for (int i = t[v].RB; i > t[v].LB; i--) {
+                if (check_for_edge(t[v].label.first, z_table[i], g, added_edges)) {
                     p = i;
                     break;
                 }
             }
 
             t[v].create(p, g, added_edges);
-            t[v].adjust();
+            t[v].adjust(g, added_edges);
 
             int j = p - 1;
 
