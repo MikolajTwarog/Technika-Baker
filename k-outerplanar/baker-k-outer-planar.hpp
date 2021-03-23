@@ -324,6 +324,26 @@ class baker_impl {
     }
 
     void triangulate(std::vector<int>& face, std::vector<int>& component, int turn) {
+        if (component.size() == 1) {
+            int c = component[0];
+            embedding[c].clear();
+
+            for (int i = 0; i < face.size(); i++) {
+                int v = face[i];
+
+                embedding[c].emplace_back(v, c, &c);
+
+                if (!edge(v, c, g).second) {
+                    add_edge(c, v, g);
+                    int next = face[(i + 1) % face.size()];
+                    embedding[v].insert(embedding[v].begin() + get_edge_it(Edge(v, next, nullptr), v) + 1,
+                                        Edge(v, c ,nullptr));
+                    added_edges.emplace(v, c);
+                }
+            }
+            return;
+        }
+
         int level = vertex_level[face[0]];
         Edge connecting_e;
         int starting_v;
@@ -347,97 +367,116 @@ class baker_impl {
         }
 
         std::rotate(face.begin(), face.begin() + starting_v_it, face.end());
-//        std::rotate(component.begin(), std::find(component.begin(), component.end(), c_v), component.end());
-//
-//        int face_it = 0;
-//        int comp_it = 1;
-//        int curr_e_it_face = get_edge_it(connecting_e, starting_v);
-//        int curr_e_it_comp = get_edge_it(connecting_e, c_v);
-//
-//        while (face_it < face.size() && comp_it < component.size()) {
-//            bool res = false;
-//            int comp_curr = component[comp_it];
-//            int face_curr = face[face_it];
-//            int last = -1;
-//
-//            for (int i = curr_e_it_comp; i != (curr_e_it_comp + 1) % embedding[comp_curr].size();
-//            i = (i - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()) {
-//                Edge& e = embedding[comp_curr][i];
-//                int neighbour = e.m_source == comp_curr ? e.m_target : e.m_source;
-//                if (vertex_level[neighbour] == level && neighbour != face_curr) {
-//                    res = true;
-//                    last = neighbour;
-//                    break;
-//                }
-//            }
-//
-//            if (res)  {
-//                for (int i = face_it + 1; ; i++) {
-//                    if (face[i] == last) {
-//                        face_it = i;
-//                        curr_e_it_face = get_edge_it(Edge(last, comp_curr, nullptr), last);
-//                        comp_it++;
-//                        curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
-//                        break;
-//                    }
-//
-//                    Edge e(face[i - 1], face[i], nullptr);
-//                    int e_it = get_edge_it(e, face[i]);
-//                    embedding[face[i]].insert(embedding[face[i]].begin() + e_it + 1,
-//                                              Edge(face[i], comp_curr, nullptr));
-//                    embedding[comp_curr].insert(embedding[comp_curr].begin() +
-//                    ((curr_e_it_comp - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()),
-//                    Edge(face[i], comp_curr, nullptr));
-//
-//                    added_edges.emplace(face[i], comp_curr);
-//
-//                    add_edge(face[i], comp_curr, g);
-//                }
-//            } else {
-//                embedding[face_curr].insert(embedding[face_curr].begin() + curr_e_it_face,
-//                                            Edge(face_curr, comp_curr,nullptr));
-//                embedding[comp_curr].insert(embedding[comp_curr].begin() +
-//                                            ((curr_e_it_comp - 1 + embedding[comp_curr].size()) % embedding[comp_curr].size()),
-//                                            Edge(face_curr, comp_curr, nullptr));
-//
-//                added_edges.emplace(face_curr, comp_curr);
-//
-//                add_edge(face_curr, comp_curr, g);
-//
-//                comp_it++;
-//                curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
-//            }
-//        }
+        std::rotate(component.begin(), std::find(component.begin(), component.end(), c_v), component.end());
 
-        for (int i = 0; i < face.size(); i++) {
-            int first = face[i];
-            int second = face[(i + 1) % face.size()];
+        int face_it = 0;
+        int comp_it = 0;
+        int curr_e_it_face = get_edge_it(connecting_e, starting_v);
+        int curr_e_it_comp = get_edge_it(connecting_e, c_v);
 
-            Edge temp1(first, second, nullptr);
+        while (face_it < face.size()) {
+            bool res = false;
+            int comp_curr = component[comp_it];
+            int face_curr = face[face_it];
+            int last = -1;
 
-            int edge_it = get_edge_it(temp1, first);
-            int edge_it2 = get_edge_it(temp1, second);
-
-
-            edge_it = (edge_it + (1 * turn) + embedding[first].size()) % embedding[first].size();
-            connecting_e = embedding[first][edge_it];
-
-            int target = connecting_e.m_source == first ? connecting_e.m_target : connecting_e.m_source;
-            Edge temp2(first, target, nullptr);
-
-            if (!boost::edge(second, target, g).second) {
-                add_edge(second, target, g);
-                int target_e_it = get_edge_it(temp2, target);
-                if (turn == -1) {
-                    edge_it2++;
-                } else {
-                    target_e_it++;
+            int second_e = get_edge_it(Edge(comp_curr,component[(comp_it + 1) % component.size()],nullptr),
+                                       comp_curr);
+            for (int i = (curr_e_it_comp + 1) % embedding[comp_curr].size(); i != second_e;
+            i = (i + 1) % embedding[comp_curr].size()) {
+                Edge& e = embedding[comp_curr][i];
+                int neighbour = e.m_source == comp_curr ? e.m_target : e.m_source;
+                if (vertex_level[neighbour] == level && neighbour != face_curr) {
+                    res = true;
+                    last = neighbour;
+                    break;
                 }
-                embedding[second].emplace(embedding[second].begin() + edge_it2, second, target, nullptr);
-                embedding[target].emplace(embedding[target].begin() + target_e_it, second, target, nullptr);
-                added_edges.emplace(second, target);
+            }
+
+            if (res)  {
+                for (int i = face_it; ; i = (i + 1) % face.size()) {
+                    if (face[i] == last) {
+                        face_it = i;
+                        curr_e_it_face = get_edge_it(Edge(last, comp_curr, nullptr), last);
+//                        comp_it = (comp_it + 1)  % component.size();
+                        curr_e_it_comp = get_edge_it(Edge(last,
+                                                          comp_curr, nullptr), component[comp_it]);
+                        break;
+                    }
+
+                    if (edge(comp_curr, face[i], g).second) {
+                        continue;
+                    }
+
+                    Edge e(face[i - 1], face[i], nullptr);
+
+                    int e_it;
+                    if (i == face_it) {
+                        e_it = curr_e_it_face;
+                    } else {
+                        e_it = get_edge_it(e, face[i]);
+                    }
+                    embedding[face[i]].insert(embedding[face[i]].begin() + e_it,
+                                              Edge(face[i], comp_curr, nullptr));
+                    embedding[comp_curr].insert(embedding[comp_curr].begin() +
+                    (curr_e_it_comp + 1),
+                    Edge(face[i], comp_curr, nullptr));
+
+                    added_edges.emplace(face[i], comp_curr);
+
+                    add_edge(face[i], comp_curr, g);
+                }
+            } else {
+                if (!edge(comp_curr, face_curr, g).second) {
+                    embedding[face_curr].insert(embedding[face_curr].begin() + curr_e_it_face,
+                                                Edge(face_curr, comp_curr,nullptr));
+                    embedding[comp_curr].insert(embedding[comp_curr].begin() +
+                                                (curr_e_it_comp + 1),
+                                                Edge(face_curr, comp_curr, nullptr));
+
+                    added_edges.emplace(face_curr, comp_curr);
+
+                    add_edge(face_curr, comp_curr, g);
+                }
+
+                comp_it = (comp_it + 1) % component.size();
+                curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
+            }
+
+            if (last == face[0]) {
+                break;
             }
         }
+
+//        for (int i = 0; i < face.size(); i++) {
+//            int first = face[i];
+//            int second = face[(i + 1) % face.size()];
+//
+//            Edge temp1(first, second, nullptr);
+//
+//            int edge_it = get_edge_it(temp1, first);
+//            int edge_it2 = get_edge_it(temp1, second);
+//
+//
+//            edge_it = (edge_it + (1 * turn) + embedding[first].size()) % embedding[first].size();
+//            connecting_e = embedding[first][edge_it];
+//
+//            int target = connecting_e.m_source == first ? connecting_e.m_target : connecting_e.m_source;
+//            Edge temp2(first, target, nullptr);
+//
+//            if (!boost::edge(second, target, g).second) {
+//                add_edge(second, target, g);
+//                int target_e_it = get_edge_it(temp2, target);
+//                if (turn == -1) {
+//                    edge_it2++;
+//                } else {
+//                    target_e_it++;
+//                }
+//                embedding[second].emplace(embedding[second].begin() + edge_it2, second, target, nullptr);
+//                embedding[target].emplace(embedding[target].begin() + target_e_it, second, target, nullptr);
+//                added_edges.emplace(second, target);
+//            }
+//        }
     }
 
     int find_third(int one, int two) {
@@ -926,7 +965,7 @@ class baker_impl {
                 }
 
                 triangulate(face, components[0], 1);
-                triangulate(components[0], face, -1);
+//                triangulate(components[0], face, -1);
                 int v = find_third(t.label.first, t.label.second);
                 t.component_tree = build_tree_with_dividing_points(components[0], v);
                 t.component_tree.enclosing_tree = &trees[main_bicomp];
