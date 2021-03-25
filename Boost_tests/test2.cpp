@@ -153,6 +153,19 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 1);
     }
 
+//    5 6
+//    0 3  0 4  1 3  1 4  2 3  2 4
+    BOOST_AUTO_TEST_CASE(five) {
+        Graph g;
+        add_edge(0, 3, g);
+        add_edge(0, 4, g);
+        add_edge(1, 3, g);
+        add_edge(1, 4, g);
+        add_edge(2, 3, g);
+        add_edge(2, 4, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
+    }
+
 //    6 10
 //    0 1  0 2  0 4  1 3  1 5  2 4  2 5  3 4  3 5  4 5
     BOOST_AUTO_TEST_CASE(six) {
@@ -170,22 +183,75 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 2);
     }
 
-//    7 9
-//    0 6  1 5  2 4  2 5  2 6  3 4  3 5  3 6  4 6
+//    6 8
+//    0 4  0 5  1 4  1 5  2 3  2 5  3 4  3 5
+    BOOST_AUTO_TEST_CASE(six2) {
+        Graph g;
+        add_edge(0, 4, g);
+        add_edge(0, 5, g);
+        add_edge(1, 4, g);
+        add_edge(1, 5, g);
+        add_edge(2, 3, g);
+        add_edge(2, 5, g);
+        add_edge(3, 4, g);
+        add_edge(3, 5, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
+    }
+
+//    7 10
+//    0 5  0 6  1 5  1 6  2 5  2 6  3 5  3 6  4 5  4 6
     BOOST_AUTO_TEST_CASE(seven) {
         Graph g;
+        add_edge(0, 5, g);
         add_edge(0, 6, g);
         add_edge(1, 5, g);
-        add_edge(2, 4, g);
+        add_edge(1, 6, g);
+        add_edge(2, 5, g);
+        add_edge(2, 6, g);
+        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(4, 5, g);
+        add_edge(4, 6, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
+    }
+
+//    7 13
+//    0 4  0 5  0 6  1 4  1 5  1 6  2 3  2 5  2 6  3 5  3 6  4 5  4 6
+    BOOST_AUTO_TEST_CASE(seven2) {
+        Graph g;
+        add_edge(0, 4, g);
+        add_edge(0, 5, g);
+        add_edge(0, 6, g);
+        add_edge(1, 4, g);
+        add_edge(1, 5, g);
+        add_edge(1, 6, g);
+        add_edge(2, 3, g);
+        add_edge(2, 5, g);
+        add_edge(2, 6, g);
+        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(4, 5, g);
+        add_edge(4, 6, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
+    }
+
+//    7 12
+//    0 5  0 6  1 2  1 5  1 6  2 5  2 6  3 4  3 5  3 6  4 5  4 6
+    BOOST_AUTO_TEST_CASE(seven3) {
+        Graph g;
+        add_edge(0, 5, g);
+        add_edge(0, 6, g);
+        add_edge(1, 2, g);
+        add_edge(1, 5, g);
+        add_edge(1, 6, g);
         add_edge(2, 5, g);
         add_edge(2, 6, g);
         add_edge(3, 4, g);
         add_edge(3, 5, g);
         add_edge(3, 6, g);
         add_edge(4, 6, g);
-        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
-
 
     BOOST_AUTO_TEST_CASE(four_vertices) {
         file_reader f("4vertices");
@@ -234,6 +300,21 @@ BOOST_AUTO_TEST_SUITE(kouter)
 
     BOOST_AUTO_TEST_CASE(seven_vertices) {
         file_reader f("7vertices");
+//        std::string s = get_current_dir_name();
+
+        Graph g;
+        int i = 0;
+        while(f.next_graph(g)) {
+            std::cout << i++ << std::endl;
+            int result = baker2<independent_set>(g);
+            int expected = independent_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+            g.clear();
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(eight_vertices) {
+        file_reader f("8vertices");
 //        std::string s = get_current_dir_name();
 
         Graph g;
