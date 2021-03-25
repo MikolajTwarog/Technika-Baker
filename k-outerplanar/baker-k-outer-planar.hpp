@@ -20,6 +20,7 @@
 #include <boost/graph/planar_face_traversal.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 #include <boost/graph/make_maximal_planar.hpp>
+#include <boost/graph/subgraph.hpp>
 
 #include "problems2.hpp"
 #include "../utils/level_face_traversal.h"
@@ -34,14 +35,14 @@ namespace boost {
 
 typedef property<edge_faces_t, std::vector<int> > EdgeProperty;
 
-typedef adjacency_list
+typedef subgraph<adjacency_list
         <
                 vecS,
                 vecS,
                 undirectedS,
                 property<vertex_index_t, int>,
                 property<edge_index_t, int, EdgeProperty>
-        >
+        > >
         Graph;
 
 typedef std::vector<std::vector< graph_traits<Graph>::edge_descriptor > > PlanarEmbedding;
@@ -839,22 +840,22 @@ class baker_impl {
             return t;
         }
 
-        std::set<int> vis;
-        Graph g_temp;
-        for (int v : component) {
-            if (vis.find(v) != vis.end()) {
-                continue;
-            }
-
-            for (Edge e : embedding[v]) {
-                int target = e.m_source == v ? e.m_target : e.m_source;
-                if (vertex_level[target] == level && v < target) {
-                    add_edge(e.m_source, e.m_target, g_temp);
-                }
-            }
-
-            vis.insert(v);
-        }
+//        std::set<int> vis;
+        Graph& g_temp = g.create_subgraph(component.begin(), component.end());
+//        for (int v : component) {
+//            if (vis.find(v) != vis.end()) {
+//                continue;
+//            }
+//
+//            for (Edge e : embedding[v]) {
+//                int target = e.m_source == v ? e.m_target : e.m_source;
+//                if (vertex_level[target] == level && v < target) {
+//                    add_edge(e.m_source, e.m_target, g_temp);
+//                }
+//            }
+//
+//            vis.insert(v);
+//        }
 
         auto bicomp = get(edge_index, g_temp);
         int bi_num = biconnected_components(g_temp, bicomp);
@@ -864,10 +865,12 @@ class baker_impl {
         std::map<std::pair<int, int>, int> bi_map;
         graph_traits<Graph>::edge_iterator ei, ei_end;
         for(boost::tie(ei, ei_end) = edges(g_temp); ei != ei_end; ++ei) {
-            v_in_bicomps[bicomp[*ei]].insert(ei->m_source);
-            v_in_bicomps[bicomp[*ei]].insert(ei->m_target);
-            bi_map[std::pair<int, int>(ei->m_source, ei->m_target)] = bicomp[*ei];
-            bi_map[std::pair<int, int>(ei->m_target, ei->m_source)] = bicomp[*ei];
+            int global_source = g_temp.local_to_global(ei->m_source);
+            int global_target = g_temp.local_to_global(ei->m_target);
+            v_in_bicomps[bicomp[*ei]].insert(global_source);
+            v_in_bicomps[bicomp[*ei]].insert(global_target);
+            bi_map[std::pair<int, int>(global_source, global_target)] = bicomp[*ei];
+            bi_map[std::pair<int, int>(global_target, global_source)] = bicomp[*ei];
         }
 
         std::vector< std::vector<int> > bicomps(bi_num);
@@ -902,7 +905,11 @@ class baker_impl {
         }
 
         std::vector<int> art_points;
-        articulation_points(g, std::back_inserter(art_points));
+        articulation_points(g_temp, std::back_inserter(art_points));
+
+        for (int& a : art_points) {
+            a = g_temp.local_to_global(a);
+        }
 
         std::map<int, std::vector<int> > art_to_bicomp;
         std::map<int, std::vector<int> > bicomp_to_art;

@@ -17,6 +17,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE kouter
 #include <boost/test/unit_test.hpp>
+#include <boost/graph/subgraph.hpp>
 
 using namespace boost;
 
@@ -24,15 +25,15 @@ typedef property<edge_faces_t, std::vector<int> > EdgeProperty;
 
 typedef std::vector< graph_traits<Graph>::edge_descriptor > vec_t;
 
-typedef adjacency_list
-        <
-                vecS,
-                vecS,
-                undirectedS,
-                property<vertex_index_t, int>,
-                property<edge_index_t, int, EdgeProperty>
-        >
-        Graph;
+//typedef adjacency_list
+//        <
+//                vecS,
+//                vecS,
+//                undirectedS,
+//                property<vertex_index_t, int>,
+//                property<edge_index_t, int, EdgeProperty>
+//        >
+//        Graph;
 
 struct file_reader{
     std::ifstream file;
@@ -249,22 +250,26 @@ BOOST_AUTO_TEST_SUITE(kouter)
         add_edge(3, 4, g);
         add_edge(3, 5, g);
         add_edge(3, 6, g);
+        add_edge(4, 5, g);
         add_edge(4, 6, g);
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
 
     BOOST_AUTO_TEST_CASE(four_vertices) {
         file_reader f("4vertices");
-//        std::string s = get_current_dir_name();
 
-        Graph g;
         int i = 0;
-        while(f.next_graph(g)) {
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
             std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
-            g.clear();
         }
     }
 
@@ -272,14 +277,18 @@ BOOST_AUTO_TEST_SUITE(kouter)
         file_reader f("5vertices");
 //        std::string s = get_current_dir_name();
 
-        Graph g;
         int i = 0;
-        while(f.next_graph(g)) {
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
             std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
-            g.clear();
         }
     }
 
@@ -287,14 +296,18 @@ BOOST_AUTO_TEST_SUITE(kouter)
         file_reader f("6vertices");
 //        std::string s = get_current_dir_name();
 
-        Graph g;
         int i = 0;
-        while(f.next_graph(g)) {
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
             std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
-            g.clear();
         }
     }
 
@@ -302,14 +315,18 @@ BOOST_AUTO_TEST_SUITE(kouter)
         file_reader f("7vertices");
 //        std::string s = get_current_dir_name();
 
-        Graph g;
         int i = 0;
-        while(f.next_graph(g)) {
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
             std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
-            g.clear();
         }
     }
 
@@ -317,15 +334,37 @@ BOOST_AUTO_TEST_SUITE(kouter)
         file_reader f("8vertices");
 //        std::string s = get_current_dir_name();
 
-        Graph g;
         int i = 0;
-        while(f.next_graph(g)) {
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
             std::cout << i++ << std::endl;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
-            g.clear();
         }
+    }
+
+    BOOST_AUTO_TEST_CASE(art) {
+        Graph g;
+        add_edge(0, 5, g);
+        add_edge(0, 6, g);
+        add_edge(1, 2, g);
+        add_edge(1, 5, g);
+        add_edge(1, 6, g);
+        add_edge(2, 5, g);
+        add_edge(2, 6, g);
+        add_edge(3, 4, g);
+        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(4, 6, g);
+        std::vector<int> sub{0, 1, 5};
+        Graph& g2 = g.create_subgraph(sub.begin(), sub.end());
+        add_edge(5, 0, g2);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
