@@ -12,40 +12,47 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/properties.hpp>
 
+template < typename edge_t >
+struct edge_comp : public std::binary_function<edge_t, edge_t, bool>
+{
+    bool operator()(const edge_t& a, const edge_t& b) {
+        if (a.m_eproperty != b.m_eproperty) {
+            return a.m_eproperty < b.m_eproperty;
+        }
+        int a_source = std::min(a.m_source, a.m_target);
+        int b_source = std::min(b.m_source, b.m_target);
+        int a_target = std::max(a.m_source, a.m_target);
+        int b_target = std::max(b.m_source, b.m_target);
+        return a_source == b_source ? a_target < b_target : a_source < b_source;
+    }
+};
 
 template < typename Graph, typename Visitor >
 inline void level_face_traversal(
-        std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding,
-        Visitor& visitor, int level, const std::vector<int>& vertex_level, const std::vector<int>& component)
+        std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding, Visitor& visitor)
 {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef typename boost::graph_traits<Graph>::edge_descriptor edge_t;
 
+    using h = std::hash<int>;
+    auto hash = [](const edge_t& n){return ((17 * 31 + h()(n.m_source)) * 31 + h()(n.m_target)) * 31;};
+    auto equal = [](const edge_t & l, const edge_t& r){return l.m_source == r.m_source && l.m_target == r.m_target && l.m_eproperty == r.m_eproperty;};
     std::map<edge_t, std::map<vertex_t, edge_t> > next_edge;
     std::map<edge_t, std::set<vertex_t> > visited;
 
     visitor.begin_traversal();
     std::vector<edge_t> edges_cache;
 
-    for (int v : component) {
-        if (vertex_level[v] != level)
-            continue;
-
+    for (int v = 0; v < embedding.size(); v++) {
         auto& edges = embedding[v];
 
         for (int i = 0; i < edges.size(); i++) {
             edge_t e = edges[i];
-            if (vertex_level[e.m_source] != level
-                || vertex_level[e.m_target] != level)
-                continue;
 
             edges_cache.push_back(e);
             for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
                 edge_t e_j = edges[j];
-                if (vertex_level[e_j.m_source] == level
-                    && vertex_level[e_j.m_target] == level) {
-                    next_edge[e][v] = e_j;
-                }
+                next_edge[e][v] = e_j;
             }
 
         }

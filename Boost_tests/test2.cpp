@@ -236,15 +236,17 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
 
-//    7 12
-//    0 5  0 6  1 2  1 5  1 6  2 5  2 6  3 4  3 5  3 6  4 5  4 6
+//    7 13
+//0 3  0 6  1 4  1 5  2 4  2 5  2 6  3 4  3 5  3 6  4 5  4 6  5 6
     BOOST_AUTO_TEST_CASE(seven3) {
         Graph g;
-        add_edge(0, 5, g);
+        add_edge(0, 3, g);
         add_edge(0, 6, g);
-        add_edge(1, 2, g);
+        add_edge(1, 4, g);
         add_edge(1, 5, g);
-        add_edge(1, 6, g);
+//        add_edge(1, 6, g);
+//        add_edge(2, 3, g);
+        add_edge(2, 4, g);
         add_edge(2, 5, g);
         add_edge(2, 6, g);
         add_edge(3, 4, g);
@@ -252,6 +254,26 @@ BOOST_AUTO_TEST_SUITE(kouter)
         add_edge(3, 6, g);
         add_edge(4, 5, g);
         add_edge(4, 6, g);
+        add_edge(5, 6, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 4);
+    }
+
+//  8 12
+//  0 7  1 6  1 7  2 6  2 7  3 5  3 6  3 7  4 5  4 6  4 7  5 7
+    BOOST_AUTO_TEST_CASE(eight) {
+        Graph g;
+        add_edge(0, 7, g);
+        add_edge(1, 6, g);
+        add_edge(1, 7, g);
+        add_edge(2, 6, g);
+        add_edge(2, 7, g);
+        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(3, 7, g);
+        add_edge(4, 5, g);
+        add_edge(4, 6, g);
+        add_edge(4, 7, g);
+        add_edge(5, 7, g);
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
 
@@ -266,7 +288,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             if (!res) {
                 break;
             }
-            std::cout << i++ << std::endl;
+            std::cout << 2*i + 1 << std::endl;
+            i++;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
@@ -285,7 +308,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             if (!res) {
                 break;
             }
-            std::cout << i++ << std::endl;
+            std::cout << 2*i + 1 << std::endl;
+            i++;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
@@ -304,7 +328,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             if (!res) {
                 break;
             }
-            std::cout << i++ << std::endl;
+            std::cout << 2*i + 1 << std::endl;
+            i++;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
@@ -323,7 +348,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             if (!res) {
                 break;
             }
-            std::cout << i++ << std::endl;
+            std::cout << 2*i + 1 << std::endl;
+            i++;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
@@ -342,7 +368,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             if (!res) {
                 break;
             }
-            std::cout << i++ << std::endl;
+            std::cout << 2*i + 1 << std::endl;
+            i++;
             int result = baker2<independent_set>(g);
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
