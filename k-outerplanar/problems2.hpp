@@ -57,7 +57,7 @@ struct tree{
         return *this;
     }
 
-    void merge(tree<Problem>& t2) {
+    void merge(tree<Problem>& t2, std::map<int, int>& place_in_comp) {
         int s = size();
         for (int i = 0; i < t2.size(); i++) {
             t.push_back(t2[i]);
@@ -95,7 +95,30 @@ struct tree{
             }
         }
 
-        t[target].children.insert(t[target].children.begin() + child_num, s + t2.root);
+        int t1_place;
+
+        for (int child : t[target].children) {
+            if (t[child].label.second != t[target].label.first) {
+                t1_place = t[child].label.second;
+                break;
+            }
+        }
+
+        int t2_place;
+
+        for (int child : t2[t2.root].children) {
+            if (t2[child].label.second != t2_v_root) {
+                t2_place = t2[child].label.second;
+                break;
+            }
+        }
+
+        if (t[target].label.first == t[target].label.second && child_num == 0 && t1_place < t2_place) {
+            t[target].children.push_back(s + t2.root);
+        } else {
+            t[target].children.insert(t[target].children.begin() + child_num, s + t2.root);
+        }
+
         t[s + t2.root].parent = target;
     }
 

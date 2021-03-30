@@ -978,6 +978,14 @@ class baker_impl {
         std::queue<int> q;
         q.push(main_bicomp);
 
+        std::map<int, int> place_in_comp;
+
+        for (int i = 0; i < component.size(); i++) {
+            if (place_in_comp.find(component[i]) == place_in_comp.end()) {
+                place_in_comp[component[i]] = i;
+            }
+        }
+
         while(!q.empty()) {
             int cur_bicomp = q.front();
             q.pop();
@@ -995,7 +1003,7 @@ class baker_impl {
                         }
 
                         merged[b] = target;
-                        trees[target].merge(trees[b]);
+                        trees[target].merge(trees[b], place_in_comp);
                     }
                 }
             }
