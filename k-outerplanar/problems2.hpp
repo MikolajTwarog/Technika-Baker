@@ -99,7 +99,7 @@ struct tree{
 
         for (int child : t[target].children) {
             if (t[child].label.second != t[target].label.first) {
-                t1_place = t[child].label.second;
+                t1_place = place_in_comp[t[child].label.second];
                 break;
             }
         }
@@ -108,7 +108,7 @@ struct tree{
 
         for (int child : t2[t2.root].children) {
             if (t2[child].label.second != t2_v_root) {
-                t2_place = t2[child].label.second;
+                t2_place = place_in_comp[t2[child].label.second];
                 break;
             }
         }
