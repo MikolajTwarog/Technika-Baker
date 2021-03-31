@@ -1171,8 +1171,15 @@ class baker_impl {
                 z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
 
+            if (z_table.front() == z_table.back()) {
+                z_table.pop_back();
+            }
+
             int p = t[v].LB;
             for (int i = t[v].RB; i > t[v].LB; i--) {
+                if (i >= z_table.size()) {
+                    i--;
+                }
                 if (check_for_edge(t[v].label.first, z_table[i], g, added_edges)) {
                     p = i;
                     break;
