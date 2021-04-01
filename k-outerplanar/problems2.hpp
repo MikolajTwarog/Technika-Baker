@@ -83,14 +83,36 @@ struct tree{
             }
         }
 
-        int child_num = 0;
-        for (int i = 0; i < t[target].children.size(); i++) {
-            if (t[t[target].children[i]].label.first == t2_v_root) {
-                child_num = i;
+        int t2_place;
+
+        for (int child : t2[t2.root].children) {
+            if (t2[child].label.second != t2_v_root) {
+                t2_place = place_in_comp[t2[child].label.second];
                 break;
             }
+        }
+
+        int child_num = 0;
+        for (int i = 0; i < t[target].children.size(); i++) {
             if (t[t[target].children[i]].label.second == t2_v_root) {
-                child_num = i + 1;
+                int t1_place = INT16_MAX;
+
+                if (i < t[target].children.size() - 1 && t[t[target].children[i + 1]].label.first == t[t[target].children[i + 1]].label.second) {
+                    for (int child : t[t[target].children[i + 1]].children) {
+                        if (t[child].label.second != t2_v_root) {
+                            t1_place = place_in_comp[t[child].label.second];
+                            break;
+                        }
+                    }
+                }
+
+                if (t2_place < t1_place) {
+                    child_num = i + 1;
+                    break;
+                }
+            }
+            else if (t[t[target].children[i]].label.first == t2_v_root) {
+                child_num = i;
                 break;
             }
         }
@@ -100,15 +122,6 @@ struct tree{
         for (int child : t[target].children) {
             if (t[child].label.second != t[target].label.first) {
                 t1_place = place_in_comp[t[child].label.second];
-                break;
-            }
-        }
-
-        int t2_place;
-
-        for (int child : t2[t2.root].children) {
-            if (t2[child].label.second != t2_v_root) {
-                t2_place = place_in_comp[t2[child].label.second];
                 break;
             }
         }

@@ -639,17 +639,17 @@ class baker_impl {
 
             int level = vertex_level[v];
             int starting_v = v;
-            int connecting_e_it = -1;
+            int connecting_e_it = get_edge_it(Edge(v, v_in_c[c].second, nullptr), v);
 
-            for (int i = 0; i < embedding[v].size(); i++) {
-                Edge e = embedding[v][i];
-                int neighbour = e.m_source == v ? e.m_target : e.m_source;
-
-                if (vertex_level[neighbour] == level - 1) {
-                    connecting_e_it = i;
-                    break;
-                }
-            }
+//            for (int i = 0; i < embedding[v].size(); i++) {
+//                Edge e = embedding[v][i];
+//                int neighbour = e.m_source == v ? e.m_target : e.m_source;
+//
+//                if (vertex_level[neighbour] == level - 1) {
+//                    connecting_e_it = i;
+//                    break;
+//                }
+//            }
 
             vis[starting_v] = comp_num;
             components.back().push_back(starting_v);

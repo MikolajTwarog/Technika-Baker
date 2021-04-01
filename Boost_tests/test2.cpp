@@ -236,16 +236,17 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
 
-//   7 12
-//0 6  1 3  1 6  2 4  2 5  2 6  3 4  3 5  3 6  4 5  4 6  5 6
+//   7 13
+//0 3  0 6  1 4  1 5  2 4  2 5  2 6  3 4  3 5  3 6  4 5  4 6  5 6
     BOOST_AUTO_TEST_CASE(seven3) {
         Graph g;
+        add_edge(0, 3, g);
 //        add_edge(0, 5, g);
         add_edge(0, 6, g);
-        add_edge(1, 3, g);
-//        add_edge(1, 4, g);
-//        add_edge(1, 5, g);
-        add_edge(1, 6, g);
+//        add_edge(1, 3, g);
+        add_edge(1, 4, g);
+        add_edge(1, 5, g);
+//        add_edge(1, 6, g);
 //        add_edge(2, 3, g);
         add_edge(2, 4, g);
         add_edge(2, 5, g);
@@ -259,27 +260,63 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
-//  8 11
-//0 6  0 7  1 6  1 7  2 6  2 7  3 4  3 5  4 5  4 6  5 7
+//8 11
+//0 2  1 5  1 7  2 5  3 4  3 6  3 7  4 6  4 7  5 6  6 7
     BOOST_AUTO_TEST_CASE(eight) {
         Graph g;
-        add_edge(0, 6, g);
-        add_edge(0, 7, g);
-        add_edge(1, 6, g);
+        add_edge(0, 2, g);
+//        add_edge(0, 6, g);
+//        add_edge(0, 7, g);
+        add_edge(1, 5, g);
+//        add_edge(1, 6, g);
         add_edge(1, 7, g);
+        add_edge(2, 5, g);
+//        add_edge(2, 6, g);
+//        add_edge(2, 7, g);
+        add_edge(3, 4, g);
+//        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(3, 7, g);
+//        add_edge(4, 5, g);
+        add_edge(4, 6, g);
+        add_edge(4, 7, g);
+        add_edge(5, 6, g);
+//        add_edge(5, 7, g);
+        add_edge(6, 7, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
+    }
+
+//   9 15
+//0 7  0 8  1 7  1 8  2 6  2 8  3 6  3 7  4 6  4 7  4 8  5 6  5 7  5 8  6 8
+    BOOST_AUTO_TEST_CASE(nine) {
+        Graph g;
+//        add_edge(0, 2, g);
+//        add_edge(0, 6, g);
+        add_edge(0, 7, g);
+        add_edge(0, 8, g);
+//        add_edge(1, 5, g);
+//        add_edge(1, 6, g);
+        add_edge(1, 7, g);
+        add_edge(1, 8, g);
 //        add_edge(2, 5, g);
         add_edge(2, 6, g);
-        add_edge(2, 7, g);
-        add_edge(3, 4, g);
-        add_edge(3, 5, g);
-//        add_edge(3, 6, g);
-//        add_edge(3, 7, g);
-        add_edge(4, 5, g);
+//        add_edge(2, 7, g);
+        add_edge(2, 8, g);
+//        add_edge(3, 4, g);
+//        add_edge(3, 5, g);
+        add_edge(3, 6, g);
+        add_edge(3, 7, g);
+//        add_edge(4, 5, g);
         add_edge(4, 6, g);
-//        add_edge(4, 7, g);
+        add_edge(4, 7, g);
+        add_edge(4, 8, g);
+        add_edge(5, 6, g);
         add_edge(5, 7, g);
+        add_edge(5, 8, g);
 //        add_edge(6, 7, g);
-        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
+        add_edge(6, 8, g);
+//        add_edge(7, 8, g);
+        BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
     BOOST_AUTO_TEST_CASE(four_vertices) {
@@ -381,23 +418,26 @@ BOOST_AUTO_TEST_SUITE(kouter)
         }
     }
 
-    BOOST_AUTO_TEST_CASE(art) {
-        Graph g;
-        add_edge(0, 5, g);
-        add_edge(0, 6, g);
-        add_edge(1, 2, g);
-        add_edge(1, 5, g);
-        add_edge(1, 6, g);
-        add_edge(2, 5, g);
-        add_edge(2, 6, g);
-        add_edge(3, 4, g);
-        add_edge(3, 5, g);
-        add_edge(3, 6, g);
-        add_edge(4, 6, g);
-        std::vector<int> sub{0, 1, 5};
-        Graph& g2 = g.create_subgraph(sub.begin(), sub.end());
-        add_edge(5, 0, g2);
+    BOOST_AUTO_TEST_CASE(nine_vertices) {
+        file_reader f("9vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<independent_set>(g);
+            int expected = independent_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
     }
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
