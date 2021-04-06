@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <filesystem>
 #include <unistd.h>
 #include <boost/graph/adjacency_list.hpp>
@@ -52,15 +53,29 @@ struct file_reader{
             return false;
         }
 
+        std::cout << n << " " << m << std::endl;
+
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
+            std::cout << a << " " << b << "  ";
         }
+
+        std::cout << std::endl;
 
         return true;
     }
 };
+
+void make_graph(Graph& g, int m, std::string edges) {
+    std::stringstream stream(edges);
+    int a, b;
+    while (m--) {
+        stream >> a >> b;
+        add_edge(a, b, g);
+    }
+}
 
 int independent_set_(Graph& g) {
     const int n = num_vertices(g);
@@ -236,86 +251,27 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 5);
     }
 
-//   7 13
-//0 3  0 6  1 4  1 5  2 4  2 5  2 6  3 4  3 5  3 6  4 5  4 6  5 6
+//   7 15
+//0 1  0 2  0 3  0 4  0 5  0 6  1 2  1 5  1 6  2 3  2 4  2 5  3 4  4 5  5 6
     BOOST_AUTO_TEST_CASE(seven3) {
         Graph g;
-        add_edge(0, 3, g);
-//        add_edge(0, 5, g);
-        add_edge(0, 6, g);
-//        add_edge(1, 3, g);
-        add_edge(1, 4, g);
-        add_edge(1, 5, g);
-//        add_edge(1, 6, g);
-//        add_edge(2, 3, g);
-        add_edge(2, 4, g);
-        add_edge(2, 5, g);
-        add_edge(2, 6, g);
-        add_edge(3, 4, g);
-        add_edge(3, 5, g);
-        add_edge(3, 6, g);
-        add_edge(4, 5, g);
-        add_edge(4, 6, g);
-        add_edge(5, 6, g);
+        make_graph(g, 15, "0 1  0 2  0 3  0 4  0 5  0 6  1 2  1 5  1 6  2 3  2 4  2 5  3 4  4 5  5 6");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
-//8 11
-//0 2  1 5  1 7  2 5  3 4  3 6  3 7  4 6  4 7  5 6  6 7
+//8 14
+//0 1  0 2  0 5  1 2  1 5  2 4  3 4  3 6  3 7  4 6  4 7  5 6  5 7  6 7
     BOOST_AUTO_TEST_CASE(eight) {
         Graph g;
-        add_edge(0, 2, g);
-//        add_edge(0, 6, g);
-//        add_edge(0, 7, g);
-        add_edge(1, 5, g);
-//        add_edge(1, 6, g);
-        add_edge(1, 7, g);
-        add_edge(2, 5, g);
-//        add_edge(2, 6, g);
-//        add_edge(2, 7, g);
-        add_edge(3, 4, g);
-//        add_edge(3, 5, g);
-        add_edge(3, 6, g);
-        add_edge(3, 7, g);
-//        add_edge(4, 5, g);
-        add_edge(4, 6, g);
-        add_edge(4, 7, g);
-        add_edge(5, 6, g);
-//        add_edge(5, 7, g);
-        add_edge(6, 7, g);
+        make_graph(g, 14, "0 1  0 2  0 5  1 2  1 5  2 4  3 4  3 6  3 7  4 6  4 7  5 6  5 7  6 7");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
-//   9 15
-//0 7  0 8  1 7  1 8  2 6  2 8  3 6  3 7  4 6  4 7  4 8  5 6  5 7  5 8  6 8
+//   9 14
+//0 4  0 5  1 5  1 8  2 6  2 7  3 7  3 8  4 5  4 8  5 6  6 7  6 8  7 8
     BOOST_AUTO_TEST_CASE(nine) {
         Graph g;
-//        add_edge(0, 2, g);
-//        add_edge(0, 6, g);
-        add_edge(0, 7, g);
-        add_edge(0, 8, g);
-//        add_edge(1, 5, g);
-//        add_edge(1, 6, g);
-        add_edge(1, 7, g);
-        add_edge(1, 8, g);
-//        add_edge(2, 5, g);
-        add_edge(2, 6, g);
-//        add_edge(2, 7, g);
-        add_edge(2, 8, g);
-//        add_edge(3, 4, g);
-//        add_edge(3, 5, g);
-        add_edge(3, 6, g);
-        add_edge(3, 7, g);
-//        add_edge(4, 5, g);
-        add_edge(4, 6, g);
-        add_edge(4, 7, g);
-        add_edge(4, 8, g);
-        add_edge(5, 6, g);
-        add_edge(5, 7, g);
-        add_edge(5, 8, g);
-//        add_edge(6, 7, g);
-        add_edge(6, 8, g);
-//        add_edge(7, 8, g);
+        make_graph(g, 14, "0 4  0 5  1 5  1 8  2 6  2 7  3 7  3 8  4 5  4 8  5 6  6 7  6 8  7 8");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 

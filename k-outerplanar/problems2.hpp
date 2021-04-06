@@ -72,14 +72,20 @@ struct tree{
 
         int target = 0;
         int t2_v_root = t2[t2.root].label.first;
+        std::queue<int> q;
+        q.push(root);
 
-        for (int i = 0; i < s; i++) {
-            if (i == outer_face) {
-                continue;
-            }
+        while (!q.empty()) {
+            int i = q.front();
+            q.pop();
+
             if (std::find(t[i].face.begin(), t[i].face.end(), t2_v_root) != t[i].face.end()) {
                 target = i;
                 break;
+            }
+
+            for (int c : t[i].children) {
+                q.push(c);
             }
         }
 
