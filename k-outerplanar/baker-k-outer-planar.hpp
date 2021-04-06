@@ -241,6 +241,8 @@ class baker_impl {
 //        current_level.push_back(current_v);
 
         while (!next_level_edges.empty()) {
+            current_level.clear();
+
             next_level_edge = next_level_edges.front();
             next_level_edges.pop();
 
@@ -318,6 +320,10 @@ class baker_impl {
             for (int i = 0; i < current_level.size(); i++) {
                 int v = current_level[i];
                 vertex_level[v] = level;
+            }
+
+            for (int i = 0; i < current_level.size(); i++) {
+                int v = current_level[i];
                 int w = current_level[(i+1) % current_level.size()];
                 for (Edge& e : embedding[v]) {
                     if (vertex_level[e.m_source] == -1

@@ -259,19 +259,22 @@ BOOST_AUTO_TEST_SUITE(kouter)
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
-//8 14
-//0 1  0 2  0 5  1 2  1 5  2 4  3 4  3 6  3 7  4 6  4 7  5 6  5 7  6 7
+
+//    8 15
+//0 1  0 2  0 7  1 2  1 7  2 4  3 5  3 6  3 7  4 5  4 6  4 7  5 6  5 7  6 7
+//    8 15
+//0 1  0 2  0 6  1 2  1 7  2 4  3 5  3 6  3 7  4 5  4 6  4 7  5 6  5 7  6 7
     BOOST_AUTO_TEST_CASE(eight) {
         Graph g;
-        make_graph(g, 14, "0 1  0 2  0 5  1 2  1 5  2 4  3 4  3 6  3 7  4 6  4 7  5 6  5 7  6 7");
+        make_graph(g, 14, "0 1  0 2  0 7  1 2  1 7  2 4  3 5  3 6  3 7  4 5  4 6  4 7  5 6  5 7  6 7");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
-//   9 14
-//0 4  0 5  1 5  1 8  2 6  2 7  3 7  3 8  4 5  4 8  5 6  6 7  6 8  7 8
+//   9 16
+//0 4  1 2  1 8  2 8  3 5  3 6  3 7  3 8  4 5  4 6  4 7  5 6  5 7  6 7  6 8  7 8
     BOOST_AUTO_TEST_CASE(nine) {
         Graph g;
-        make_graph(g, 14, "0 4  0 5  1 5  1 8  2 6  2 7  3 7  3 8  4 5  4 8  5 6  6 7  6 8  7 8");
+        make_graph(g, 16, "0 4  1 2  1 8  2 8  3 5  3 6  3 7  3 8  4 5  4 6  4 7  5 6  5 7  6 7  6 8  7 8");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
