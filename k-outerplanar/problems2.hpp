@@ -247,7 +247,7 @@ struct independent_set : node
         if (my_tree->enclosing_tree == nullptr)
             return;
 
-        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_left_boundary(rb);
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_right_boundary(rb);
     }
 
     void merge(std::vector< std::vector<int> > one, std::vector< std::vector<int> > two) {

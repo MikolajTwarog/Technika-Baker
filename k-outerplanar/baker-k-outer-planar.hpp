@@ -1003,10 +1003,8 @@ class baker_impl {
 
         root_tree_with_root(trees[main_bicomp], root);
 
-        std::vector<int> merged(bi_num);
-        for (int i = 0; i < bi_num; i++) {
-            merged[i] = i;
-        }
+        std::vector<bool> merged(bi_num, false);
+        merged[main_bicomp] = true;
 
         std::queue<int> q;
         q.push(main_bicomp);
@@ -1025,18 +1023,18 @@ class baker_impl {
 
             for (int a : bicomp_to_art[cur_bicomp]) {
                 for (int b : art_to_bicomp[a]) {
-                    if (merged[b] == b && b != main_bicomp) {
+                    if (!merged[b]) {
                         q.push(b);
                         root_tree_with_root(trees[b], a);
 
-                        int target = cur_bicomp;
-                        while (target != merged[target]) {
-                            merged[target] = merged[merged[target]];
-                            target = merged[target];
-                        }
+//                        int target = cur_bicomp;
+//                        while (target != merged[target]) {
+//                            merged[target] = merged[merged[target]];
+//                            target = merged[target];
+//                        }
 
-                        merged[b] = target;
-                        trees[target].merge(trees[b], place_in_comp);
+                        merged[b] = true;
+                        trees[main_bicomp].merge(trees[b], place_in_comp);
                     }
                 }
             }
@@ -1064,6 +1062,31 @@ class baker_impl {
                     components.clear();
                     v_to_c.clear();
                     get_component(components, v_to_c, v_in_c);
+                }
+
+                int face_v = v_in_c[0].second;
+                for (auto e : v_in_c) {
+                    if (e.second != face_v) {
+                        face_v = -1;
+                        break;
+                    }
+                }
+
+                if (face_v > -1) {
+                    int next_in_face;
+                    for (int v = 0; v < face.size(); v++) {
+                        if (face[v] == face_v) {
+                            face_v = face[(v + 1) % face.size()];
+                            next_in_face = face[(v + 2) % face.size()];
+                            break;
+                        }
+                    }
+
+                    int comp_v = v_in_c.back().first;
+                    Edge new_e = add_edge(face_v, comp_v, g).first;
+                    added_edges.emplace(face_v, comp_v);
+                    embedding[face_v].insert(embedding[face_v].begin() + get_edge_it(Edge(face_v, next_in_face, nullptr), face_v) + 1, new_e);
+                    embedding[comp_v].insert(embedding[comp_v].begin() + get_edge_it(Edge(face_v, comp_v, nullptr), comp_v) + 1, new_e);
                 }
 
                 triangulate(face, components[0], 1);
@@ -1186,7 +1209,7 @@ class baker_impl {
                 if (i >= z_table.size()) {
                     i--;
                 }
-                if (check_for_edge(t[v].label.first, z_table[i], g, added_edges)) {
+                if (edge(t[v].label.first, z_table[i], g).second) {
                     p = i;
                     break;
                 }
