@@ -1006,6 +1006,9 @@ class baker_impl {
         std::vector<bool> merged(bi_num, false);
         merged[main_bicomp] = true;
 
+        std::vector<int> where_to_merge(bi_num);
+        where_to_merge[main_bicomp] = trees[main_bicomp].root;
+
         std::queue<int> q;
         q.push(main_bicomp);
 
@@ -1027,14 +1030,9 @@ class baker_impl {
                         q.push(b);
                         root_tree_with_root(trees[b], a);
 
-//                        int target = cur_bicomp;
-//                        while (target != merged[target]) {
-//                            merged[target] = merged[merged[target]];
-//                            target = merged[target];
-//                        }
-
                         merged[b] = true;
-                        trees[main_bicomp].merge(trees[b], place_in_comp);
+                        where_to_merge[b] = trees[main_bicomp].merge(trees[b], place_in_comp,
+                                                                     where_to_merge[cur_bicomp]);
                     }
                 }
             }

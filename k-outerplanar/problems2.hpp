@@ -57,7 +57,7 @@ struct tree{
         return *this;
     }
 
-    void merge(tree<Problem>& t2, std::map<int, int>& place_in_comp) {
+    int merge(tree<Problem>& t2, std::map<int, int>& place_in_comp, int starting_node) {
         int s = size();
         for (int i = 0; i < t2.size(); i++) {
             t.push_back(t2[i]);
@@ -73,7 +73,7 @@ struct tree{
         int target = 0;
         int t2_v_root = t2[t2.root].label.first;
         std::queue<int> q;
-        q.push(root);
+        q.push(starting_node);
 
         while (!q.empty()) {
             int i = q.front();
@@ -139,6 +139,8 @@ struct tree{
         }
 
         t[s + t2.root].parent = target;
+
+        return s + t2.root;
     }
 
     void remove_outer_face() {
