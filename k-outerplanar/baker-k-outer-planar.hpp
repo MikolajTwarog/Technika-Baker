@@ -354,7 +354,7 @@ class baker_impl {
                 if (!edge(v, c, g).second) {
                     Edge new_e = add_edge(c, v, g).first;
                     int next = face[(i + 1) % face.size()];
-                    embedding[v].insert(embedding[v].begin() + get_edge_it(Edge(v, next, nullptr), v) + 1,
+                    embedding[v].insert(embedding[v].begin() + get_edge_it(v, next) + 1,
                                         new_e);
                     added_edges.emplace(v, c);
                 }
@@ -411,11 +411,9 @@ class baker_impl {
 
             face_vis.insert(face_curr);
 
-            int first_e = get_edge_it(Edge(comp_curr,component[(comp_it - 1 + component.size()) % component.size()],nullptr),
-                                      comp_curr);
+            int first_e = get_edge_it(comp_curr, component[(comp_it - 1 + component.size()) % component.size()]);
 
-            int second_e = get_edge_it(Edge(comp_curr,component[(comp_it + 1) % component.size()],nullptr),
-                                       comp_curr);
+            int second_e = get_edge_it(comp_curr, component[(comp_it + 1) % component.size()]);
 
             for (int i = (first_e + 1) % embedding[comp_curr].size(); i != second_e;
                  i = (i + 1) % embedding[comp_curr].size()) {
@@ -490,7 +488,7 @@ class baker_impl {
                 comp_vis.insert(comp_curr);
                 comp++;
                 comp_it = (comp_it + 1) % component.size();
-                curr_e_it_comp = get_edge_it(Edge(component[comp_it], comp_curr, nullptr), component[comp_it]);
+                curr_e_it_comp = get_edge_it(component[comp_it], comp_curr);
                 comp_curr = component[comp_it];
 
                 if (!edge(comp_curr, face_curr, g).second) {
@@ -553,7 +551,7 @@ class baker_impl {
             }
         }
 
-        int edge_it = get_edge_it(Edge(one, two, nullptr), one);
+        int edge_it = get_edge_it(one, two);
         int cos = edge_it - one_edges.size();
         for (int i = edge_it - 1; i > cos; i--) {
             int neighbour = one_edges[i].m_source == one ? one_edges[i].m_target : one_edges[i].m_source;
@@ -644,7 +642,7 @@ class baker_impl {
 
             int level = vertex_level[v];
             int starting_v = v;
-            int connecting_e_it = get_edge_it(Edge(v, v_in_c[c].second, nullptr), v);
+            int connecting_e_it = get_edge_it(v, v_in_c[c].second);
 
 //            for (int i = 0; i < embedding[v].size(); i++) {
 //                Edge e = embedding[v][i];
@@ -742,11 +740,9 @@ class baker_impl {
             added_edges.insert(std::pair<int, int>(curr, next));
             Edge new_e = add_edge(curr, next, g).first;
 
-            embedding[curr].insert(embedding[curr].begin() + get_edge_it(Edge(curr, curr_con, nullptr), curr) + 1,
-                                   new_e);
+            embedding[curr].insert(embedding[curr].begin() + get_edge_it(curr, curr_con) + 1, new_e);
 
-            embedding[next].insert(embedding[next].begin() + get_edge_it(Edge(next, next_con, nullptr), next),
-                                   new_e);
+            embedding[next].insert(embedding[next].begin() + get_edge_it(next, next_con), new_e);
         }
     }
 
@@ -760,8 +756,8 @@ class baker_impl {
         int prev = face.size() - 1, curr = 0, next = 1;
 
         for (; curr < face.size(); prev = (prev + 1) % face.size(), curr++, next = (next + 1) % face.size()) {
-            int one = get_edge_it(Edge(face[prev], face[curr], nullptr), face[curr]);
-            int two = get_edge_it(Edge(face[curr], face[next], nullptr), face[curr]);
+            int one = get_edge_it(face[curr], face[prev]);
+            int two = get_edge_it(face[curr], face[next]);
             for (int i = (one - 1 + embedding[face[curr]].size()) % embedding[face[curr]].size(); i != two;
             i = (i - 1 + embedding[face[curr]].size()) % embedding[face[curr]].size()) {
                 Edge e = embedding[face[curr]][i];
@@ -779,11 +775,16 @@ class baker_impl {
 
     template<typename Edge>
     int get_edge_it(Edge e, int v) {
+        int w = e.m_source == v ? e.m_target : e.m_source;
+        return get_edge_it(v, w);
+    }
+
+    int get_edge_it(int v, int w) {
         for (int i = 0; i < embedding[v].size(); i++) {
-            if ((embedding[v][i].m_source == e.m_source
-                 && embedding[v][i].m_target == e.m_target)
-                || (embedding[v][i].m_source == e.m_target
-                    && embedding[v][i].m_target == e.m_source)) {
+            if ((embedding[v][i].m_source == v
+                 && embedding[v][i].m_target == w)
+                || (embedding[v][i].m_source == w
+                    && embedding[v][i].m_target == v)) {
                 return i;
             }
         }
@@ -1082,8 +1083,8 @@ class baker_impl {
                     int comp_v = v_in_c.back().first;
                     Edge new_e = add_edge(face_v, comp_v, g).first;
                     added_edges.emplace(face_v, comp_v);
-                    embedding[face_v].insert(embedding[face_v].begin() + get_edge_it(Edge(face_v, next_in_face, nullptr), face_v) + 1, new_e);
-                    embedding[comp_v].insert(embedding[comp_v].begin() + get_edge_it(Edge(face_v, comp_v, nullptr), comp_v) + 1, new_e);
+                    embedding[face_v].insert(embedding[face_v].begin() + get_edge_it(face_v, next_in_face) + 1, new_e);
+                    embedding[comp_v].insert(embedding[comp_v].begin() + get_edge_it(comp_v, face_v) + 1, new_e);
                 }
 
                 triangulate(face, components[0], 1);
@@ -1126,7 +1127,7 @@ class baker_impl {
 
     void create_boudaries(::tree<Problem>& t, ::tree<Problem>& t2, int root) {
         if (t.enclosing_tree != nullptr) {
-            Problem& f = t.enclosing_tree->t[t.enclosing_face];
+            Problem& f = t.get_enclosing_face();
             std::vector<int> y_table;
             y_table.push_back(t2[f.children[0]].label.first);
 
@@ -1192,7 +1193,7 @@ class baker_impl {
             t[v].adjust(g, added_edges);
         } else if (level > 1) {
             std::vector<int> z_table;
-            z_table.push_back(t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[0]].label.first);
+            z_table.push_back(t.get_enclosing_face().get_child(0).label.first);
             for (int x : t.enclosing_tree->t[t.enclosing_face].children) {
                 z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
@@ -1219,7 +1220,7 @@ class baker_impl {
 
             while (j >= t[v].LB) {
                 table(*t.enclosing_tree, t.enclosing_tree->t[t.enclosing_face].children[j]);
-                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.first, g, added_edges);
+                Problem second = t.get_enclosing_face().get_child(j).extend(t[v].label.first, g, added_edges);
                 t[v].merge(second.val, t[v].val);
                 j--;
             }
@@ -1228,7 +1229,7 @@ class baker_impl {
 
             while (j < t[v].RB) {
                 table(*t.enclosing_tree, t.enclosing_tree->t[t.enclosing_face].children[j]);
-                Problem second = t.enclosing_tree->t[t.enclosing_tree->t[t.enclosing_face].children[j]].extend(t[v].label.second, g, added_edges);
+                Problem second = t.get_enclosing_face().get_child(j).extend(t[v].label.second, g, added_edges);
                 t[v].merge(t[v].val, second.val);
                 j++;
             }

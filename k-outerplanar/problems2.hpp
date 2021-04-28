@@ -159,6 +159,10 @@ struct tree{
         }
     }
 
+    Problem& get_enclosing_face() {
+        return enclosing_tree->t[enclosing_face];
+    }
+
     int size() {
         return t.size();
     }
@@ -228,6 +232,10 @@ struct independent_set : node
         my_tree = two.my_tree;
         level = two.level;
         return *this;
+    }
+
+    independent_set& get_child(int x) {
+        return my_tree->t[children[x]];
     }
 
     // val = {v_0, ..., v_(1 << (level*2)}
