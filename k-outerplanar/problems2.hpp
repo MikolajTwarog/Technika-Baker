@@ -367,7 +367,7 @@ struct independent_set : node
 
             bool bad = false;
             for (int v = 0; v < vertices.size() - 1; v++) {
-                if (((i >> v) & 1) && ((i >> (v + 1)) & 1)) {
+                if (((i >> v) & 1) && ((i >> (v + 1)) & 1) && check_for_edge(vertices[v], vertices[v+1], g, ae)) {
                     bad = true;
                     break;
                 }

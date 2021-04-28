@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
 //0 1  0 2  0 3  1 2  1 3  2 6  3 7  4 6  4 7  4 8  5 6  5 7  5 8  6 8  7 8
     BOOST_AUTO_TEST_CASE(nine) {
         Graph g;
-        make_graph(g, 15, "0 1  0 2  1 6  1 8  2 6  2 8  3 4  3 5  3 7  4 5  4 7  5 8  6 7  6 8  7 8");
+        make_graph(g, 16, "0 1  0 2  1 7  1 8  2 5  2 7  3 4  3 6  3 8  4 5  4 6  4 7  5 6  5 8  6 8  7 8");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 4);
     }
 
