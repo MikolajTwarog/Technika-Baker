@@ -24,6 +24,7 @@
 
 #include "problems2.hpp"
 #include "../utils/level_face_traversal.h"
+#include "../utils/cyclic_vector.h"
 
 using namespace boost;
 
@@ -45,7 +46,7 @@ typedef subgraph<adjacency_list
         > >
         Graph;
 
-typedef std::vector<std::vector< graph_traits<Graph>::edge_descriptor > > PlanarEmbedding;
+typedef std::vector<cyclic_vector< graph_traits<Graph>::edge_descriptor > > PlanarEmbedding;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
@@ -263,8 +264,7 @@ class baker_impl {
 
             vertex_level[starting_v] = level;
             bool res = false;
-            for (int j = (current_egde_it + 1) % embedding[starting_v].size(); j != current_egde_it;
-                 j = (j + 1) % embedding[starting_v].size()) {
+            for (int j = current_egde_it + 1; j < current_egde_it + embedding[starting_v].size(); j++) {
                 Edge e_j = embedding[starting_v][j];
                 if (vertex_level[e_j.m_source] == -1
                     || vertex_level[e_j.m_target] == -1) {
@@ -292,8 +292,7 @@ class baker_impl {
 
                 int temp_v = current_v;
 
-                for (int j = (current_egde_it + 1) % embedding[current_v].size(); j != current_egde_it;
-                     j = (j + 1) % embedding[current_v].size()) {
+                for (int j = current_egde_it + 1; j < current_egde_it + embedding[current_v].size(); j++) {
                     Edge e_j = embedding[current_v][j];
                     int neighbour = e_j.m_source == current_v ? e_j.m_target : e_j.m_source;
                     if (vertex_level[neighbour] == -1) {
@@ -555,8 +554,8 @@ class baker_impl {
         }
 
         int edge_it = get_edge_it(Edge(one, two, nullptr), one);
-
-        for (int i = (edge_it - 1 + one_edges.size()) % one_edges.size(); i != edge_it; i = (i - 1 + one_edges.size()) % one_edges.size()) {
+        int cos = edge_it - one_edges.size();
+        for (int i = edge_it - 1; i > cos; i--) {
             int neighbour = one_edges[i].m_source == one ? one_edges[i].m_target : one_edges[i].m_source;
 
             if (neighbour != one) {
