@@ -19,6 +19,9 @@
 #define BOOST_TEST_MODULE kouter
 #include <boost/test/unit_test.hpp>
 #include <boost/graph/subgraph.hpp>
+#include <boost/dynamic_bitset.hpp>
+
+#include "../utils/random_graph.hpp"
 
 using namespace boost;
 
@@ -79,29 +82,38 @@ void make_graph(Graph& g, int m, std::string edges) {
 
 int independent_set_(Graph& g) {
     const int n = num_vertices(g);
-    int count = 1 << n;
+    boost::dynamic_bitset<> s(n, 0);
 
     int mx = 0;
 
-    for (int i = 0; i < count; i++) {
+    int last = n;
+
+    while (s.count() != n) {
         graph_traits<Graph>::edge_iterator ei, ei_end;
         bool res = true;
-        std::bitset<32> u(i);
         for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
             Edge e = *ei;
-            if (u[e.m_source] && u[e.m_target]) {
+            if (s[e.m_source] && s[e.m_target]) {
                 res = false;
                 break;
             }
         }
 
         if (res) {
-            int ones = 0;
-            for (int j = 0; j < n; j++) {
-                ones += u[j];
-            }
-
+            int ones = s.count();
             mx = std::max(mx, ones);
+        }
+
+        for(int i = s.size() - 1; i >= 0; --i) {
+            if ((s[i] ^= 0x1) == 0x1) {
+                break;
+            }
+        }
+
+        int f = s.find_first();
+        if (f < last) {
+            last = f;
+            std::cout << f << std::endl;
         }
     }
 
@@ -416,6 +428,13 @@ BOOST_AUTO_TEST_SUITE(kouter)
             int expected = independent_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
         }
+    }
+
+    BOOST_AUTO_TEST_CASE(random) {
+        Graph g = random_graph(30, 120);
+        int result = baker2<independent_set>(g);
+        int expected = independent_set_(g);
+        BOOST_CHECK_EQUAL(result, expected);
     }
 
 

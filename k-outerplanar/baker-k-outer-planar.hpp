@@ -182,11 +182,6 @@ class baker_impl {
     }
 
     int name_levels() {
-//        std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
-//        std::vector<std::vector<int> > vertices_in_face;
-//        my_visitor<Edge> my_vis(faces, vertices_in_face);
-//        planar_face_traversal(g, &embedding.front(), my_vis);
-
         std::vector<int> outer_face;
         find_outer_face(outer_face);
 
@@ -222,24 +217,8 @@ class baker_impl {
         int current_v;
         int current_egde_it;
 
-
-//        typename boost::graph_traits<Graph>::edge_iterator fi, fi_end;
-//        for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
-//            if (faces[*fi][0] == 0 || faces[*fi][1] == 0) {
-//                next_level_edge = *fi;
-//                current_edge = next_level_edge;
-//                starting_v = next_level_edge.m_source;
-//                current_v = next_level_edge.m_target;
-//                vertex_level[current_v] = 0;
-//                next_level_edges.push(next_level_edge);
-//                break;
-//            }
-//        }
-
         int level = 1;
         std::vector<int> current_level;
-//        current_level.push_back(starting_v);
-//        current_level.push_back(current_v);
 
         while (!next_level_edges.empty()) {
             current_level.clear();
@@ -1252,8 +1231,10 @@ public:
         )
                 )
             std::cout << "Input graph is planar" << std::endl;
-        else
+        else {
             std::cout << "Input graph is not planar" << std::endl;
+            return;
+        }
 
         int k = name_levels();
 
