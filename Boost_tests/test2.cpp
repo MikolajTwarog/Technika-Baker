@@ -25,8 +25,6 @@
 
 using namespace boost;
 
-typedef property<edge_faces_t, std::vector<int> > EdgeProperty;
-
 typedef std::vector< graph_traits<Graph>::edge_descriptor > vec_t;
 
 //typedef adjacency_list
@@ -110,11 +108,11 @@ int independent_set_(Graph& g) {
             }
         }
 
-        int f = s.find_first();
-        if (f < last) {
-            last = f;
-            std::cout << f << std::endl;
-        }
+//        int f = s.find_first();
+//        if (f < last) {
+//            last = f;
+//            std::cout << f << std::endl;
+//        }
     }
 
     return mx;

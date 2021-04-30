@@ -2,8 +2,8 @@
 // Created by mikolajtwarog on 2021-02-04.
 //
 
-#ifndef TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_H
-#define TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_H
+#ifndef TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_HPP
+#define TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_HPP
 
 #include <vector>
 #include <set>
@@ -11,6 +11,7 @@
 #include <boost/next_prior.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/properties.hpp>
+//#include "../k-outerplanar/baker-k-outer-planar.hpp"
 
 template < typename edge_t >
 struct edge_comp : public std::binary_function<edge_t, edge_t, bool>
@@ -114,4 +115,22 @@ bool check_for_edge(int x, int y, Graph& g, std::set<std::pair<int, int> >& adde
     return added_edges.find(e) == added_edges.end();
 }
 
-#endif //TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_H
+int get_edge_it(int v, int w, PlanarEmbedding& embedding) {
+    for (int i = 0; i < embedding[v].size(); i++) {
+        if ((embedding[v][i].m_source == v
+             && embedding[v][i].m_target == w)
+            || (embedding[v][i].m_source == w
+                && embedding[v][i].m_target == v)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int get_edge_it(Edge e, int v, PlanarEmbedding& embedding) {
+    int w = e.m_source == v ? e.m_target : e.m_source;
+    return get_edge_it(v, w, embedding);
+}
+
+#endif //TECHNIKA_BAKER_LEVEL_FACE_TRAVERSAL_HPP

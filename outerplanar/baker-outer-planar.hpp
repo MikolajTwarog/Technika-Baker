@@ -12,7 +12,7 @@
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 #include "problems.hpp"
-#include "../utils/level_face_traversal.h"
+#include "../utils/level_face_traversal.hpp"
 
 using namespace boost;
 
@@ -35,13 +35,13 @@ typedef adjacency_list
         Graph;
 
 template <typename Edge>
-struct my_visitor : public planar_face_traversal_visitor
+struct face_getter : public planar_face_traversal_visitor
 {
     property_map<Graph, edge_faces_t>::type &faces;
     std::vector<std::vector<int> >& vertices_in_face;
     int current_face = 0;
 
-    my_visitor(property_map<Graph, edge_faces_t>::type& f, std::vector<std::vector<int> >& o)
+    face_getter(property_map<Graph, edge_faces_t>::type& f, std::vector<std::vector<int> >& o)
         : faces(f), vertices_in_face(o){ }
 
     void begin_face() {
@@ -162,7 +162,7 @@ template <typename Problem>
 int baker(Graph &g, PlanarEmbedding &embedding, int root) {
     property_map<Graph, edge_faces_t>::type faces = get(edge_faces_t(), g);
     std::vector<std::vector<int> > outer_face;
-    my_visitor<graph_traits<Graph>::edge_descriptor> my_vis(faces, outer_face);
+    face_getter<graph_traits<Graph>::edge_descriptor> my_vis(faces, outer_face);
     planar_face_traversal(g, &embedding[0], my_vis);
     std::vector<Problem> tree(my_vis.current_face);
 

@@ -2,8 +2,8 @@
 // Created by mikolajtwarog on 2021-04-28.
 //
 
-#ifndef TECHNIKA_BAKER_CYCLIC_VECTOR_H
-#define TECHNIKA_BAKER_CYCLIC_VECTOR_H
+#ifndef TECHNIKA_BAKER_CYCLIC_VECTOR_HPP
+#define TECHNIKA_BAKER_CYCLIC_VECTOR_HPP
 
 
 #include <vector>
@@ -21,4 +21,4 @@ public:
 };
 
 
-#endif //TECHNIKA_BAKER_CYCLIC_VECTOR_H
+#endif //TECHNIKA_BAKER_CYCLIC_VECTOR_HPP
