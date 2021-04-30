@@ -13,7 +13,7 @@
 
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
-#include "../k-outerplanar/baker-k-outer-planar.hpp"
+#include "../Baker's Technique/bakers_technique.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE kouter
@@ -432,6 +432,13 @@ BOOST_AUTO_TEST_SUITE(kouter)
         Graph g = random_graph(30, 120);
         int result = baker2<independent_set>(g);
         int expected = independent_set_(g);
+        BOOST_CHECK_EQUAL(result, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE(technique) {
+        Graph g = random_graph(30, 120);
+        int result = bakers_technique(g, 3);
+        int expected = baker2<independent_set>(g);
         BOOST_CHECK_EQUAL(result, expected);
     }
 

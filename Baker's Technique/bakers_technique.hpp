@@ -2,11 +2,11 @@
 // Created by mikolajtwarog on 2021-04-29.
 //
 
-#include "../k-outerplanar/baker-k-outer-planar.hpp"
 
 #ifndef TECHNIKA_BAKER_BAKERS_TECHNIQUE_HPP
 #define TECHNIKA_BAKER_BAKERS_TECHNIQUE_HPP
 
+#include "../k-outerplanar/baker-k-outer-planar.hpp"
 
 int bakers_technique(Graph g, int k) {
     property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
@@ -24,10 +24,38 @@ int bakers_technique(Graph g, int k) {
         std::cout << "Input graph is planar" << std::endl;
     else {
         std::cout << "Input graph is not planar" << std::endl;
-        return;
+        return -1;
     }
 
+    std::vector<int> vertex_level(num_vertices(g));
 
+    int max_level = name_levels(g, embedding, vertex_level);
+
+    std::vector<std::vector<int> > levels(max_level + 1);
+
+    for (int i = 0; i < vertex_level.size(); i++) {
+        levels[vertex_level[i]].push_back(i);
+    }
+
+    int res = 0;
+
+    for (int i = 1; i <= max_level; i += (k + 1)) {
+        Graph& sub_g = g.create_subgraph();
+        for (int j = i; j < std::min(max_level + 1, i + k); j++) {
+            for (int v : levels[j]) {
+                add_vertex(v, sub_g);
+            }
+        }
+
+        Graph sub_g2;
+
+        for(auto ei2 : sub_g.m_local_edge)
+            add_edge(ei2.second.m_source, ei2.second.m_target, sub_g2);
+
+        res += baker2<independent_set>(sub_g2);
+    }
+
+    return res;
 }
 
 
