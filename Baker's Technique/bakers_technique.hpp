@@ -42,7 +42,7 @@ int bakers_technique(Graph g, int k) {
 
     for (int i = 1; i <= max_level; i += (k + 1)) {
         Graph& sub_g = g.create_subgraph();
-        for (int j = i; j < std::min(max_level + 1, i + k); j++) {
+        for (int j = i; j < std::min(max_level + 1, i + k + 1); j++) {
             for (int v : levels[j]) {
                 add_vertex(v, sub_g);
             }
@@ -50,8 +50,13 @@ int bakers_technique(Graph g, int k) {
 
         Graph sub_g2;
 
-        for(auto ei2 : sub_g.m_local_edge)
+        for (auto ei2 : sub_g.m_local_edge)
             add_edge(ei2.second.m_source, ei2.second.m_target, sub_g2);
+
+        if (num_vertices(sub_g2) == 0) {
+            res++;
+            continue;
+        }
 
         std::vector<int> v_comp(num_vertices(sub_g2));
         int num = connected_components(sub_g2, &v_comp[0]);

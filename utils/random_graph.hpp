@@ -67,10 +67,11 @@ Graph random_graph(int n, int m) {
             bi_size[bicomp[*ei]]++;
         }
 
-        boost::random::uniform_int_distribution<> dist(0, num_edges(g) - 1);
+        boost::random::uniform_int_distribution<> dist(0, num_edges(g) - 2);
         Edge* rm_e = &g.m_global_edge[dist(gen)];
 
-        while (bi_size[bicomp[*rm_e]] == 2) {
+        int binum = bicomp[*rm_e];
+        while (bi_size[bicomp[*rm_e]] == 1) {
             rm_e = &g.m_global_edge[dist(gen)];
         }
 

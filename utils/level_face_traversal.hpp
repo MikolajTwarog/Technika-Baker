@@ -105,8 +105,22 @@ inline void level_face_traversal(
 //wymaga poprawy, edge jest liniowy
 template<typename Graph>
 bool check_for_edge(int x, int y, Graph& g, std::set<std::pair<int, int> >& added_edges) {
+    if (x == y) {
+        return false;
+    }
+
     std::pair<int, int> e(x, y);
-    if (!boost::edge(x, y, g).second || added_edges.find(e) != added_edges.end()) {
+
+    bool res = false;
+    typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
+    for(boost::tie(ei, ei_end) = out_edges(x, g); ei != ei_end; ++ei) {
+        if (ei->m_source == y || ei->m_target == y) {
+            res = true;
+            break;
+        }
+    }
+
+    if (!res || added_edges.find(e) != added_edges.end()) {
         return false;
     }
 
