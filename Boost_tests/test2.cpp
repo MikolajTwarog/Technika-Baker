@@ -436,8 +436,9 @@ BOOST_AUTO_TEST_SUITE(kouter)
     }
 
     BOOST_AUTO_TEST_CASE(technique) {
-        Graph g = random_graph(30, 120);
-        int result = bakers_technique(g, 3);
+        Graph g = random_graph(100, 200);
+        std::cout << num_edges(g) << std::endl;
+        int result = bakers_technique(g, 5);
         int expected = baker2<independent_set>(g);
         BOOST_CHECK_EQUAL(result, expected);
     }

@@ -53,12 +53,31 @@ Graph random_graph(int n, int m) {
 
     make_maximal_planar(g, &embedding[0]);
 
-    std::cout << n << " " << m << std::endl;
+    while(num_edges(g) > m) {
+        auto bicomp = get(edge_index, g);
+        edge_count = 0;
+        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+            put(e_index, *ei, edge_count++);
+        }
+        int bi_num = biconnected_components(g, bicomp);
 
-//    boost::random::uniform_int_distribution<> dist(0, n-1);
-//    while(num_edges(g) > m) {
-//        remove_edge(dist(gen), dist(gen), g);
-//    }
+        std::vector<int> bi_size(bi_num);
+
+        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+            bi_size[bicomp[*ei]]++;
+        }
+
+        boost::random::uniform_int_distribution<> dist(0, num_edges(g) - 1);
+        Edge* rm_e = &g.m_global_edge[dist(gen)];
+
+        while (bi_size[bicomp[*rm_e]] == 2) {
+            rm_e = &g.m_global_edge[dist(gen)];
+        }
+
+        remove_edge(rm_e->m_source, rm_e->m_target, g);
+    }
+
+    std::cout << n << " " << m << std::endl;
 
     for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
         std::cout << ei->m_source << " " << ei->m_target << "  ";

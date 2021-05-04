@@ -6,6 +6,7 @@
 #ifndef TECHNIKA_BAKER_BAKERS_TECHNIQUE_HPP
 #define TECHNIKA_BAKER_BAKERS_TECHNIQUE_HPP
 
+#include <boost/graph/connected_components.hpp>
 #include "../k-outerplanar/baker-k-outer-planar.hpp"
 
 int bakers_technique(Graph g, int k) {
@@ -52,7 +53,29 @@ int bakers_technique(Graph g, int k) {
         for(auto ei2 : sub_g.m_local_edge)
             add_edge(ei2.second.m_source, ei2.second.m_target, sub_g2);
 
-        res += baker2<independent_set>(sub_g2);
+        std::vector<int> v_comp(num_vertices(sub_g2));
+        int num = connected_components(sub_g2, &v_comp[0]);
+
+        std::vector<std::vector<int> > components(num);
+
+        for (int v = 0; v < num_vertices(sub_g2); v++) {
+            components[v_comp[v]].push_back(v);
+        }
+
+        for (int c = 0; c < num; c++) {
+            Graph graph = sub_g2.create_subgraph(components[c].begin(), components[c].end());
+
+            if (num_vertices(graph) == 1) {
+                res++;
+            } else {
+                Graph graph2;
+
+                for (auto edge : graph.m_local_edge)
+                    add_edge(edge.second.m_source, edge.second.m_target, graph2);
+
+                res += baker2<independent_set>(graph2);
+            }
+        }
     }
 
     return res;
