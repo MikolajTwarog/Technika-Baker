@@ -406,37 +406,217 @@ struct independent_set : node
 
 struct vertex_cover : node
 {
-    std::vector<vertex_cover> component_tree;
-    std::vector<int> val;
-    vertex_cover() {
-        val.push_back(INT16_MAX-1);
-        val.push_back(1);
-        val.push_back(1);
-        val.push_back(2);
+    tree<vertex_cover>* my_tree;
+    tree<independent_set> component_tree;
+    std::vector< std::vector<int> > val;
+    int level;
+
+    vertex_cover(int l): vertex_cover(l, nullptr) {}
+
+    vertex_cover(int l, tree<vertex_cover>* mt):
+            level(l), val(1 << l,std::vector<int>(1 << l)), my_tree(mt) {
+        if(l == 1) {
+            val[0][0] = INT16_MAX - 1;
+            val[0][1] = 1;
+            val[1][0] = 1;
+            val[1][1] = 2;
+        }
     }
 
-    void merge(vertex_cover &two) {
-        std::vector<int> copy(val);
-        for(int i=0; i<4; i++){
-            val[i] = INT16_MAX-1;
-            for(int j=0; j<2; j++) {
-                val[i] = std::min(val[i], copy[(i&2) + j] + two.val[((j<<1) + (i&1))] - j);
+    vertex_cover(const vertex_cover& two): my_tree(two.my_tree) {
+        parent = two.parent;
+        label = two.label;
+        LB = two.LB;
+        RB = two.RB;
+        children = two.children;
+        face = two.face;
+        val = two.val;
+        component_tree = two.component_tree;
+        level = two.level;
+//        my_tree = two.my_tree;
+    }
+
+    vertex_cover& operator=(const vertex_cover& two) {
+        parent = two.parent;
+        label = two.label;
+        LB = two.LB;
+        RB = two.RB;
+        children = two.children;
+        face = two.face;
+        val = two.val;
+        component_tree = two.component_tree;
+        my_tree = two.my_tree;
+        level = two.level;
+        return *this;
+    }
+
+    vertex_cover& get_child(int x) {
+        return my_tree->t[children[x]];
+    }
+
+    // val = {v_0, ..., v_(1 << (level*2)}
+    // v_0 <- x
+    // v_(1 << level) <- y
+
+    void get_left_boundary(std::vector<int>& lb) {
+        lb.push_back(label.first);
+
+        if (my_tree->enclosing_tree == nullptr)
+            return;
+
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
+    }
+
+    void get_right_boundary(std::vector<int>& rb) {
+        rb.push_back(label.second);
+
+        if (my_tree->enclosing_tree == nullptr)
+            return;
+
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_right_boundary(rb);
+    }
+
+    void merge(std::vector< std::vector<int> > one, std::vector< std::vector<int> > two) {
+//        std::vector<int> copy(val);
+
+        int count = 1 << level;
+
+        for (int u = 0; u < count; u++){
+            for (int v = 0; v < count; v++) {
+                val[u][v] = INT16_MAX - 1;
+                for (int z = 0; z < count; z++) {
+                    int ones = 0;
+                    for (int i = 0; i < level; i++) {
+                        ones += (z & (1 << i)) > 0;
+                    }
+
+                    val[u][v] = std::min(val[u][v], one[u][z] + two[z][v] - ones);
+                }
             }
         }
     }
 
-    void adjust() {
-        if(parent == -1) {
-            val[1] = INT16_MAX-1;
-            val[2] = INT16_MAX-1;
-            val[3]--;
+    template<typename Graph>
+    void adjust(Graph& g, std::set<std::pair<int, int> >& ae) {
+        int count = 1 << (level - 1);
+
+        if(label.first == label.second) {
+            for (int u = 0; u < count; u++) {
+                for (int v = 0; v < count; v++) {
+                    val[(u << 1) + 1][(v << 1) + 1]--;
+                    val[u << 1][(v << 1) + 1] = INT16_MAX - 1;
+                    val[(u << 1) + 1][v << 1] = INT16_MAX - 1;
+                }
+            }
+        }
+        if (check_for_edge(label.first, label.second, g, ae)) {
+            for (int u = 0; u < count; u++) {
+                for (int v = 0; v < count; v++) {
+                    val[u << 1][v << 1] = INT16_MAX - 1;
+                }
+            }
+        }
+    }
+
+    void contract(vertex_cover& two) {
+        int count = 1 << level;
+
+        for (int u = 0; u < count; u++) {
+            for (int v = 0; v < count; v++) {
+                val[u][v] = std::min(two.val[(u << 1) + 1][(v << 1) + 1], two.val[u << 1][v << 1]);
+            }
+        }
+    }
+
+    template<typename Graph>
+    vertex_cover extend(int z, Graph& g, std::set< std::pair<int, int> >& ae) {
+        int count = 1 << level;
+
+        vertex_cover res(level + 1);
+
+        std::vector<int> lb;
+        std::vector<int> rb;
+
+        get_left_boundary(lb);
+        get_right_boundary(rb);
+
+        for (int u = 0; u < count; u++) {
+            for (int v = 0; v < count; v++) {
+                res.val[(u << 1) + 1][(v << 1) + 1] = val[u][v] + 1;
+                res.val[u << 1][(v << 1) + 1]= INT16_MAX - 1;
+                res.val[(u << 1) + 1][v << 1] = INT16_MAX - 1;
+
+                if (((u & 1) == 1 && check_for_edge(lb[0], z, g, ae))
+                    || ((v & 1) == 1 && check_for_edge(rb[0], z, g, ae))){
+                    res.val[u << 1][v << 1] = val[u][v];
+                } else {
+                    res.val[u << 1][v << 1] = INT16_MAX - 1;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    template<typename Graph>
+    void create(int child_num, Graph& g, std::set<std::pair<int, int> >& ae) {
+        const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
+        std::vector<int> vertices;
+
+        if (child_num < children.size()) {
+            vertex_cover& child = my_tree->enclosing_tree->t[children[child_num]];
+            child.get_left_boundary(vertices);
         } else {
-            val[0] = INT16_MAX-1;
+            vertex_cover& child = my_tree->enclosing_tree->t[children[child_num - 1]];
+            child.get_right_boundary(vertices);
+        }
+
+        int count = 1 << vertices.size();
+
+        for (int u = 0; u < (count << 1); u++) {
+            for (int v = 0; v < (count << 1); v++) {
+                val[u][v] = INT16_MAX - 1;
+            }
+        }
+
+        for (int i = 0; i < count; i++) {
+
+            bool bad = false;
+            for (int v = 0; v < vertices.size() - 1; v++) {
+                if (!((i >> v) & 1) && !((i >> (v + 1)) & 1) && check_for_edge(vertices[v], vertices[v+1], g, ae)) {
+                    bad = true;
+                    break;
+                }
+            }
+
+            if (bad) {
+                continue;
+            }
+
+            int ones = 0;
+            for (int j = 0; j < vertices.size(); j++) {
+                ones += (i & (1 << j)) > 0;
+            }
+
+            val[(i << 1) + 1][(i << 1) + 1] = ones + 2;
+
+            if ((i & 1) == 1 || check_for_edge(vertices[0], label.first, g,  ae)) {
+                val[(i << 1) + 1][i << 1] = ones + 1;
+            }
+
+            if ((i & 1) == 1 || check_for_edge(vertices[0], label.second, g, ae)) {
+                val[i << 1][(i << 1) + 1] = ones + 1;
+            }
+
+            if ((i & 1) == 1 && (check_for_edge(vertices[0], label.second, g, ae)
+                                 && check_for_edge(vertices[0], label.first, g,  ae))) {
+                val[i << 1][i << 1] = ones;
+            }
         }
     }
 
     int result() {
-        return std::min(val[0], val[3]);
+        return std::min(val[0][0], val[1][1]);
     }
 };
 
