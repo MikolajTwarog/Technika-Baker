@@ -11,16 +11,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/graph/make_biconnected_planar.hpp>
 
-//typedef adjacency_list
-//        <
-//                vecS,
-//                vecS,
-//                undirectedS,
-//                property<vertex_index_t, int>,
-//property<edge_index_t, int, EdgeProperty>
-//>
-//Graph;
-
 Graph random_graph(int n, int m) {
     Graph g;
     boost::random::mt19937 gen;

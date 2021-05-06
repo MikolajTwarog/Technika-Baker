@@ -407,7 +407,7 @@ struct independent_set : node
 struct vertex_cover : node
 {
     tree<vertex_cover>* my_tree;
-    tree<independent_set> component_tree;
+    tree<vertex_cover> component_tree;
     std::vector< std::vector<int> > val;
     int level;
 
@@ -546,8 +546,8 @@ struct vertex_cover : node
                 res.val[u << 1][(v << 1) + 1]= INT16_MAX - 1;
                 res.val[(u << 1) + 1][v << 1] = INT16_MAX - 1;
 
-                if (((u & 1) == 1 && check_for_edge(lb[0], z, g, ae))
-                    || ((v & 1) == 1 && check_for_edge(rb[0], z, g, ae))){
+                if (((u & 1) == 1 || !check_for_edge(lb[0], z, g, ae))
+                    && ((v & 1) == 1 || !check_for_edge(rb[0], z, g, ae))){
                     res.val[u << 1][v << 1] = val[u][v];
                 } else {
                     res.val[u << 1][v << 1] = INT16_MAX - 1;
@@ -600,16 +600,16 @@ struct vertex_cover : node
 
             val[(i << 1) + 1][(i << 1) + 1] = ones + 2;
 
-            if ((i & 1) == 1 || check_for_edge(vertices[0], label.first, g,  ae)) {
-                val[(i << 1) + 1][i << 1] = ones + 1;
-            }
-
-            if ((i & 1) == 1 || check_for_edge(vertices[0], label.second, g, ae)) {
+            if ((i & 1) == 1 || !check_for_edge(vertices[0], label.first, g,  ae)) {
                 val[i << 1][(i << 1) + 1] = ones + 1;
             }
 
-            if ((i & 1) == 1 && (check_for_edge(vertices[0], label.second, g, ae)
-                                 && check_for_edge(vertices[0], label.first, g,  ae))) {
+            if ((i & 1) == 1 || !check_for_edge(vertices[0], label.second, g, ae)) {
+                val[(i << 1) + 1][i << 1] = ones + 1;
+            }
+
+            if ((i & 1) == 1 || (!check_for_edge(vertices[0], label.second, g, ae)
+                                 && !check_for_edge(vertices[0], label.first, g,  ae))) {
                 val[i << 1][i << 1] = ones;
             }
         }

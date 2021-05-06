@@ -118,6 +118,46 @@ int independent_set_(Graph& g) {
     return mx;
 }
 
+int vertex_cover_(Graph& g) {
+    const int n = num_vertices(g);
+    boost::dynamic_bitset<> s(n, 0);
+
+    int mn = INT16_MAX;
+
+    int last = n;
+
+    while (s.count() != n) {
+        graph_traits<Graph>::edge_iterator ei, ei_end;
+        bool res = true;
+        for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+            Edge e = *ei;
+            if (!s[e.m_source] && !s[e.m_target]) {
+                res = false;
+                break;
+            }
+        }
+
+        if (res) {
+            int ones = s.count();
+            mn = std::min(mn, ones);
+        }
+
+        for(int i = s.size() - 1; i >= 0; --i) {
+            if ((s[i] ^= 0x1) == 0x1) {
+                break;
+            }
+        }
+
+//        int f = s.find_first();
+//        if (f < last) {
+//            last = f;
+//            std::cout << f << std::endl;
+//        }
+    }
+
+    return mn;
+}
+
 BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(smiple)
     {
@@ -442,6 +482,140 @@ BOOST_AUTO_TEST_SUITE(kouter)
         int expected = baker2<independent_set>(g);
         BOOST_CHECK_EQUAL(result, expected);
     }
+
+    BOOST_AUTO_TEST_CASE(vc_four_vertices) {
+        file_reader f("4vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_five_vertices) {
+        file_reader f("5vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_six_vertices) {
+        file_reader f("6vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_seven_vertices) {
+        file_reader f("7vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_eight_vertices) {
+        file_reader f("8vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_nine_vertices) {
+        file_reader f("9vertices");
+//        std::string s = get_current_dir_name();
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            std::cout << 2*i + 1 << std::endl;
+            i++;
+            int result = baker2<vertex_cover>(g);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(vc_random) {
+        Graph g = random_graph(30, 120);
+        int result = baker2<vertex_cover>(g);
+        int expected = vertex_cover_(g);
+        BOOST_CHECK_EQUAL(result, expected);
+    }
+
+//    BOOST_AUTO_TEST_CASE(vc_technique) {
+//        Graph g = random_graph(500, 700);
+//        std::cout << num_edges(g) << std::endl;
+//        int result = bakers_technique(g, 5);
+//        int expected = baker2<independent_set>(g);
+//        BOOST_CHECK_EQUAL(result, expected);
+//    }
 
 
 BOOST_AUTO_TEST_SUITE_END()
