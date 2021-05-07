@@ -404,6 +404,7 @@ struct independent_set : node
     }
 };
 
+
 struct vertex_cover : node
 {
     tree<vertex_cover>* my_tree;
@@ -620,44 +621,285 @@ struct vertex_cover : node
     }
 };
 
+
 struct dominating_set : node
 {
-    std::vector<dominating_set> component_tree;
-    std::vector<int> val;
-    int child_num = 1;
-    dominating_set() {
-        val.push_back(INT16_MAX-1); //0
-        val.push_back(1);           //1
-        val.push_back(INT16_MAX-1); //2
-        val.push_back(1);           //3
-        val.push_back(2);           //4
-        val.push_back(1);           //5
-        val.push_back(INT16_MAX-1); //6
-        val.push_back(1);           //7
-        val.push_back(0);           //8
-    }
+    tree<dominating_set>* my_tree;
+    tree<dominating_set> component_tree;
+    std::vector< std::vector<int> > val;
+    int level;
 
-    void merge(dominating_set &two) {
-        std::vector<int> copy(val);
-        for(int i=0; i<9; i++){
-            int b1 = i / 3;
-            int b2 = i % 3;
-            val[i] = std::min(copy[b1*3 + 1] + two.val[b2 + 3] - 1, copy[b1*3 + 2] + two.val[b2]);
-            val[i] = std::min(val[i], copy[b1*3] + two.val[b2 + 6]);
+    dominating_set(int l): dominating_set(l, nullptr) {}
+
+    dominating_set(int l, tree<dominating_set>* mt):
+            level(l), val(pow(3, l),std::vector<int>(pow(3, l))), my_tree(mt) {
+        if(l == 1) {
+            val[0][0] = INT16_MAX - 1;
+            val[0][1] = 1;
+            val[0][2] = INT16_MAX - 1;
+            val[1][0] = 1;
+            val[1][1] = 2;
+            val[1][2] = 1;
+            val[2][0] = INT16_MAX - 1;
+            val[2][1] = 1;
+            val[2][2] = 0;
         }
     }
 
-    void adjust() {
-        if(parent == -1) {
-            val[4]--;
+    dominating_set(const dominating_set& two): my_tree(two.my_tree) {
+        parent = two.parent;
+        label = two.label;
+        LB = two.LB;
+        RB = two.RB;
+        children = two.children;
+        face = two.face;
+        val = two.val;
+        component_tree = two.component_tree;
+        level = two.level;
+//        my_tree = two.my_tree;
+    }
+
+    dominating_set& operator=(const dominating_set& two) {
+        parent = two.parent;
+        label = two.label;
+        LB = two.LB;
+        RB = two.RB;
+        children = two.children;
+        face = two.face;
+        val = two.val;
+        component_tree = two.component_tree;
+        my_tree = two.my_tree;
+        level = two.level;
+        return *this;
+    }
+
+    dominating_set& get_child(int x) {
+        return my_tree->t[children[x]];
+    }
+
+    // val = {v_0, ..., v_(1 << (level*2)}
+    // v_0 <- x
+    // v_(1 << level) <- y
+
+    void get_left_boundary(std::vector<int>& lb) {
+        lb.push_back(label.first);
+
+        if (my_tree->enclosing_tree == nullptr)
+            return;
+
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
+    }
+
+    void get_right_boundary(std::vector<int>& rb) {
+        rb.push_back(label.second);
+
+        if (my_tree->enclosing_tree == nullptr)
+            return;
+
+        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[RB - 1]].get_right_boundary(rb);
+    }
+
+    void merge(std::vector< std::vector<int> > one, std::vector< std::vector<int> > two) {
+        int count = val.size();
+
+        for (int u = 0; u < count; u++){
+            for (int v = 0; v < count; v++) {
+                val[u][v] = INT16_MAX - 1;
+                for (int one_z = 0; one_z < count; one_z++) {
+                    int two_z = one_z;
+                    int ones = 0;
+                    for (int i = one_z, j = 2; i > 0; i /= 3, j *= 3) {
+                        int mod = i % 3;
+
+                        if (mod == 0) {
+                            two_z += j;
+                        }
+
+                        if (mod == 1) {
+                            ones++;
+                        }
+
+                        if (mod == 2) {
+                            two_z -= j;
+                        }
+
+                    }
+
+                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
+                }
+            }
+        }
+    }
+
+    template<typename Graph>
+    void adjust(Graph& g, std::set<std::pair<int, int> >& ae) {
+        int count = pow(3, level - 1);
+
+        if(label.first == label.second) {
+            for (int u = 0; u < count; u++) {
+                for (int v = 0; v < count; v++) {
+                    val[(u * 3) + 1][(v * 3) + 1]--;
+                    val[u * 3][(v * 3) + 1] = INT16_MAX - 1;
+                    val[u * 3][(v * 3) + 2] = INT16_MAX - 1;
+                    val[(u * 3) + 1][v * 3] = INT16_MAX - 1;
+                    val[(u * 3) + 1][(v * 3) + 2] = INT16_MAX - 1;
+                    val[(u * 3) + 2][v * 3] = INT16_MAX - 1;
+                    val[(u * 3) + 2][(v * 3) + 1] = INT16_MAX - 1;
+                }
+            }
+        }
+        if (check_for_edge(label.first, label.second, g, ae)) {
+            for (int u = 0; u < count; u++) {
+                for (int v = 0; v < count; v++) {
+                    val[(u * 3) + 1][v * 3] = val[(u * 3) + 1][(v * 3) + 2];
+                    val[u * 3][(v * 3) + 1] = val[(u * 3) + 2][(v * 3) + 1];
+                }
+            }
+        }
+    }
+
+    void contract(dominating_set& two, Graph& g, std::set<std::pair<int, int> >& ae) {
+        int count = 1 << level;
+
+        int x = my_tree->get_enclosing_face().get_child(LB).label.first;
+        int y = my_tree->get_enclosing_face().get_child(RB - 1).label.second;
+
+        for (int u = 0; u < count; u++) {
+            for (int v = 0; v < count; v++) {
+                val[u][v] = std::min(two.val[(u * 3) + 1][(v * 3) + 1], two.val[u * 3][v * 3]);
+
+                if ((u % 3 == 1 && check_for_edge(x, label.first, g, ae)) ||
+                (v % 3 == 1 && check_for_edge(y, label.first, g, ae))) {
+                    val[u][v] = std::min(val[u][v], two.val[(u * 3) + 2][(v * 3) + 2]);
+                }
+            }
+        }
+    }
+
+    template<typename Graph>
+    dominating_set extend(int z, Graph& g, std::set< std::pair<int, int> >& ae) {
+        int count = 1 << level;
+
+        dominating_set res(level + 1);
+
+        std::vector<int> lb;
+        std::vector<int> rb;
+
+        get_left_boundary(lb);
+        get_right_boundary(rb);
+
+        for (int u = 0; u < count; u++) {
+            for (int v = 0; v < count; v++) {
+                res.val[u * 3][(v * 3) + 1]= INT16_MAX - 1;
+                res.val[u * 3][(v * 3) + 2]= INT16_MAX - 1;
+                res.val[(u * 3) + 1][v * 3] = INT16_MAX - 1;
+                res.val[(u * 3) + 1][(v * 3) + 2] = INT16_MAX - 1;
+                res.val[(u * 3) + 2][v * 3] = INT16_MAX - 1;
+                res.val[(u * 3) + 2][(v * 3) + 1] = INT16_MAX - 1;
+
+                res.val[(u * 3) + 2][(v * 3) + 2] = val[u][v];
+
+                if (((u % 3) == 1 && check_for_edge(lb[0], z, g, ae))
+                    || ((v % 3) == 1 && check_for_edge(rb[0], z, g, ae))){
+                    res.val[u * 3][v * 3] = val[u][v];
+                } else {
+                    res.val[u * 3][v * 3] = INT16_MAX - 1;
+                }
+
+                if ((u % 3) == 0 && check_for_edge(lb[0], z, g, ae)) {
+                    u += 2;
+                }
+
+                if ((v % 3) == 0 && check_for_edge(rb[0], z, g, ae)) {
+                    v += 2;
+                }
+
+                res.val[(u * 3) + 1][(v * 3) + 1] = val[u][v] + 1;
+            }
+        }
+
+        return res;
+    }
+
+    template<typename Graph>
+    void create(int child_num, Graph& g, std::set<std::pair<int, int> >& ae) {
+        const std::vector<int>& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
+        std::vector<int> vertices;
+
+        if (child_num < children.size()) {
+            dominating_set& child = my_tree->enclosing_tree->t[children[child_num]];
+            child.get_left_boundary(vertices);
         } else {
-            val[3] = val[5];
-            val[1] = val[7];
+            dominating_set& child = my_tree->enclosing_tree->t[children[child_num - 1]];
+            child.get_right_boundary(vertices);
+        }
+
+        int count = pow(3, vertices.size());
+
+        for (int u = 0; u < (count * 3); u++) {
+            for (int v = 0; v < (count * 3); v++) {
+                val[u][v] = INT16_MAX - 1;
+            }
+        }
+
+        for (int i = 0; i < count; i++) {
+
+            bool bad = false;
+            for (int v = 1, p = 3; v < vertices.size() - 1; v++, p *= 3) {
+                if ((i / p) % 3 == 0 && !((i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae)
+                || (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae))) {
+                    bad = true;
+                    break;
+                }
+            }
+
+            if (bad) {
+                continue;
+            }
+
+            int ones = 0;
+            for (int j = i; j > 0; j /= 3) {
+                ones += j % 3 == 1;
+            }
+
+            bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
+            bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
+
+
+            val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
+
+            if ((i % 3) == 1) {
+                if (x_edge && y_edge) {
+                    val[i * 3][i * 3] = ones;
+                }
+                
+                if (x_edge) {
+                    val[i * 3][(i * 3) + 1] = ones + 1;
+                    val[i * 3][(i * 3) + 2] = ones + 1;
+                }
+
+                if (y_edge) {
+                    val[(i * 3) + 1][i * 3] = ones + 1;
+                    val[(i * 3) + 2][i * 3] = ones + 1;
+                }
+            }
+
+            if ((i % 3) > 0 || (i / 3) % 3 == 1) {
+                val[(i * 3) + 2][(i * 3) + 2] = ones;
+            }
+
+            if ((i % 3) > 0 || (i / 3) % 3 == 1 || x_edge) {
+                val[(i * 3) + 1][(i * 3) + 2] = ones + 1;
+            }
+
+            if ((i % 3) > 0 || (i / 3) % 3 == 1 || y_edge) {
+                val[(i * 3) + 2][(i * 3) + 1] = ones + 1;
+            }
         }
     }
 
     int result() {
-        return std::min(val[0], val[4]);
+        return std::min(val[0][0], val[1][1]);
     }
 };
 
