@@ -100,9 +100,6 @@ inline void level_face_traversal(
     }
 }
 
-
-
-//wymaga poprawy, edge jest liniowy
 template<typename Graph>
 bool check_for_edge(int x, int y, Graph& g, std::set<std::pair<int, int> >& added_edges) {
     if (x == y) {

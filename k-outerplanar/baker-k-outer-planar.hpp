@@ -789,7 +789,7 @@ class baker_impl {
         } else if (!t[v].children.empty() && !t[v].component_tree.empty()) {
             auto& ct = t[v].component_tree;
             table(ct, ct.root);
-            t[v].contract(ct[ct.root]);
+            t[v].contract(ct[ct.root], g, added_edges);
             t[v].adjust(g, added_edges);
         } else if (level > 1) {
             std::vector<int> z_table;

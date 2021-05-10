@@ -302,7 +302,7 @@ struct independent_set : node
         }
     }
 
-    void contract(independent_set& two) {
+    void contract(independent_set& two, Graph& g, std::set< std::pair<int, int> >& ae) {
         int count = 1 << level;
 
         for (int u = 0; u < count; u++) {
@@ -519,7 +519,7 @@ struct vertex_cover : node
         }
     }
 
-    void contract(vertex_cover& two) {
+    void contract(vertex_cover& two, Graph& g, std::set< std::pair<int, int> >& ae) {
         int count = 1 << level;
 
         for (int u = 0; u < count; u++) {
@@ -708,7 +708,7 @@ struct dominating_set : node
                 for (int one_z = 0; one_z < count; one_z++) {
                     int two_z = one_z;
                     int ones = 0;
-                    for (int i = one_z, j = 2; i > 0; i /= 3, j *= 3) {
+                    for (int i = one_z, j = 2, it = 0; it < level; i /= 3, j *= 3, it++) {
                         int mod = i % 3;
 
                         if (mod == 0) {
@@ -738,6 +738,7 @@ struct dominating_set : node
         if(label.first == label.second) {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
+                    val[u * 3][v * 3] = std::min(val[u * 3][(v * 3) + 2], val[(u * 3) + 2][v * 3]);
                     val[(u * 3) + 1][(v * 3) + 1]--;
                     val[u * 3][(v * 3) + 1] = INT16_MAX - 1;
                     val[u * 3][(v * 3) + 2] = INT16_MAX - 1;
@@ -759,17 +760,14 @@ struct dominating_set : node
     }
 
     void contract(dominating_set& two, Graph& g, std::set<std::pair<int, int> >& ae) {
-        int count = 1 << level;
-
-        int x = my_tree->get_enclosing_face().get_child(LB).label.first;
-        int y = my_tree->get_enclosing_face().get_child(RB - 1).label.second;
+        int count = val.size();
 
         for (int u = 0; u < count; u++) {
             for (int v = 0; v < count; v++) {
                 val[u][v] = std::min(two.val[(u * 3) + 1][(v * 3) + 1], two.val[u * 3][v * 3]);
 
-                if ((u % 3 == 1 && check_for_edge(x, label.first, g, ae)) ||
-                (v % 3 == 1 && check_for_edge(y, label.first, g, ae))) {
+                if ((u % 3 == 1 && check_for_edge(label.first, two.label.first, g, ae)) ||
+                (v % 3 == 1 && check_for_edge(label.second, two.label.first, g, ae))) {
                     val[u][v] = std::min(val[u][v], two.val[(u * 3) + 2][(v * 3) + 2]);
                 }
             }
@@ -778,7 +776,7 @@ struct dominating_set : node
 
     template<typename Graph>
     dominating_set extend(int z, Graph& g, std::set< std::pair<int, int> >& ae) {
-        int count = 1 << level;
+        int count = val.size();
 
         dominating_set res(level + 1);
 
@@ -806,15 +804,18 @@ struct dominating_set : node
                     res.val[u * 3][v * 3] = INT16_MAX - 1;
                 }
 
+                int u_temp = u;
+                int v_temp = v;
+
                 if ((u % 3) == 0 && check_for_edge(lb[0], z, g, ae)) {
-                    u += 2;
+                    u_temp += 2;
                 }
 
                 if ((v % 3) == 0 && check_for_edge(rb[0], z, g, ae)) {
-                    v += 2;
+                    v_temp += 2;
                 }
 
-                res.val[(u * 3) + 1][(v * 3) + 1] = val[u][v] + 1;
+                res.val[(u * 3) + 1][(v * 3) + 1] = val[u_temp][v_temp] + 1;
             }
         }
 
