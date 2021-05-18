@@ -725,6 +725,7 @@ struct dominating_set : node
 
                     }
 
+//                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[one_z][v] - ones);
                     val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
                 }
             }
@@ -738,7 +739,8 @@ struct dominating_set : node
         if(label.first == label.second) {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
-                    val[u * 3][v * 3] = std::min(val[u * 3][(v * 3) + 2], val[(u * 3) + 2][v * 3]);
+                    val[u * 3][v * 3] = std::min(val[u * 3][v * 3], val[u * 3][(v * 3) + 2]);
+                    val[u * 3][v * 3] = std::min(val[u * 3][v * 3], val[(u * 3) + 2][v * 3]);
                     val[(u * 3) + 1][(v * 3) + 1]--;
                     val[u * 3][(v * 3) + 1] = INT16_MAX - 1;
                     val[u * 3][(v * 3) + 2] = INT16_MAX - 1;
@@ -789,10 +791,8 @@ struct dominating_set : node
         for (int u = 0; u < count; u++) {
             for (int v = 0; v < count; v++) {
                 res.val[u * 3][(v * 3) + 1]= INT16_MAX - 1;
-                res.val[u * 3][(v * 3) + 2]= INT16_MAX - 1;
                 res.val[(u * 3) + 1][v * 3] = INT16_MAX - 1;
                 res.val[(u * 3) + 1][(v * 3) + 2] = INT16_MAX - 1;
-                res.val[(u * 3) + 2][v * 3] = INT16_MAX - 1;
                 res.val[(u * 3) + 2][(v * 3) + 1] = INT16_MAX - 1;
 
                 res.val[(u * 3) + 2][(v * 3) + 2] = val[u][v];
@@ -803,6 +803,10 @@ struct dominating_set : node
                 } else {
                     res.val[u * 3][v * 3] = INT16_MAX - 1;
                 }
+
+                res.val[u * 3][(v * 3) + 2]= res.val[u * 3][v * 3];
+                res.val[(u * 3) + 2][v * 3] = res.val[u * 3][v * 3];
+
 
                 int u_temp = u;
                 int v_temp = v;
@@ -865,9 +869,8 @@ struct dominating_set : node
 
             bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
             bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
+            bool z_edge = check_for_edge(vertices[0], vertices[1], g, ae);
 
-
-            val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
 
             if ((i % 3) == 1) {
                 if (x_edge && y_edge) {
@@ -876,25 +879,29 @@ struct dominating_set : node
                 
                 if (x_edge) {
                     val[i * 3][(i * 3) + 1] = ones + 1;
-                    val[i * 3][(i * 3) + 2] = ones + 1;
+                    val[i * 3][(i * 3) + 2] = ones;
                 }
 
                 if (y_edge) {
                     val[(i * 3) + 1][i * 3] = ones + 1;
-                    val[(i * 3) + 2][i * 3] = ones + 1;
+                    val[(i * 3) + 2][i * 3] = ones;
                 }
             }
 
-            if ((i % 3) > 0 || (i / 3) % 3 == 1) {
+            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge)) {
                 val[(i * 3) + 2][(i * 3) + 2] = ones;
             }
 
-            if ((i % 3) > 0 || (i / 3) % 3 == 1 || x_edge) {
+            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge) {
                 val[(i * 3) + 1][(i * 3) + 2] = ones + 1;
             }
 
-            if ((i % 3) > 0 || (i / 3) % 3 == 1 || y_edge) {
+            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || y_edge) {
                 val[(i * 3) + 2][(i * 3) + 1] = ones + 1;
+            }
+
+            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge || y_edge) {
+                val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
             }
         }
     }

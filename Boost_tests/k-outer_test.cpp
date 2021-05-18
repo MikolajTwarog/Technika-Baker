@@ -670,7 +670,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
 
     BOOST_AUTO_TEST_CASE(ds_four) {
         Graph g;
-        make_graph(g, 6, "0 1  0 2  0 3  1 2  1 3  2 3");
+        make_graph(g, 7, "0 4  1 2  1 3  1 4  2 3  2 4  3 4");
         BOOST_CHECK_EQUAL(baker2<dominating_set>(g), 1);
     }
 
