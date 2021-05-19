@@ -856,7 +856,7 @@ public:
             return;
         }
 
-        int k = name_levels(g, embedding, vertex_level);
+        int k = name_levels(g, embedding, vertex_level, std::vector< std::vector<Edge> >());
 
         int v = 0;
 
