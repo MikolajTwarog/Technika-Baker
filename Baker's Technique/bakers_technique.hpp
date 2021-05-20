@@ -30,7 +30,8 @@ int bakers_technique(Graph g, int k) {
 
     std::vector<int> vertex_level(num_vertices(g));
 
-    int max_level = name_levels(g, embedding, vertex_level);
+    std::vector< std::vector<Edge> > outer_edges;
+    int max_level = name_levels(g, embedding, vertex_level, outer_edges);
 
     std::vector<std::vector<int> > levels(max_level + 1);
 

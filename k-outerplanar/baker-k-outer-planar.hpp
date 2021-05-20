@@ -44,6 +44,7 @@ typedef graph_traits<Graph>::vertex_descriptor Vertex;
 #include "../utils/level_face_traversal.hpp"
 #include "problems2.hpp"
 #include "../utils/visitors.hpp"
+//#include "../utils/tree_builder.hpp"
 #include "../utils/find_outer_face.hpp"
 #include "../utils/name_levels.hpp"
 
@@ -856,7 +857,8 @@ public:
             return;
         }
 
-        int k = name_levels(g, embedding, vertex_level, std::vector< std::vector<Edge> >());
+        std::vector< std::vector<Edge> > outer_edges;
+        int k = name_levels(g, embedding, vertex_level, outer_edges);
 
         int v = 0;
 

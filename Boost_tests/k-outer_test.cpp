@@ -14,6 +14,7 @@
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 #include "../Baker's Technique/bakers_technique.hpp"
+#include "../tree_decomposition/create_tree_decomposition.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE kouter
@@ -24,18 +25,6 @@
 #include "../utils/random_graph.hpp"
 
 using namespace boost;
-
-typedef std::vector< graph_traits<Graph>::edge_descriptor > vec_t;
-
-//typedef adjacency_list
-//        <
-//                vecS,
-//                vecS,
-//                undirectedS,
-//                property<vertex_index_t, int>,
-//                property<edge_index_t, int, EdgeProperty>
-//        >
-//        Graph;
 
 struct file_reader{
     std::ifstream file;
@@ -772,6 +761,33 @@ BOOST_AUTO_TEST_SUITE(kouter)
             int expected = dominating_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
         }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_simple)
+    {
+        Graph g;
+        make_graph(g, 8, "0 1  1 2  2 3  3 0  0 4  1 4  2 4  3 5");
+
+        PlanarEmbedding embedding(num_vertices(g));
+        property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
+        graph_traits<Graph>::edges_size_type edge_count = 0;
+        graph_traits<Graph>::edge_iterator ei, ei_end;
+        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+            put(e_index, *ei, edge_count++);
+
+
+        if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
+                                         boyer_myrvold_params::embedding =
+                                                 &embedding[0]
+        )
+                )
+            std::cout << "Input graph is planar" << std::endl;
+        else {
+            std::cout << "Input graph is not planar" << std::endl;
+            return;
+        }
+
+        create_tree_decomposition tr(g, embedding);
     }
 
 

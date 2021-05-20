@@ -6,7 +6,7 @@
 #define TECHNIKA_BAKER_NAME_LEVELS_HPP
 
 int name_levels(Graph& g, PlanarEmbedding& embedding, std::vector<int>& vertex_level,
-                std::vector< std::vector<Edge> > outer_edges) {
+                std::vector< std::vector<Edge> >& outer_edges) {
     std::vector<int> outer_face;
     find_outer_face(g, embedding, outer_face);
 
@@ -21,10 +21,12 @@ int name_levels(Graph& g, PlanarEmbedding& embedding, std::vector<int>& vertex_l
     std::queue<Edge> next_level_edges;
 
     outer_edges.emplace_back();
+    outer_edges.emplace_back();
 
     for (int i = 0; i < outer_face.size(); i++) {
         int v = outer_face[i];
         int w = outer_face[(i + 1) % outer_face.size()];
+        outer_edges[1].push_back(Edge(v, w, nullptr));
         for (Edge e : embedding[v]) {
             if (vertex_level[e.m_source] == -1 || vertex_level[e.m_target] == -1) {
                 next_level_edges.push(e);
@@ -34,7 +36,6 @@ int name_levels(Graph& g, PlanarEmbedding& embedding, std::vector<int>& vertex_l
                 std::swap(e.m_source, e.m_target);
                 int e_it = get_edge_it(e, w, embedding);
                 std::swap(embedding[w][e_it].m_source, embedding[w][e_it].m_target);
-                outer_edges[1].push_back(embedding[w][e_it]);
             }
         }
     }
