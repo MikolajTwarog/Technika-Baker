@@ -8,26 +8,35 @@
 template <typename Edge>
 struct face_getter : public boost::planar_face_traversal_visitor
 {
-    std::map<Edge, std::vector<int> > &faces;
+    std::map<Edge, std::vector<int> >* faces0;
+    std::map< std::pair<int, int>, std::vector<int> >* faces1;
     std::vector<std::vector<int> >& vertices_in_face;
     int current_face = 0;
+    int which;
 
-    face_getter(std::map<Edge, std::vector<int> >& f, std::vector<std::vector<int> >& o)
-            : faces(f), vertices_in_face(o){ }
+    face_getter(std::map<Edge, std::vector<int> >* f0, std::vector<std::vector<int> >& o)
+            : faces0(f0), vertices_in_face(o), faces1(nullptr), which(0){}
+
+    face_getter(std::map< std::pair<int, int>, std::vector<int> >* f1, std::vector<std::vector<int> >& o)
+            : faces1(f1), vertices_in_face(o), faces0(nullptr), which(1){}
 
     void begin_face() {
         vertices_in_face.emplace_back();
     }
 
     void end_face() {
-//        std::cout << "\n";
         current_face++;
     }
 
     void next_edge(Edge e)
     {
-//        std::cout << e << " " << current_face << "\n";
-        faces[e].push_back(current_face);
+        if (which == 0) {
+            (*faces0)[e].push_back(current_face);
+        } else {
+            int v = std::min(e.m_source, e.m_target);
+            int w = std::max(e.m_source, e.m_target);
+            (*faces1)[std::make_pair(v, w)].push_back(current_face);
+        }
     }
 
     template <typename Vertex>

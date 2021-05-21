@@ -481,7 +481,7 @@ class baker_impl {
 
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
-        face_getter<Edge> my_vis(faces, vertices_in_face);
+        face_getter<Edge> my_vis(&faces, vertices_in_face);
         level_face_traversal<Graph>(emb, my_vis);
         ::tree<Problem> t(my_vis.current_face, level);
 

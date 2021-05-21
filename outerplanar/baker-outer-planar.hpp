@@ -162,7 +162,7 @@ template <typename Problem>
 int baker(Graph &g, PlanarEmbedding &embedding, int root) {
     property_map<Graph, edge_faces_t>::type faces = get(edge_faces_t(), g);
     std::vector<std::vector<int> > outer_face;
-    face_getter<graph_traits<Graph>::edge_descriptor> my_vis(faces, outer_face);
+    face_getter<graph_traits<Graph>::edge_descriptor> my_vis(&faces, outer_face);
     planar_face_traversal(g, &embedding[0], my_vis);
     std::vector<Problem> tree(my_vis.current_face);
 
