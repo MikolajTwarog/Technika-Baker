@@ -71,6 +71,7 @@ class create_tree_decomposition {
     int k;
     std::vector< std::vector< cyclic_vector<int> > > level_graphs;
     std::vector< std::vector< cyclic_vector<int> > > level_cycles;
+    int outer_face;
 
     std::vector<int> visited;
     std::vector<int> grey;
@@ -232,7 +233,136 @@ class create_tree_decomposition {
         }
     }
 
-    void expand_vertices(){}
+    void expand_vertices() {
+        std::map< std::pair<int, int>, std::vector<int> > faces;
+        std::vector< std::vector<int> > vertices_in_face;
+        face_getter<Edge> my_vis(&faces, vertices_in_face);
+        planar_face_traversal(graph, &embedding.front(), my_vis);
+
+        for (int j = 0; j < vertices_in_face.size(); j++) {
+            auto& face = vertices_in_face[j];
+            Edge current_e;
+            Edge next_e(face[0], face[1], nullptr);
+
+            bool res = true;
+            for (int i = 1; i < face.size() - 1; i++) {
+                current_e = next_e;
+                next_e.m_source = face[i];
+                next_e.m_target = face[i + 1];
+
+                int dis = (get_edge_it(next_e, face[i], embedding) - get_edge_it(current_e, face[i], embedding)
+                           + embedding[face[i]].size()) % embedding[face[i]].size();
+                if (dis != 1 && dis != embedding[face[i]].size() - 1) {
+                    res = false;
+                    break;
+                }
+            }
+
+            if (res) {
+                outer_face = j;
+                break;
+            }
+        }
+
+        std::vector<int> face_level(vertices_in_face.size(), INT16_MAX);
+        face_level[outer_face] = 0;
+
+        std::queue<int> q;
+        q.push(outer_face);
+
+        while (!q.empty()) {
+            int face = q.front();
+            q.pop();
+
+            int prev_v = vertices_in_face[face].back();
+            for (int v : vertices_in_face[face]) {
+                std::pair<int, int> e(std::min(prev_v, v), std::max(prev_v, v));
+                std::vector<int>& fs = faces[e];
+                int nei = fs[0] == face ? fs[1] : fs[0];
+
+                if (face_level[nei] == INT16_MAX) {
+                    q.push(nei);
+                } else {
+                    face_level[face] = std::min(face_level[face], face_level[nei] + 1);
+                }
+            }
+        }
+
+        int size = embedding.size();
+        for (int v = 0; v < size; v++) {
+            if (embedding[v].size() <= 3) {
+                continue;
+            }
+
+            int starting_e_it;
+            int lowest_level = INT16_MAX;
+            int face_num;
+
+            Edge& prev_e = embedding[v].back();
+            std::pair<int, int> prev_edge =std::make_pair(std::min(prev_e.m_source, prev_e.m_target),
+                                                          std::max(prev_e.m_source, prev_e.m_target));
+            for (int i = 0; i < embedding[v].size(); i++) {
+                Edge& e = embedding[v][i];
+                int w = e.m_source == v ? e.m_target : e.m_source;
+                std::pair<int, int> edge(std::min(v, w), std::max(v, w));
+                std::vector<int>& edge_fs = faces[edge];
+                std::vector<int>& prev_edge_fs = faces[prev_edge];
+                int face;
+                for (int f1 : edge_fs) {
+                    for (int f2 : prev_edge_fs) {
+                        if (f1 == f2) {
+                            face = f1;
+                            break;
+                        }
+                    }
+                }
+
+                if (face_level[face] < lowest_level ) {
+                    lowest_level = face_level[face];
+                    face_num = face;
+                    starting_e_it = i;
+                }
+
+                prev_edge = edge;
+            }
+
+            cyclic_vector<Edge> v_emb = embedding[v];
+            embedding[v].clear();
+            embedding[v].push_back(v_emb[starting_e_it]);
+            embedding[v].push_back(v_emb[starting_e_it + 1]);
+            embedding[v].emplace_back(v, embedding.size(), nullptr);
+            int last = v;
+
+            for (int i = starting_e_it + 2; i < v_emb.size() + starting_e_it - 2; i++) {
+                int curr = embedding.size();
+                embedding.emplace_back();
+                embedding.back().emplace_back(last, curr, nullptr);
+                embedding.back().push_back(v_emb[i]);
+                embedding.back().emplace_back(curr, curr + 1, nullptr);
+                last = curr;
+            }
+
+            int curr = embedding.size();
+            embedding.emplace_back();
+            embedding.back().emplace_back(last, curr, nullptr);
+            embedding.back().push_back(v_emb[starting_e_it - 2]);
+            embedding.back().push_back(v_emb[starting_e_it - 1]);
+        }
+
+        Graph new_graph;
+        for (int v = 0; v < embedding.size(); v++) {
+            auto& v_emb = embedding[v];
+            for (auto& edge : v_emb) {
+                if (edge.m_source < edge.m_target) {
+                    Edge e = add_edge(edge.m_source, edge.m_target, new_graph).first;
+                    embedding[edge.m_source][get_edge_it(edge, edge.m_source, embedding)] = e;
+                    embedding[edge.m_target][get_edge_it(edge, edge.m_target, embedding)] = e;
+                }
+            }
+        }
+
+        graph = new_graph;
+    }
 
     void create_spanning_forest() {
         std::vector< std::vector<int> > vertices_on_level(k + 1);
@@ -474,7 +604,7 @@ class create_tree_decomposition {
         }
 
         std::vector<Edge> edges;
-        tr_dfs(0, -1, edges, face_tree);
+        tr_dfs(outer_face, -1, edges, face_tree);
     }
 
     void contract_vertices(){}
@@ -482,6 +612,7 @@ class create_tree_decomposition {
 public:
     create_tree_decomposition(Graph& g, std::vector< cyclic_vector<Edge> >& emb): graph(g), embedding(emb),
     visited(embedding.size()), vertex_level(embedding.size()), spanning_forest(embedding.size()) {
+        expand_vertices();
         k = name_levels(graph, embedding, vertex_level, outer_edges);
         outer_edges.emplace_back();
         level_graphs = std::vector< std::vector< cyclic_vector<int> > >(k + 1, std::vector< cyclic_vector<int> >(embedding.size()));
@@ -492,7 +623,6 @@ public:
             return;
         }
 
-        expand_vertices();
         create_spanning_forest();
 
         build_tree_decomposition();
