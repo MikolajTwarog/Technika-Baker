@@ -11,11 +11,11 @@
 template <typename T>
 class cyclic_vector : public std::vector<T> {
 public:
-    T& operator[] (int x) {
-        x %= this->size();
-        if (x < 0) {
+    T& operator[] (signed int x) {
+        while (x < 0) {
             x += this->size();
         }
+        x %= this->size();
         return this->at(x);
     }
 };

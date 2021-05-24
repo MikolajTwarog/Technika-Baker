@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
 //0 5  0 6  1 5  1 6  2 5  2 6  3 5  3 6  4 5  4 6
     BOOST_AUTO_TEST_CASE(seven3) {
         Graph g;
-        make_graph(g, 10, "0 5  0 6  1 5  1 6  2 5  2 6  3 5  3 6  4 5  4 6");
+        make_graph(g, 6, "0 1  0 2  0 3  1 2  1 3  2 3");
         BOOST_CHECK_EQUAL(baker2<independent_set>(g), 3);
     }
 
@@ -766,7 +766,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(tr_simple)
     {
         Graph g;
-        make_graph(g, 8, "0 1  1 2  2 3  3 0  0 4  1 4  2 4  3 5");
+        make_graph(g, 9, "0 1  1 2  2 3  3 0  0 4  1 4  2 4  3 5  4 3");
 
         PlanarEmbedding embedding(num_vertices(g));
         property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);

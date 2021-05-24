@@ -87,8 +87,8 @@ struct tree_builder : public boost::planar_face_traversal_visitor
                 int last = tree.size() - 1;
                 tree[current_face].children.push_back(last);
                 tree[last].parent = current_face;
-                tree[last].label.first = last_vertex;
-                tree[last].label.second = last_vertex == global_source ? global_target : global_source;
+                tree[last].label.second = last_vertex;
+                tree[last].label.first = last_vertex == global_source ? global_target : global_source;
 //                tree[last].my_tree = &tree;
 
 //                if (e != *embedding[target(e, graph)].begin())

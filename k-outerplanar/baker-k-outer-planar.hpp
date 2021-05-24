@@ -278,7 +278,7 @@ class baker_impl {
     void get_component(std::vector< std::vector<int> >& components, std::map<int, int>& vis,
                        std::vector< std::pair<int, int> >& v_in_c) {
         if (vertex_level[v_in_c[0].first] == 1) {
-            find_outer_face(g, embedding, components[0]);
+            find_outer_face(embedding, components[0]);
 
             return;
         }
@@ -477,7 +477,7 @@ class baker_impl {
     ::tree<Problem> build_tree(std::vector<int> component, std::map<int, std::vector<Edge> >& emb) {
         int level = vertex_level[component[0]];
 
-        std::reverse(component.begin(), component.end());
+//        std::reverse(component.begin(), component.end());
 
         std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
         std::vector<std::vector<int> > vertices_in_face;
@@ -511,6 +511,11 @@ class baker_impl {
         tree_builder<graph_traits<Graph>::edge_descriptor, Problem, PlanarEmbedding> tree_b(faces, t, g, embedding);
         level_face_traversal<Graph>(emb, tree_b);
         t.remove_outer_face();
+
+        for (auto& node : t.t) {
+            std::reverse(node.children.begin(), node.children.end());
+            std::reverse(node.face.begin(), node.face.end());
+        }
 
         return t;
     }
@@ -858,7 +863,7 @@ public:
         }
 
         std::vector< std::vector<Edge> > outer_edges;
-        int k = name_levels(g, embedding, vertex_level, outer_edges);
+        int k = name_levels(embedding, vertex_level, outer_edges);
 
         int v = 0;
 
@@ -870,7 +875,7 @@ public:
         }
 
         std::vector<int> face;
-        find_outer_face(g, embedding, face);
+        find_outer_face(embedding, face);
         tree = build_tree_with_dividing_points(face, v);
 
         create_boudaries(tree, tree, tree.root);

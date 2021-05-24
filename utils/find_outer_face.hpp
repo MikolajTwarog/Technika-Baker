@@ -5,11 +5,11 @@
 #ifndef TECHNIKA_BAKER_FIND_OUTER_FACE_HPP
 #define TECHNIKA_BAKER_FIND_OUTER_FACE_HPP
 
-void find_outer_face(Graph& g, PlanarEmbedding& embedding, std::vector<int>& outer_face) {
+void find_outer_face(PlanarEmbedding& embedding, std::vector<int>& outer_face) {
     std::map<graph_traits<Graph>::edge_descriptor, std::vector<int> > faces;
     std::vector<std::vector<int> > vertices_in_face;
     face_getter<Edge> my_vis(&faces, vertices_in_face);
-    planar_face_traversal(g, &embedding.front(), my_vis);
+    level_face_traversal<Graph>(embedding, my_vis);
 
     for (const auto& face : vertices_in_face) {
         Edge current_e;

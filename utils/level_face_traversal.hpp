@@ -28,9 +28,9 @@ struct edge_comp : public std::binary_function<edge_t, edge_t, bool>
     }
 };
 
-template < typename Graph, typename Visitor >
+template < typename Graph, typename Visitor , typename Container>
 inline void level_face_traversal(
-        std::map<int, std::vector<typename boost::graph_traits<Graph>::edge_descriptor> >& embedding, Visitor& visitor)
+        Container& embedding, Visitor& visitor)
 {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef typename boost::graph_traits<Graph>::edge_descriptor edge_t;
@@ -51,10 +51,12 @@ inline void level_face_traversal(
             edge_t e = edges[i];
 
             edges_cache.push_back(e);
-            for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
-                edge_t e_j = edges[j];
-                next_edge[e][v] = e_j;
-            }
+
+            next_edge[e][v] = edges[(i+1)%edges.size()];
+//            for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
+//                edge_t e_j = edges[j];
+//                next_edge[e][v] = e_j;
+//            }
 
         }
     }
