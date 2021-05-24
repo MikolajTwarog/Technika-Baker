@@ -683,7 +683,16 @@ public:
 
         contract_vertices();
     }
+
+    tree_decomposition get_tree_decomposition() {
+        return tr;
+    }
 };
+
+void get_tree_decomposition(Graph& g, PlanarEmbedding& emb, tree_decomposition& tr) {
+    create_tree_decomposition ctr(g, emb);
+    tr = ctr.get_tree_decomposition();
+}
 
 
 #endif //TECHNIKA_BAKER_CREATE_TREE_DECOMPOSITION_HPP
