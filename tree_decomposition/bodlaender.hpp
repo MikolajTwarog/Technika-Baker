@@ -31,24 +31,29 @@ using namespace boost;
 
 class bodlaender {
 
+    struct tr_node{
+        dynamic_bitset<> f;
+        std::vector<int> r_values;
+        int x;
+
+        tr_node(int n): f(n, 0) {}
+        tr_node(int n, int f_num): f(n, f_num) {}
+    };
+
     tree_decomposition tr;
     Graph graph;
     PlanarEmbedding embedding;
-    std::vector< std::vector<node> > tables;
+    std::vector< std::vector<tr_node> > tables;
     int n, m;
-    std::vector< std::pair<int, int> > edges;
+    int neighbourhood;
+    bool minimum;
 
-    struct node{
-        dynamic_bitset<> f;
-        std::vector<int> r_values;
 
-        node(): f(n) {}
-        node(int f_num): f(n, f_num) {}
-    };
+    std::vector< std::vector<int> > constraints;
 
     void calculate_table(int v, int p) {
         std::vector<int>& children = tr.tree[v];
-        std::vector<int> vertices(tr.nodes[v]);
+        std::vector<int> vertices(tr.nodes[v].begin(), tr.nodes[v].end());
 
         for (int child : children) {
             if (child != p) {
@@ -56,15 +61,28 @@ class bodlaender {
             }
         }
 
-        std::vector<node> temp;
+        std::vector<tr_node> temp;
 
-        int num = 2 << vertices.size();
+        int num = 1 << vertices.size();
         for (int x = 0; x < num; x++) {
-            temp.emplace_back(x);
-            for (auto & e : edges) {
-                temp.back().r_values.push_back(x[e.first] + x[e.second]);
+            temp.emplace_back(n);
+            auto& f = temp.back().f;
+            for (int i = 0; i < vertices.size(); i++) {
+                if ((x >> i) & 1) {
+                    f[vertices[i]] = 1;
+                }
             }
-            temp.back().push_back(x.count());
+
+            for (auto & con : constraints) {
+                int r = 0;
+                for (int ver : con) {
+                    r += f[ver];
+                }
+                temp.back().r_values.push_back(r);
+            }
+
+            temp.back().r_values.push_back(f.count());
+            temp.back().x = x;
         }
 
         for (int child : children) {
@@ -76,11 +94,11 @@ class bodlaender {
         tables[v] = temp;
     }
 
-    std::vector<node> calculate_temp (int v, int child, std::vector<node>& temp) {
-        std::vector<node> new_temp;
+    std::vector<tr_node> calculate_temp (int v, int child, std::vector<tr_node>& temp) {
+        std::vector<tr_node> new_temp;
         std::vector<int> intersection;
-        std::set_intersection(tr.nodes[v].begin(), tr.nodes[v].end(), tr.nodes[child].begin(), r.nodes[child].end()
-        intersection.begin());
+        std::set_intersection(tr.nodes[v].begin(), tr.nodes[v].end(), tr.nodes[child].begin(),
+                              tr.nodes[child].end(), std::back_inserter(intersection));
 
         for (auto& f1 : temp) {
             for (auto& f2 : tables[child]) {
@@ -96,10 +114,19 @@ class bodlaender {
                     continue;
                 }
 
+                auto f3 = f1.f | f2.f;
                 std::vector<int> s_values;
-                for (int i = 0; i < f1.r_values.size(); i++) {
-                    s_values.push_back(f1.r_values[i] + f2.r_values[i]);
+                for (auto & con : constraints) {
+                    int r = 0;
+                    for (int ver : con) {
+                        r += f3[ver];
+                    }
+                    s_values.push_back(r);
                 }
+                s_values.push_back(f3.count());
+//                for (int i = 0; i < f1.r_values.size(); i++) {
+//                    s_values.push_back(f1.r_values[i] + f2.r_values[i]);
+//                }
 
                 int f_it = -1;
                 for (int i = 0; i < new_temp.size(); i++) {
@@ -118,11 +145,17 @@ class bodlaender {
                 }
 
                 if (f_it == -1) {
-                    new_temp.emplace_back();
-                    new_temp.back().f = f1.f;
+                    new_temp.emplace_back(n);
+                    new_temp.back().f = f3;
                     new_temp.back().r_values = s_values;
+                    new_temp.back().x = f1.x | f2.x;
                 } else {
-                    new_temp[f_it].r_values.back() = std::min(new_temp[f_it].r_values.back(), s_values.back());
+                    if ((minimum && new_temp[f_it].r_values.back() > s_values.back())
+                    || (!minimum && new_temp[f_it].r_values.back() < s_values.back())) {
+                        new_temp[f_it].r_values.back() = s_values.back();
+                        new_temp[f_it].f = f3;
+                        new_temp[f_it].x = f1.x | f2.x;
+                    }
                 }
             }
         }
@@ -130,37 +163,93 @@ class bodlaender {
         return new_temp;
     }
 
-    bodlaender(Graph g, PlanarEmbedding emb): graph(g), embedding(emb), n(num_vertices(g)), m(num_edges(g)) {
+public:
+    bodlaender(Graph g, PlanarEmbedding emb, int nei, bool min): graph(g), embedding(emb), n(num_vertices(g)),
+    m(num_edges(g)), neighbourhood(nei), minimum(min) {
         get_tree_decomposition(g, emb, tr);
         tables.resize(tr.tree.size());
-        graph_traits<Graph>::edge_iterator ei, ei_end;
-        for(boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei) {
-            edges.emplace_back(ei->m_source, ei->m_target);
+
+        if (neighbourhood == 0) {
+            graph_traits<Graph>::edge_iterator ei, ei_end;
+            for (boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei) {
+                constraints.emplace_back();
+                constraints.back().push_back(ei->m_source);
+                constraints.back().push_back(ei->m_target);
+            }
+        }
+        if (neighbourhood == 1) {
+            for (int v = 0; v < embedding.size(); v++) {
+                constraints.emplace_back();
+                constraints.back().push_back(v);
+
+                for (auto& e : embedding[v]) {
+                    int w = v == e.m_source ? e.m_target : e.m_source;
+                    constraints.back().push_back(w);
+                }
+            }
+
+            for (auto& node : tr.nodes) {
+                std::vector<int> to_add;
+                for (int v : node) {
+                    for (auto& e : embedding[v]) {
+                        int w = v == e.m_source ? e.m_target : e.m_source;
+                        to_add.push_back(w);
+                    }
+                }
+
+                for (int v : to_add) {
+                    node.insert(v);
+                }
+            }
         }
 
         calculate_table(0, -1);
     }
 
     int get_result() {
-        int result = INT16_MAX;
+        int result;
+        if (minimum) {
+            result = INT16_MAX;
+        } else {
+            result = -1;
+        }
 
         for (auto& node : tables[0]) {
             int good = true;
             for (int r = 0; r < node.r_values.size() - 1; r++) {
-                if (node.r_values[r] == 0) {
+                if ((node.r_values[r] == 0 && minimum) || (node.r_values[r] > 1 && !minimum)) {
                     good = false;
                     break;
                 }
             }
 
             if (good) {
-                result = std::min(result, node.r_values.back());
+                if (minimum) {
+                    result = std::min(result, node.r_values.back());
+                } else {
+                    result = std::max(result, node.r_values.back());
+                }
             }
         }
 
         return result;
     }
 };
+
+int bodlaender_vertex_cover(Graph g, PlanarEmbedding emb) {
+    bodlaender bd(g, emb, 0, true);
+    return bd.get_result();
+}
+
+int bodlaender_dominating_set(Graph g, PlanarEmbedding emb) {
+    bodlaender bd(g, emb, 1, true);
+    return bd.get_result();
+}
+
+int bodlaender_independent_set(Graph g, PlanarEmbedding emb) {
+    bodlaender bd(g, emb, 0, false);
+    return bd.get_result();
+}
 
 
 #endif //TECHNIKA_BAKER_BODLAENDER_HPP

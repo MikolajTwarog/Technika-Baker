@@ -129,7 +129,7 @@ class create_tree_decomposition {
     }
 
     void outerplanar() {
-        std::vector< std::list<int> > g;
+        std::vector< std::list<int> > g(embedding.size());
         std::queue<int> low_degree;
 
         for (int i = 0; i < embedding.size(); i++) {
@@ -661,21 +661,22 @@ class create_tree_decomposition {
 
 public:
     create_tree_decomposition(Graph& g, std::vector< cyclic_vector<Edge> >& emb): graph(g), embedding(emb),
-    expanded_vertices(embedding.size(), -1) {
+    expanded_vertices(embedding.size(), -1), vertex_level(embedding.size()) {
+        k = name_levels(embedding, vertex_level, outer_edges);
+        if (k == 1) {
+            outerplanar();
+            return;
+        }
+
         expand_vertices();
         vertex_level.resize(embedding.size());
         visited.resize(embedding.size());
         spanning_forest.resize(embedding.size());
-
         k = name_levels(embedding, vertex_level, outer_edges);
         outer_edges.emplace_back();
         level_graphs = std::vector< std::vector< cyclic_vector<int> > >(k + 1, std::vector< cyclic_vector<int> >(embedding.size()));
         level_cycles.resize(k + 1);
 
-        if (k == 1) {
-            outerplanar();
-            return;
-        }
 
         create_spanning_forest();
 

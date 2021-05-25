@@ -53,8 +53,8 @@ inline void level_face_traversal(
             edges_cache.push_back(e);
 
             next_edge[e][v] = edges[(i+1)%edges.size()];
-//            for (int j = (i+1)%edges.size(); j != i; j = (j+1)%edges.size()) {
-//                edge_t e_j = edges[j];
+//            for (int j = (i+1)%constraints.size(); j != i; j = (j+1)%constraints.size()) {
+//                edge_t e_j = constraints[j];
 //                next_edge[e][v] = e_j;
 //            }
 
@@ -64,7 +64,7 @@ inline void level_face_traversal(
     std::vector<vertex_t> vertices_in_edge;
 //    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
 
-//    for (boost::tie(fi, fi_end) = edges(g); fi != fi_end; ++fi) {
+//    for (boost::tie(fi, fi_end) = constraints(g); fi != fi_end; ++fi) {
 //        edge_t e(*fi);
 //        if (vertex_level[e.m_source] == level
 //            && vertex_level[e.m_target] == level) {

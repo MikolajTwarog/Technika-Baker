@@ -14,7 +14,7 @@
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 #include "../Baker's Technique/bakers_technique.hpp"
-#include "../tree_decomposition/create_tree_decomposition.hpp"
+#include "../tree_decomposition/bodlaender.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE kouter
@@ -766,7 +766,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(tr_simple)
     {
         Graph g;
-        make_graph(g, 9, "0 1  1 2  2 3  3 0  0 4  1 4  2 4  3 5  4 3");
+        make_graph(g, 7, "0 3  0 4  1 3  1 4  2 3  2 4  3 4 ");
 
         PlanarEmbedding embedding(num_vertices(g));
         property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
@@ -787,7 +787,40 @@ BOOST_AUTO_TEST_SUITE(kouter)
             return;
         }
 
-        create_tree_decomposition tr(g, embedding);
+        bodlaender_vertex_cover(g, embedding);
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_four_vertices) {
+        file_reader f("4vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
+            graph_traits<Graph>::edges_size_type edge_count = 0;
+            graph_traits<Graph>::edge_iterator ei, ei_end;
+            for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+                put(e_index, *ei, edge_count++);
+            if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
+                                             boyer_myrvold_params::embedding =
+                                                     &embedding[0]
+            )
+                    )
+                std::cout << "Input graph is planar" << std::endl;
+            else {
+                std::cout << "Input graph is not planar" << std::endl;
+                return;
+            }
+            int result = bodlaender_vertex_cover(g, embedding);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
     }
 
 
