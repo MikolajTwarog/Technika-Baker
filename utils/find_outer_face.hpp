@@ -23,7 +23,7 @@ void find_outer_face(PlanarEmbedding& embedding, std::vector<int>& outer_face) {
 
             int dis = (get_edge_it(next_e, face[i], embedding) - get_edge_it(current_e, face[i], embedding)
                        + embedding[face[i]].size()) % embedding[face[i]].size();
-            if (dis != 1 && dis != embedding[face[i]].size() - 1) {
+            if (dis != 1) {
                 res = false;
                 break;
             }

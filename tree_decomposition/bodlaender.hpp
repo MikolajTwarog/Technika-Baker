@@ -164,9 +164,9 @@ class bodlaender {
     }
 
 public:
-    bodlaender(Graph g, PlanarEmbedding emb, int nei, bool min): graph(g), embedding(emb), n(num_vertices(g)),
-    m(num_edges(g)), neighbourhood(nei), minimum(min) {
-        get_tree_decomposition(g, emb, tr);
+    bodlaender(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, int nei, bool min): graph(g), embedding(emb),
+    n(num_vertices(g)), m(num_edges(g)), neighbourhood(nei), minimum(min) {
+        get_tree_decomposition(g, emb, outer_face, tr);
         tables.resize(tr.tree.size());
 
         if (neighbourhood == 0) {
@@ -236,18 +236,18 @@ public:
     }
 };
 
-int bodlaender_vertex_cover(Graph g, PlanarEmbedding emb) {
-    bodlaender bd(g, emb, 0, true);
+int bodlaender_vertex_cover(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
+    bodlaender bd(g, emb, outer_face, 0, true);
     return bd.get_result();
 }
 
-int bodlaender_dominating_set(Graph g, PlanarEmbedding emb) {
-    bodlaender bd(g, emb, 1, true);
+int bodlaender_dominating_set(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
+    bodlaender bd(g, emb, outer_face, 1, true);
     return bd.get_result();
 }
 
-int bodlaender_independent_set(Graph g, PlanarEmbedding emb) {
-    bodlaender bd(g, emb, 0, false);
+int bodlaender_independent_set(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
+    bodlaender bd(g, emb, outer_face, 0, false);
     return bd.get_result();
 }
 

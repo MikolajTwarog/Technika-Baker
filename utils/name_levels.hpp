@@ -5,11 +5,8 @@
 #ifndef TECHNIKA_BAKER_NAME_LEVELS_HPP
 #define TECHNIKA_BAKER_NAME_LEVELS_HPP
 
-int name_levels(PlanarEmbedding& embedding, std::vector<int>& vertex_level,
+int name_levels(PlanarEmbedding& embedding, std::vector<int> outer_face, std::vector<int>& vertex_level,
                 std::vector< std::vector<Edge> >& outer_edges) {
-    std::vector<int> outer_face;
-    find_outer_face(embedding, outer_face);
-
     for (int &v : vertex_level) {
         v = -1;
     }

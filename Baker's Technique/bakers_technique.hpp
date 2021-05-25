@@ -31,7 +31,8 @@ int bakers_technique(Graph g, int k) {
     std::vector<int> vertex_level(num_vertices(g));
 
     std::vector< std::vector<Edge> > outer_edges;
-    int max_level = name_levels(embedding, vertex_level, outer_edges);
+    std::vector<int> outer_face; // to do
+    int max_level = name_levels(embedding, outer_face, vertex_level, outer_edges);
 
     std::vector<std::vector<int> > levels(max_level + 1);
 
@@ -79,7 +80,7 @@ int bakers_technique(Graph g, int k) {
                 for (auto edge : graph.m_local_edge)
                     add_edge(edge.second.m_source, edge.second.m_target, graph2);
 
-                res += baker2<independent_set>(graph2);
+//                res += baker2<independent_set>(graph2);
             }
         }
     }

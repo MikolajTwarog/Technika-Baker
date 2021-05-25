@@ -44,15 +44,13 @@ typedef graph_traits<Graph>::vertex_descriptor Vertex;
 #include "../utils/level_face_traversal.hpp"
 #include "problems2.hpp"
 #include "../utils/visitors.hpp"
-//#include "../utils/tree_builder.hpp"
-#include "../utils/find_outer_face.hpp"
 #include "../utils/name_levels.hpp"
 
 template<typename Problem>
 class baker_impl {
-
     Graph g;
     PlanarEmbedding embedding;
+    std::vector<int> outer_face;
     ::tree<Problem> tree;
     std::vector<int> vertex_level;
     std::set< std::pair<int, int> > added_edges;
@@ -278,7 +276,9 @@ class baker_impl {
     void get_component(std::vector< std::vector<int> >& components, std::map<int, int>& vis,
                        std::vector< std::pair<int, int> >& v_in_c) {
         if (vertex_level[v_in_c[0].first] == 1) {
-            find_outer_face(embedding, components[0]);
+            for (int v : outer_face) {
+                components[0].push_back(v);
+            }
 
             return;
         }
@@ -843,27 +843,10 @@ class baker_impl {
     }
 
 public:
-    baker_impl(const Graph& arg_g): g(arg_g), embedding(num_vertices(arg_g)), vertex_level(num_vertices(arg_g)) {
-        property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
-        graph_traits<Graph>::edges_size_type edge_count = 0;
-        graph_traits<Graph>::edge_iterator ei, ei_end;
-        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-            put(e_index, *ei, edge_count++);
-
-
-        if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
-                                         boyer_myrvold_params::embedding =
-                                                 &embedding[0]
-        )
-                )
-            std::cout << "Input graph is planar" << std::endl;
-        else {
-            std::cout << "Input graph is not planar" << std::endl;
-            return;
-        }
-
+    baker_impl(const Graph& arg_g, PlanarEmbedding emb, std::vector<int> out_face): g(arg_g), embedding(emb),
+    outer_face(out_face), vertex_level(num_vertices(arg_g)) {
         std::vector< std::vector<Edge> > outer_edges;
-        int k = name_levels(embedding, vertex_level, outer_edges);
+        int k = name_levels(embedding, outer_face,vertex_level, outer_edges);
 
         int v = 0;
 
@@ -874,9 +857,7 @@ public:
             }
         }
 
-        std::vector<int> face;
-        find_outer_face(embedding, face);
-        tree = build_tree_with_dividing_points(face, v);
+        tree = build_tree_with_dividing_points(outer_face, v);
 
         create_boudaries(tree, tree, tree.root);
 
@@ -890,8 +871,8 @@ public:
 };
 
 template <typename Problem>
-int baker2(const Graph& g) {
-    baker_impl < Problem > b(g);
+int baker2(const Graph& g, PlanarEmbedding embedding, std::vector<int> outer_face) {
+    baker_impl < Problem > b(g, embedding, outer_face);
     return b.result();
 }
 
