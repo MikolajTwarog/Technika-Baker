@@ -43,16 +43,16 @@ struct file_reader{
             return false;
         }
 
-//        std::cout << n << " " << m << std::endl;
+        std::cout << n << " " << m << std::endl;
 
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
-//            std::cout << a << " " << b << "  ";
+            std::cout << a << " " << b << "  ";
         }
 
-//        std::cout << std::endl;
+        std::cout << std::endl;
 
         return true;
     }
@@ -628,31 +628,36 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(tr_simple)
     {
         Graph g;
-        make_graph(g, 7, "0 3  0 4  1 3  1 4  2 3  2 4  3 4 ");
+        make_graph(g, 12, "0 1  0 2  0 3  0 4  1 2  1 3  1 5  2 4  2 5  3 4  3 5  4 5");
 
         PlanarEmbedding embedding(num_vertices(g));
-        property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
-        graph_traits<Graph>::edges_size_type edge_count = 0;
-        graph_traits<Graph>::edge_iterator ei, ei_end;
-        for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-            put(e_index, *ei, edge_count++);
+        std::vector<int> outer_face;
+        get_embedding(g, embedding, outer_face);
 
-
-        if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
-                                         boyer_myrvold_params::embedding =
-                                                 &embedding[0]
-        )
-                )
-            std::cout << "Input graph is planar" << std::endl;
-        else {
-            std::cout << "Input graph is not planar" << std::endl;
-            return;
-        }
-
-//        bodlaender_vertex_cover(g, embedding);
+        bodlaender_vertex_cover(g, embedding, outer_face);
     }
 
     BOOST_AUTO_TEST_CASE(tr_four_vertices) {
+        file_reader f("4vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_vertex_cover(g, embedding, outer_face);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_five_vertices) {
         file_reader f("5vertices");
 
         int i = 0;
@@ -664,24 +669,51 @@ BOOST_AUTO_TEST_SUITE(kouter)
                 break;
             }
             PlanarEmbedding embedding(num_vertices(g));
-            property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
-            graph_traits<Graph>::edges_size_type edge_count = 0;
-            graph_traits<Graph>::edge_iterator ei, ei_end;
-            for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-                put(e_index, *ei, edge_count++);
-            if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
-                                             boyer_myrvold_params::embedding =
-                                                     &embedding[0]
-            )
-                    )
-                std::cout << "Input graph is planar" << std::endl;
-            else {
-                std::cout << "Input graph is not planar" << std::endl;
-                return;
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_vertex_cover(g, embedding, outer_face);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_six_vertices) {
+        file_reader f("6vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
             }
-//            int result = bodlaender_vertex_cover(g, embedding);
-//            int expected = vertex_cover_(g);
-//            BOOST_CHECK_EQUAL(result, expected);
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_vertex_cover(g, embedding, outer_face);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_seven_vertices) {
+        file_reader f("7vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_vertex_cover(g, embedding, outer_face);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
         }
     }
 

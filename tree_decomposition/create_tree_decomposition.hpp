@@ -100,7 +100,7 @@ class create_tree_decomposition {
         }
 
         if (!grey.empty() && grey.back() == v) {
-            cycle = false;
+            cycle = -1;
             grey.pop_back();
         }
 
@@ -109,6 +109,17 @@ class create_tree_decomposition {
 
     bool check_for_edge(int v, int w, std::vector< cyclic_vector<int> >& g) {
         for (int nei : g[v]) {
+            if (nei == w) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool check_for_edge(int v, int w, std::vector< cyclic_vector<Edge> >& g) {
+        for (Edge& e : g[v]) {
+            int nei = v == e.m_source ? e.m_target : e.m_source;
             if (nei == w) {
                 return true;
             }
@@ -241,10 +252,15 @@ class create_tree_decomposition {
         face_getter<Edge> my_vis(&faces, vertices_in_face);
         level_face_traversal<Graph>(embedding, my_vis);
 
-        for (int j = 0; j < vertices_in_face.size(); j++) {
-            auto& face = vertices_in_face[j];
-            if (face == outer_face) {
-                outer_face_it = j;
+        std::vector<int> temp_outer_face = outer_face;
+        for (int v : outer_face) {
+            temp_outer_face.push_back(v);
+        }
+
+        for (outer_face_it = 0; outer_face_it < vertices_in_face.size(); outer_face_it++) {
+            auto& face = vertices_in_face[outer_face_it];
+            if (std::search(temp_outer_face.begin(), temp_outer_face.end(), face.begin(), face.end())
+            != temp_outer_face.end()) {
                 break;
             }
         }
@@ -275,6 +291,7 @@ class create_tree_decomposition {
             }
         }
 
+        std::vector< std::vector<int> > added(embedding.size());
         int size = embedding.size();
         for (int v = 0; v < size; v++) {
             if (embedding[v].size() <= 3) {
@@ -333,6 +350,7 @@ class create_tree_decomposition {
                 last = curr;
 
                 expanded_vertices.push_back(v);
+                added[v].push_back(curr);
             }
 
             int curr = embedding.size();
@@ -350,6 +368,7 @@ class create_tree_decomposition {
             embedding[nei][get_edge_it(v_emb[e_it], nei, embedding)] = Edge(curr, nei, nullptr);
 
             expanded_vertices.push_back(v);
+            added[v].push_back(curr);
         }
 
         Graph new_graph;
@@ -367,6 +386,45 @@ class create_tree_decomposition {
         }
 
         graph = new_graph;
+
+        faces.clear();
+        vertices_in_face.clear();
+        face_getter<Edge> my_new_vis(&faces, vertices_in_face);
+        level_face_traversal<Graph>(embedding, my_new_vis);
+
+        bool found_outer = false;
+        for (outer_face_it = 0; outer_face_it < vertices_in_face.size(); outer_face_it++) {
+            std::list<int> face_temp(vertices_in_face[outer_face_it].begin(), vertices_in_face[outer_face_it].end());
+            for (int& v : face_temp) {
+                if (expanded_vertices[v] > -1) {
+                    v = expanded_vertices[v];
+                }
+            }
+
+            int prev_v = face_temp.front();
+            for(auto it = ++face_temp.begin(); it != face_temp.end(); ) {
+                if(*it == prev_v) {
+                    it = face_temp.erase(it);
+                } else {
+                    prev_v = *it;
+                    ++it;
+                }
+            }
+
+            while (face_temp.front() == face_temp.back()) {
+                face_temp.pop_back();
+            }
+
+            if (std::search(temp_outer_face.begin(), temp_outer_face.end(), face_temp.begin(), face_temp.end())
+                != temp_outer_face.end()) {
+                break;
+            }
+        }
+
+        outer_face.clear();
+        for (int v : vertices_in_face[outer_face_it]) {
+            outer_face.push_back(v);
+        }
     }
 
     void create_spanning_forest() {
@@ -511,11 +569,35 @@ class create_tree_decomposition {
                     edges_to_add.emplace_back(v, prev_v);
                     vertex_in_tree[v] = true;
                     vertex_in_tree[prev_v] = true;
+                    prev_v = v;
                 }
 
                 for (auto& e : edges_to_add) {
-                    spanning_forest[e.first].push_back(e.second);
-                    spanning_forest[e.second].push_back(e.first);
+                    if (!check_for_edge(e.first, e.second, spanning_forest)) {
+                        spanning_forest[e.first].push_back(e.second);
+                        spanning_forest[e.second].push_back(e.first);
+                    }
+                }
+
+                if (check_for_edge(cycle[starting_alpha_it], cycle[starting_alpha_it - 1], spanning_forest)) {
+                    int v = cycle[starting_alpha_it];
+                    int w = cycle[starting_alpha_it - 1];
+                    for(auto it = spanning_forest[v].begin(); it != spanning_forest[v].end(); ) {
+                        if(*it == w) {
+                            it = spanning_forest[v].erase(it);
+                            break;
+                        } else {
+                            ++it;
+                        }
+                    }
+                    for(auto it = spanning_forest[w].begin(); it != spanning_forest[w].end(); ) {
+                        if(*it == v) {
+                            it = spanning_forest[w].erase(it);
+                            break;
+                        } else {
+                            ++it;
+                        }
+                    }
                 }
             }
         }

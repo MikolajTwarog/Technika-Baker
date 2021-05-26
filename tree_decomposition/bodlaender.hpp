@@ -114,16 +114,17 @@ class bodlaender {
                     continue;
                 }
 
-                auto f3 = f1.f | f2.f;
+                auto f3 = f1.f & f2.f;
                 std::vector<int> s_values;
-                for (auto & con : constraints) {
-                    int r = 0;
+                for (int i = 0; i < constraints.size(); i++) {
+                    auto& con = constraints[i];
+                    int r = f1.r_values[i] + f2.r_values[i];
                     for (int ver : con) {
-                        r += f3[ver];
+                        r -= f3[ver];
                     }
                     s_values.push_back(r);
                 }
-                s_values.push_back(f3.count());
+                s_values.push_back(f1.r_values.back() + f2.r_values.back() - f3.count());
 //                for (int i = 0; i < f1.r_values.size(); i++) {
 //                    s_values.push_back(f1.r_values[i] + f2.r_values[i]);
 //                }
@@ -138,7 +139,7 @@ class bodlaender {
                         }
                     }
 
-                    if (good && f1.f == new_temp[i].f) {
+                    if (good) {
                         f_it = i;
                         break;
                     }
@@ -146,14 +147,14 @@ class bodlaender {
 
                 if (f_it == -1) {
                     new_temp.emplace_back(n);
-                    new_temp.back().f = f3;
+                    new_temp.back().f = f1.f;
                     new_temp.back().r_values = s_values;
                     new_temp.back().x = f1.x | f2.x;
                 } else {
                     if ((minimum && new_temp[f_it].r_values.back() > s_values.back())
                     || (!minimum && new_temp[f_it].r_values.back() < s_values.back())) {
                         new_temp[f_it].r_values.back() = s_values.back();
-                        new_temp[f_it].f = f3;
+                        new_temp[f_it].f = f1.f;
                         new_temp[f_it].x = f1.x | f2.x;
                     }
                 }
