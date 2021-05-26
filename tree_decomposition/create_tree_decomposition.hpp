@@ -49,14 +49,20 @@ struct tree_decomposition{
     std::vector< std::set<int> > nodes;
     int n;
 
-    std::map<Edge, int> edge_it;
+    std::map<std::pair<int, int>, int> edge_it;
 
     std::set<int>& operator[] (int x) {
         return nodes[x];
     }
 
-    std::set<int>& operator[] (Edge e) {
+    std::set<int>& operator[] (std::pair<int, int> e) {
         return nodes[edge_it[e]];
+    }
+
+    std::set<int>& operator[] (Edge e) {
+        std::pair<int, int> ed(std::min(e.m_source, e.m_target),
+                              std::max(e.m_source, e.m_target));
+        return nodes[edge_it[ed]];
     }
 };
 
@@ -142,7 +148,7 @@ class create_tree_decomposition {
 
     void outerplanar() {
         std::vector< std::list<int> > g(embedding.size());
-        std::queue<int> low_degree;
+        std::stack<int> low_degree;
 
         for (int i = 0; i < embedding.size(); i++) {
             if (embedding[i].size() <= 2) {
@@ -155,15 +161,16 @@ class create_tree_decomposition {
             }
         }
 
-        std::queue< std::vector<int> > deleted;
+        std::vector< std::vector<int> > deleted;
 
-        for (int i = 0; i < g.size() - 1; i++) {
-            int v = low_degree.front();
+        for (int i = 0; i < g.size() - 2; i++) {
+            int v = low_degree.top();
             low_degree.pop();
-            deleted.emplace();
+            deleted.emplace_back();
             deleted.back().push_back(v);
 
             if (g[v].size() == 0) {
+                i--;
                 continue;
             }
 
@@ -183,6 +190,7 @@ class create_tree_decomposition {
                     low_degree.push(nei);
                 }
 
+                g[v].clear();
                 continue;
             }
 
@@ -216,24 +224,29 @@ class create_tree_decomposition {
                 g[n_two].push_back(n_one);
             }
 
-            if (g[n_one].size() == 2) {
+            if (g[n_one].size() <= 2) {
                 low_degree.push(n_one);
             }
 
-            if (g[n_two].size() == 2) {
+            if (g[n_two].size() <= 2) {
                 low_degree.push(n_two);
             }
+
+            g[v].clear();
         }
 
         tr.tree.emplace_back();
         tr.nodes.emplace_back();
-        int last_v = low_degree.front();
+        int last_v = low_degree.top();
+        while (g[last_v].empty()) {
+            low_degree.pop();
+            last_v = low_degree.top();
+        }
         tr.nodes.back().insert(last_v);
         tr.nodes.back().insert(g[last_v].front());
 
-        while (!deleted.empty()) {
-            std::vector<int> front = deleted.front();
-            deleted.pop();
+        for (int i = deleted.size() - 1; i >= 0; i--) {
+            std::vector<int>& front = deleted[i];
 
             tr.tree.back().push_back(tr.tree.size());
             tr.tree.emplace_back();
@@ -684,7 +697,9 @@ class create_tree_decomposition {
                 tr.tree.emplace_back();
                 tr[s].insert(v);
                 tr[s].insert(w);
-                tr.edge_it[*ei] = s;
+                std::pair<int, int> e(std::min(ei->m_source, ei->m_target),
+                                      std::max(ei->m_source, ei->m_target));
+                tr.edge_it[e] = s;
                 tr.tree[s].push_back(v);
                 tr.tree[v].push_back(s);
                 tr.tree[s].push_back(w);

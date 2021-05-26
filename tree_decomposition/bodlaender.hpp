@@ -73,13 +73,20 @@ class bodlaender {
                 }
             }
 
+            int r_val = 1;
             for (auto & con : constraints) {
                 int r = 0;
                 for (int ver : con) {
-                    r += f[ver];
+                    if (tr.nodes[v].find(ver) != tr.nodes[v].end()) {
+                        r += f[ver];
+                    } else {
+                        r = 1;
+                        break;
+                    }
                 }
-                temp.back().r_values.push_back(r);
+                r_val &= (r > 0);
             }
+            temp.back().r_values.push_back(r_val);
 
             temp.back().r_values.push_back(f.count());
             temp.back().x = x;
@@ -116,14 +123,15 @@ class bodlaender {
 
                 auto f3 = f1.f & f2.f;
                 std::vector<int> s_values;
-                for (int i = 0; i < constraints.size(); i++) {
-                    auto& con = constraints[i];
-                    int r = f1.r_values[i] + f2.r_values[i];
-                    for (int ver : con) {
-                        r -= f3[ver];
-                    }
-                    s_values.push_back(r);
-                }
+//                for (int i = 0; i < constraints.size(); i++) {
+//                    auto& con = constraints[i];
+//                    int r = f1.r_values[i] + f2.r_values[i];
+//                    for (int ver : con) {
+//                        r -= f3[ver];
+//                    }
+//                    s_values.push_back(r);
+//                }
+                s_values.push_back(f1.r_values[0] & f2.r_values[0]);
                 s_values.push_back(f1.r_values.back() + f2.r_values.back() - f3.count());
 //                for (int i = 0; i < f1.r_values.size(); i++) {
 //                    s_values.push_back(f1.r_values[i] + f2.r_values[i]);
@@ -139,7 +147,7 @@ class bodlaender {
                         }
                     }
 
-                    if (good) {
+                    if (good && f1.f == new_temp[i].f) {
                         f_it = i;
                         break;
                     }
