@@ -707,6 +707,7 @@ struct dominating_set : node
                 val[u][v] = INT16_MAX - 1;
                 for (int one_z = 0; one_z < count; one_z++) {
                     int two_z = one_z;
+                    int three_z = one_z;
                     int ones = 0;
                     for (int i = one_z, j = 2, it = 0; it < level; i /= 3, j *= 3, it++) {
                         int mod = i % 3;
@@ -721,11 +722,13 @@ struct dominating_set : node
 
                         if (mod == 2) {
                             two_z -= j;
+                            three_z -= j;
                         }
 
                     }
 
-//                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[one_z][v] - ones);
+                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[three_z][v] - ones);
+                    val[u][v] = std::min(val[u][v], one[u][three_z] + two[one_z][v] - ones);
                     val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
                 }
             }
@@ -741,12 +744,13 @@ struct dominating_set : node
                 for (int v = 0; v < count; v++) {
                     val[u * 3][v * 3] = std::min(val[u * 3][v * 3], val[u * 3][(v * 3) + 2]);
                     val[u * 3][v * 3] = std::min(val[u * 3][v * 3], val[(u * 3) + 2][v * 3]);
+                    val[(u * 3) + 2][(v * 3) + 2] = std::min(val[(u * 3) + 2][(v * 3) + 2], val[u * 3][v * 3]);
                     val[(u * 3) + 1][(v * 3) + 1]--;
                     val[u * 3][(v * 3) + 1] = INT16_MAX - 1;
-                    val[u * 3][(v * 3) + 2] = INT16_MAX - 1;
+                    val[u * 3][(v * 3) + 2] = val[(u * 3) + 2][(v * 3) + 2];
                     val[(u * 3) + 1][v * 3] = INT16_MAX - 1;
                     val[(u * 3) + 1][(v * 3) + 2] = INT16_MAX - 1;
-                    val[(u * 3) + 2][v * 3] = INT16_MAX - 1;
+                    val[(u * 3) + 2][v * 3] = val[(u * 3) + 2][(v * 3) + 2];
                     val[(u * 3) + 2][(v * 3) + 1] = INT16_MAX - 1;
                 }
             }
@@ -754,8 +758,8 @@ struct dominating_set : node
         if (check_for_edge(label.first, label.second, g, ae)) {
             for (int u = 0; u < count; u++) {
                 for (int v = 0; v < count; v++) {
-                    val[(u * 3) + 1][v * 3] = val[(u * 3) + 1][(v * 3) + 2];
-                    val[u * 3][(v * 3) + 1] = val[(u * 3) + 2][(v * 3) + 1];
+                    val[(u * 3) + 1][v * 3] = std::min(val[(u * 3) + 1][v * 3], val[(u * 3) + 1][(v * 3) + 2]);
+                    val[u * 3][(v * 3) + 1] = std::min(val[u * 3][(v * 3) + 1], val[(u * 3) + 2][(v * 3) + 1]);
                 }
             }
         }
@@ -804,22 +808,26 @@ struct dominating_set : node
                     res.val[u * 3][v * 3] = INT16_MAX - 1;
                 }
 
-                res.val[u * 3][(v * 3) + 2]= res.val[u * 3][v * 3];
-                res.val[(u * 3) + 2][v * 3] = res.val[u * 3][v * 3];
+                res.val[u * 3][(v * 3) + 2]= res.val[(u * 3) + 2][(v * 3) + 2];
+                res.val[(u * 3) + 2][v * 3] = res.val[(u * 3) + 2][(v * 3) + 2];
 
 
+                res.val[(u * 3) + 1][(v * 3) + 1] = val[u][v];
                 int u_temp = u;
                 int v_temp = v;
 
                 if ((u % 3) == 0 && check_for_edge(lb[0], z, g, ae)) {
                     u_temp += 2;
+                    res.val[(u * 3) + 1][(v * 3) + 1] = std::min(res.val[(u * 3) + 1][(v * 3) + 1], val[u_temp][v]);
                 }
 
                 if ((v % 3) == 0 && check_for_edge(rb[0], z, g, ae)) {
                     v_temp += 2;
+                    res.val[(u * 3) + 1][(v * 3) + 1] = std::min(res.val[(u * 3) + 1][(v * 3) + 1], val[u][v_temp]);
                 }
 
-                res.val[(u * 3) + 1][(v * 3) + 1] = val[u_temp][v_temp] + 1;
+                res.val[(u * 3) + 1][(v * 3) + 1] = std::min(res.val[(u * 3) + 1][(v * 3) + 1], val[u_temp][v_temp]);
+                res.val[(u * 3) + 1][(v * 3) + 1]++;
             }
         }
 
@@ -848,60 +856,126 @@ struct dominating_set : node
         }
 
         for (int i = 0; i < count; i++) {
+            for (int j = 0; j < count; j++) {
 
-            bool bad = false;
-            for (int v = 1, p = 3; v < vertices.size() - 1; v++, p *= 3) {
-                if ((i / p) % 3 == 0 && !((i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae)
-                || (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae))) {
-                    bad = true;
-                    break;
-                }
-            }
-
-            if (bad) {
-                continue;
-            }
-
-            int ones = 0;
-            for (int j = i; j > 0; j /= 3) {
-                ones += j % 3 == 1;
-            }
-
-            bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
-            bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
-            bool z_edge = check_for_edge(vertices[0], vertices[1], g, ae);
-
-
-            if ((i % 3) == 1) {
-                if (x_edge && y_edge) {
-                    val[i * 3][i * 3] = ones;
-                }
-                
-                if (x_edge) {
-                    val[i * 3][(i * 3) + 1] = ones + 1;
-                    val[i * 3][(i * 3) + 2] = ones;
+                bool bad = false;
+                int ones = 0;
+                for (int v = 0, p = 1; v < vertices.size(); v++, p *= 3) {
+                    if (((i / p) % 3 == 1) != ((j / p) % 3 == 1)) {
+                        bad = true;
+                        break;
+                    }
+                    ones += (i / p) % 3 == 1;
                 }
 
-                if (y_edge) {
-                    val[(i * 3) + 1][i * 3] = ones + 1;
-                    val[(i * 3) + 2][i * 3] = ones;
+                for (int v = 1, p = 3; v < vertices.size(); v++, p *= 3) {
+                    bool up_dominated = false;
+                    if (v < vertices.size() - 1) {
+                        up_dominated = (i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae);
+                    }
+                    bool down_dominated = (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae);
+                    if ((i / p) % 3 == 0 && (j / p) % 3 == 0 &&
+                        !((i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae)
+                          || (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae))) {
+                        bad = true;
+                        break;
+                    }
                 }
-            }
 
-            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge)) {
-                val[(i * 3) + 2][(i * 3) + 2] = ones;
-            }
+                if (bad) {
+                    continue;
+                }
 
-            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge) {
-                val[(i * 3) + 1][(i * 3) + 2] = ones + 1;
-            }
+                bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
+                bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
 
-            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || y_edge) {
-                val[(i * 3) + 2][(i * 3) + 1] = ones + 1;
-            }
+                val[(i * 3) + 1][(j * 3) + 1] = ones + 2;
+                val[(i * 3) + 2][(j * 3) + 2] = ones;
+                val[(i * 3) + 1][(j * 3) + 2] = ones + 1;
+                val[(i * 3) + 2][(j * 3) + 1] = ones + 1;
 
-            if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge || y_edge) {
-                val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
+                if (x_edge && i % 3 == 1) {
+                    val[i * 3][(j * 3) + 1] = ones + 1;
+                    val[i * 3][(j * 3) + 2] = ones;
+                }
+
+                if (y_edge && i % 3 == 1) {
+                    val[(i * 3) + 1][j * 3] = ones + 1;
+                    val[(i * 3) + 2][j * 3] = ones;
+                }
+
+                if (x_edge && y_edge && i % 3 == 1) {
+                    val[i * 3][j * 3] = ones;
+                }
+
+                bool z_edge = !(vertices.size() == 1 || !check_for_edge(vertices[0], vertices[1], g, ae));
+                if (i % 3 == 0 && j % 3 == 0 && !((i/ 3) % 3 == 1 && z_edge)) {
+                    val[(i * 3) + 2][(j * 3) + 2] = INT16_MAX;
+                    if (!x_edge) {
+                        val[(i * 3) + 1][(j * 3) + 2] = INT16_MAX;
+                    }
+                    if (!y_edge) {
+                        val[(i * 3) + 2][(j * 3) + 1] = INT16_MAX;
+                    }
+                    if (!x_edge && !y_edge) {
+                        val[(i * 3) + 1][(j * 3) + 1] = INT16_MAX;
+                    }
+                }
+
+//                for (int v = 1, p = 3; v < vertices.size() - 1; v++, p *= 3) {
+//                    if ((i / p) % 3 == 0 &&
+//                        !((i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae)
+//                          || (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae))) {
+//                        bad = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (bad) {
+//                    continue;
+//                }
+//
+//                int ones = 0;
+//                for (int j = i; j > 0; j /= 3) {
+//                    ones += j % 3 == 1;
+//                }
+//
+//                bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
+//                bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
+//                bool z_edge = check_for_edge(vertices[0], vertices[1], g, ae);
+//
+//
+//                if ((i % 3) == 1) {
+//                    if (x_edge && y_edge) {
+//                        val[i * 3][i * 3] = ones;
+//                    }
+//
+//                    if (x_edge) {
+//                        val[i * 3][(i * 3) + 1] = ones + 1;
+//                        val[i * 3][(i * 3) + 2] = ones;
+//                    }
+//
+//                    if (y_edge) {
+//                        val[(i * 3) + 1][i * 3] = ones + 1;
+//                        val[(i * 3) + 2][i * 3] = ones;
+//                    }
+//                }
+//
+//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge)) {
+//                    val[(i * 3) + 2][(i * 3) + 2] = ones;
+//                }
+//
+//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge) {
+//                    val[(i * 3) + 1][(i * 3) + 2] = ones + 1;
+//                }
+//
+//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || y_edge) {
+//                    val[(i * 3) + 2][(i * 3) + 1] = ones + 1;
+//                }
+//
+//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge || y_edge) {
+//                    val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
+//                }
             }
         }
     }

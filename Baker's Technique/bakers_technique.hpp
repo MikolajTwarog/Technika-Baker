@@ -9,29 +9,9 @@
 #include <boost/graph/connected_components.hpp>
 #include "../k-outerplanar/baker-k-outer-planar.hpp"
 
-int bakers_technique(Graph g, int k) {
-    property_map<Graph, edge_index_t>::type e_index = get(edge_index, g);
-    graph_traits<Graph>::edges_size_type edge_count = 0;
-    graph_traits<Graph>::edge_iterator ei, ei_end;
-    for(boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-        put(e_index, *ei, edge_count++);
-
-    std::vector<cyclic_vector< graph_traits<Graph>::edge_descriptor > > embedding(num_vertices(g));
-    if (boyer_myrvold_planarity_test(boyer_myrvold_params::graph = g,
-                                     boyer_myrvold_params::embedding =
-                                             &embedding[0]
-    )
-            )
-        std::cout << "Input graph is planar" << std::endl;
-    else {
-        std::cout << "Input graph is not planar" << std::endl;
-        return -1;
-    }
-
+int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& outer_face, int k) {
     std::vector<int> vertex_level(num_vertices(g));
-
     std::vector< std::vector<Edge> > outer_edges;
-    std::vector<int> outer_face; // to do
     int max_level = name_levels(embedding, outer_face, vertex_level, outer_edges);
 
     std::vector<std::vector<int> > levels(max_level + 1);

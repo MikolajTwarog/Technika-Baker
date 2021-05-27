@@ -152,7 +152,8 @@ class baker_impl {
                 for (int i = (face_it + 1) % face.size(); ; i = (i + 1) % face.size()) {
                     if (face[i] == last) {
                         face_it = i;
-                        curr_e_it_face = get_edge_it(Edge(last, comp_curr, nullptr), last, embedding);
+                        curr_e_it_face = (get_edge_it(last, face[(i - 1 + face.size()) % face.size()], embedding)
+                                - 1 + embedding[last].size()) % embedding[last].size();
                         curr_e_it_comp = (curr_e_it_comp + 1) % embedding[comp_curr].size();
                         break;
                     }
@@ -207,8 +208,13 @@ class baker_impl {
                                                 (curr_e_it_comp + 1),
                                                 new_e);
                 } else {
-
-                    curr_e_it_face = (curr_e_it_face - 1 + embedding[face_curr].size()) % embedding[face_curr].size();
+                    Edge& e_con = embedding[component[(comp_it - 1 + component.size()) % component.size()]][curr_e_it_comp];
+                    curr_e_it_face = 0;
+                    for (; curr_e_it_face < embedding[face_curr].size(); curr_e_it_face++) {
+                        if (embedding[face_curr][curr_e_it_face] == e_con) {
+                            break;
+                        }
+                    }
                 }
                 curr_e_it_comp = (curr_e_it_comp + 1) % embedding[comp_curr].size();
             }

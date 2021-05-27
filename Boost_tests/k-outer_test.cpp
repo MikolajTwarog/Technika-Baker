@@ -43,16 +43,16 @@ struct file_reader{
             return false;
         }
 
-//        std::cout << n << " " << m << std::endl;
+        std::cout << n << " " << m << std::endl;
 
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
-//            std::cout << a << " " << b << "  ";
+            std::cout << a << " " << b << "  ";
         }
 
-//        std::cout << std::endl;
+        std::cout << std::endl;
 
         return true;
     }
@@ -514,11 +514,15 @@ BOOST_AUTO_TEST_SUITE(kouter)
         }
     }
 
-//    BOOST_AUTO_TEST_CASE(ds_four) {
-//        Graph g;
-//        make_graph(g, 7, "0 4  1 2  1 3  1 4  2 3  2 4  3 4");
-//        BOOST_CHECK_EQUAL(baker2<dominating_set>(g), 1);
-//    }
+    BOOST_AUTO_TEST_CASE(ds_four) {
+        Graph g;
+        make_graph(g, 17, "0 5  0 6  1 6  1 7  2 4  2 7  2 8  3 4  3 7  3 8  4 8  5 6  5 7  5 8  6 7  6 8  7 8");
+        PlanarEmbedding embedding(num_vertices(g));
+        std::vector<int> outer_face;
+        get_embedding(g, embedding, outer_face);
+        int result = baker2<dominating_set>(g, embedding, outer_face);
+        BOOST_CHECK_EQUAL(result, 2);
+    }
 
     BOOST_AUTO_TEST_CASE(ds_five_vertices) {
         file_reader f("5vertices");
@@ -622,6 +626,9 @@ BOOST_AUTO_TEST_SUITE(kouter)
             int result = baker2<dominating_set>(g, embedding, outer_face);
             int expected = dominating_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
+            if (result != expected) {
+                break;
+            }
         }
     }
 
@@ -839,6 +846,26 @@ BOOST_AUTO_TEST_SUITE(kouter)
 
     BOOST_AUTO_TEST_CASE(tr_ds_ecc_eight_vertices) {
         file_reader f("8vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_dominating_set_ecc(g, embedding, outer_face);
+            int expected = dominating_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_ds_ecc_nine_vertices) {
+        file_reader f("9vertices");
 
         int i = 0;
         bool res = true;
