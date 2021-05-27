@@ -84,7 +84,11 @@ class bodlaender {
                         break;
                     }
                 }
-                r_val &= (r > 0);
+                if (minimum) {
+                    r_val &= (r > 0);
+                } else {
+                    r_val &= (r < 2);
+                }
             }
             temp.back().r_values.push_back(r_val);
 
@@ -226,7 +230,7 @@ public:
         for (auto& node : tables[0]) {
             int good = true;
             for (int r = 0; r < node.r_values.size() - 1; r++) {
-                if ((node.r_values[r] == 0 && minimum) || (node.r_values[r] > 1 && !minimum)) {
+                if (node.r_values[r] == 0) {
                     good = false;
                     break;
                 }
