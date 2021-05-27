@@ -43,16 +43,16 @@ struct file_reader{
             return false;
         }
 
-        std::cout << n << " " << m << std::endl;
+//        std::cout << n << " " << m << std::endl;
 
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
-            std::cout << a << " " << b << "  ";
+//            std::cout << a << " " << b << "  ";
         }
 
-        std::cout << std::endl;
+//        std::cout << std::endl;
 
         return true;
     }
@@ -773,6 +773,66 @@ BOOST_AUTO_TEST_SUITE(kouter)
             get_embedding(g, embedding, outer_face);
             int result = bodlaender_independent_set(g, embedding, outer_face);
             int expected = independent_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_ds_four_vertices) {
+        file_reader f("4vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_dominating_set(g, embedding, outer_face);
+            int expected = dominating_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_ds_seven_vertices) {
+        file_reader f("7vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_dominating_set(g, embedding, outer_face);
+            int expected = dominating_set_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_ds_eight_vertices) {
+        file_reader f("8vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_dominating_set(g, embedding, outer_face);
+            int expected = dominating_set_(g);
             BOOST_CHECK_EQUAL(result, expected);
         }
     }
