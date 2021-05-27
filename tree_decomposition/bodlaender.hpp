@@ -29,6 +29,8 @@
 
 using namespace boost;
 
+enum Problem {vc, is, ds_ecc, ds_lcc};
+
 class bodlaender {
 
     struct tr_node{
@@ -44,8 +46,8 @@ class bodlaender {
     Graph graph;
     PlanarEmbedding embedding;
     std::vector< std::vector<tr_node> > tables;
-    int n, m;
-    int neighbourhood;
+    int n;
+    Problem problem;
     bool minimum;
 
 
@@ -73,24 +75,34 @@ class bodlaender {
                 }
             }
 
-            int r_val = 1;
-            for (auto & con : constraints) {
-                int r = 0;
-                for (int ver : con) {
-                    if (tr.nodes[v].find(ver) != tr.nodes[v].end()) {
+            if (problem == ds_ecc) {
+                for (auto &con : constraints) {
+                    int r = 0;
+                    for (int ver : con) {
                         r += f[ver];
+                    }
+                    temp.back().r_values.push_back(r);
+                }
+            } else {
+                int r_val = 1;
+                for (auto &con : constraints) {
+                    int r = 0;
+                    for (int ver : con) {
+                        if (tr.nodes[v].find(ver) != tr.nodes[v].end()) {
+                            r += f[ver];
+                        } else {
+                            r = 1;
+                            break;
+                        }
+                    }
+                    if (minimum) {
+                        r_val &= (r > 0);
                     } else {
-                        r = 1;
-                        break;
+                        r_val &= (r < 2);
                     }
                 }
-                if (minimum) {
-                    r_val &= (r > 0);
-                } else {
-                    r_val &= (r < 2);
-                }
+                temp.back().r_values.push_back(r_val);
             }
-            temp.back().r_values.push_back(r_val);
 
             temp.back().r_values.push_back(f.count());
             temp.back().x = x;
@@ -127,19 +139,20 @@ class bodlaender {
 
                 auto f3 = f1.f & f2.f;
                 std::vector<int> s_values;
-//                for (int i = 0; i < constraints.size(); i++) {
-//                    auto& con = constraints[i];
-//                    int r = f1.r_values[i] + f2.r_values[i];
-//                    for (int ver : con) {
-//                        r -= f3[ver];
-//                    }
-//                    s_values.push_back(r);
-//                }
-                s_values.push_back(f1.r_values[0] & f2.r_values[0]);
+                if (problem == ds_ecc) {
+                    for (int i = 0; i < constraints.size(); i++) {
+                        auto &con = constraints[i];
+                        int r = f1.r_values[i] + f2.r_values[i];
+                        for (int ver : con) {
+                            r -= f3[ver];
+                        }
+                        s_values.push_back(r);
+                    }
+                } else {
+                    s_values.push_back(f1.r_values[0] & f2.r_values[0]);
+                }
+
                 s_values.push_back(f1.r_values.back() + f2.r_values.back() - f3.count());
-//                for (int i = 0; i < f1.r_values.size(); i++) {
-//                    s_values.push_back(f1.r_values[i] + f2.r_values[i]);
-//                }
 
                 int f_it = -1;
                 for (int i = 0; i < new_temp.size(); i++) {
@@ -177,12 +190,13 @@ class bodlaender {
     }
 
 public:
-    bodlaender(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, int nei, bool min): graph(g), embedding(emb),
-    n(num_vertices(g)), m(num_edges(g)), neighbourhood(nei), minimum(min) {
+    bodlaender(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, Problem pr): graph(g), embedding(emb),
+    n(num_vertices(g)), problem(pr) {
+        minimum = pr == vc || pr == ds_ecc || pr == ds_lcc;
         get_tree_decomposition(g, emb, outer_face, tr);
         tables.resize(tr.tree.size());
 
-        if (neighbourhood == 0) {
+        if (problem == vc || problem == is) {
             graph_traits<Graph>::edge_iterator ei, ei_end;
             for (boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei) {
                 constraints.emplace_back();
@@ -190,7 +204,7 @@ public:
                 constraints.back().push_back(ei->m_target);
             }
         }
-        if (neighbourhood == 1) {
+        if (problem == ds_ecc || problem == ds_lcc) {
             for (int v = 0; v < embedding.size(); v++) {
                 constraints.emplace_back();
                 constraints.back().push_back(v);
@@ -201,17 +215,19 @@ public:
                 }
             }
 
-            for (auto& node : tr.nodes) {
-                std::vector<int> to_add;
-                for (int v : node) {
-                    for (auto& e : embedding[v]) {
-                        int w = v == e.m_source ? e.m_target : e.m_source;
-                        to_add.push_back(w);
+            if (problem == ds_lcc) {
+                for (auto &node : tr.nodes) {
+                    std::vector<int> to_add;
+                    for (int v : node) {
+                        for (auto &e : embedding[v]) {
+                            int w = v == e.m_source ? e.m_target : e.m_source;
+                            to_add.push_back(w);
+                        }
                     }
-                }
 
-                for (int v : to_add) {
-                    node.insert(v);
+                    for (int v : to_add) {
+                        node.insert(v);
+                    }
                 }
             }
         }
@@ -250,17 +266,22 @@ public:
 };
 
 int bodlaender_vertex_cover(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, 0, true);
-    return bd.get_result();
-}
-
-int bodlaender_dominating_set(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, 1, true);
+    bodlaender bd(g, emb, outer_face, vc);
     return bd.get_result();
 }
 
 int bodlaender_independent_set(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, 0, false);
+    bodlaender bd(g, emb, outer_face, is);
+    return bd.get_result();
+}
+
+int bodlaender_dominating_set_lcc(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
+    bodlaender bd(g, emb, outer_face, ds_lcc);
+    return bd.get_result();
+}
+
+int bodlaender_dominating_set_ecc(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
+    bodlaender bd(g, emb, outer_face, ds_ecc);
     return bd.get_result();
 }
 
