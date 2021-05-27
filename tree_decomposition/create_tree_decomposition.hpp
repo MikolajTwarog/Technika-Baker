@@ -45,7 +45,7 @@ typedef graph_traits<Graph>::edge_descriptor Edge;
 #include "../utils/name_levels.hpp"
 
 struct tree_decomposition{
-    std::vector< std::vector<int> > tree;
+    std::vector< cyclic_vector<int> > tree;
     std::vector< std::set<int> > nodes;
     int n;
 
@@ -84,7 +84,7 @@ class create_tree_decomposition {
     std::vector<int> visited;
     std::vector<int> grey;
     int cycle_num = 0;
-    int cycle_dfs(int v, int p ,int level) {
+    int cycle_dfs(int v, int p, int level) {
         visited[v] = 1;
 
         int cycle = -1;
@@ -166,13 +166,14 @@ class create_tree_decomposition {
         for (int i = 0; i < g.size() - 2; i++) {
             int v = low_degree.top();
             low_degree.pop();
-            deleted.emplace_back();
-            deleted.back().push_back(v);
 
             if (g[v].size() == 0) {
                 i--;
                 continue;
             }
+
+            deleted.emplace_back();
+            deleted.back().push_back(v);
 
             if (g[v].size() == 1) {
                 int nei = g[v].front();
@@ -245,16 +246,34 @@ class create_tree_decomposition {
         tr.nodes.back().insert(last_v);
         tr.nodes.back().insert(g[last_v].front());
 
+        for (auto& node : deleted) {
+            tr.tree.emplace_back();
+            tr.nodes.emplace_back();
+            for (int v : node) {
+                tr.nodes.back().insert(v);
+            }
+        }
+
         for (int i = deleted.size() - 1; i >= 0; i--) {
             std::vector<int>& front = deleted[i];
+            std::set<int> neibs;
+            neibs.insert(front[1]);
+            if (front.size() > 2)
+                neibs.insert(front[2]);
 
-            tr.tree.back().push_back(tr.tree.size());
-            tr.tree.emplace_back();
-            tr.tree.back().push_back(tr.tree.size() - 2);
+            int node_it = 0;
+            for (auto& set : tr.nodes) {
+                if (node_it != i + 1 && std::includes(set.begin(), set.end(), neibs.begin(), neibs.end()) && !check_for_edge(i + 1, node_it, tr.tree)) {
+                    break;
+                }
+                node_it++;
+            }
 
-            tr.nodes.emplace_back();
-            for (int v : front) {
-                tr.nodes.back().insert(v);
+            if (node_it < tr.nodes.size()) {
+
+                tr.tree[node_it].push_back(i + 1);
+//            tr.tree.emplace_back();
+                tr.tree[i + 1].push_back(node_it);
             }
         }
     }
@@ -477,7 +496,11 @@ class create_tree_decomposition {
             }
 
             cycle_num = 0;
-            cycle_dfs(vertices_on_level[level][0], -1, level);
+            for (int v : vertices_on_level[level]) {
+                if (visited[v] == 0) {
+                    cycle_dfs(v, -1, level);
+                }
+            }
         }
 
         std::vector<bool> vertex_in_tree(embedding.size());
@@ -733,10 +756,10 @@ public:
     create_tree_decomposition(Graph& g, std::vector< cyclic_vector<Edge> >& emb, std::vector<int> out_face): graph(g),
     embedding(emb), outer_face(out_face), expanded_vertices(embedding.size(), -1), vertex_level(embedding.size()) {
         k = name_levels(embedding, out_face, vertex_level, outer_edges);
-        if (k == 1) {
-            outerplanar();
-            return;
-        }
+//        if (k == 1) {
+//            outerplanar();
+//            return;
+//        }
 
         expand_vertices();
         vertex_level.resize(embedding.size());

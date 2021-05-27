@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(tr_simple)
     {
         Graph g;
-        make_graph(g, 6, "0 5  1 5  2 5  3 4  3 5  4 5");
+        make_graph(g, 14, "0 6  0 7  1 6  1 7  2 6  2 7  3 4  3 5  3 7  4 5  4 7  5 6  5 7  6 7");
 
         PlanarEmbedding embedding(num_vertices(g));
         std::vector<int> outer_face;
@@ -719,6 +719,26 @@ BOOST_AUTO_TEST_SUITE(kouter)
 
     BOOST_AUTO_TEST_CASE(tr_eight_vertices) {
         file_reader f("8vertices");
+
+        int i = 0;
+        bool res = true;
+        while (true) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_vertex_cover(g, embedding, outer_face);
+            int expected = vertex_cover_(g);
+            BOOST_CHECK_EQUAL(result, expected);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(tr_nine_vertices) {
+        file_reader f("9vertices");
 
         int i = 0;
         bool res = true;
