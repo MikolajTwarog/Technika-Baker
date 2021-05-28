@@ -706,30 +706,48 @@ struct dominating_set : node
             for (int v = 0; v < count; v++) {
                 val[u][v] = INT16_MAX - 1;
                 for (int one_z = 0; one_z < count; one_z++) {
-                    int two_z = one_z;
-                    int three_z = one_z;
-                    int ones = 0;
-                    for (int i = one_z, j = 2, it = 0; it < level; i /= 3, j *= 3, it++) {
-                        int mod = i % 3;
-
-                        if (mod == 0) {
-                            two_z += j;
+                    for (int two_z = 0; two_z < count; two_z++) {
+                        bool bad = false;
+                        int ones = 0;
+                        for (int i = one_z, j = two_z, it = 0; it < level; i /= 3, j /= 3, it++) {
+                            if (i % 3 == 1 && j % 3 == 1) {
+                                ones++;
+                                continue;
+                            }
+                            if (((i % 3 == 1) != (j % 3 == 1)) || (i % 3 == 2 && j % 3 == 2)) {
+                                bad = true;
+                                break;
+                            }
                         }
-
-                        if (mod == 1) {
-                            ones++;
+                        if (bad) {
+                            continue;
                         }
-
-                        if (mod == 2) {
-                            two_z -= j;
-                            three_z -= j;
-                        }
-
+                        val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
                     }
-
-                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[three_z][v] - ones);
-                    val[u][v] = std::min(val[u][v], one[u][three_z] + two[one_z][v] - ones);
-                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
+//                    int two_z = one_z;
+//                    int three_z = one_z;
+//                    int ones = 0;
+//                    for (int i = one_z, j = 2, it = 0; it < level; i /= 3, j *= 3, it++) {
+//                        int mod = i % 3;
+//
+//                        if (mod == 0) {
+//                            two_z += j;
+//                        }
+//
+//                        if (mod == 1) {
+//                            ones++;
+//                        }
+//
+//                        if (mod == 2) {
+//                            two_z -= j;
+//                            three_z -= j;
+//                        }
+//
+//                    }
+//
+//                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[three_z][v] - ones);
+//                    val[u][v] = std::min(val[u][v], one[u][three_z] + two[one_z][v] - ones);
+//                    val[u][v] = std::min(val[u][v], one[u][one_z] + two[two_z][v] - ones);
                 }
             }
         }
@@ -921,61 +939,6 @@ struct dominating_set : node
                         val[(i * 3) + 1][(j * 3) + 1] = INT16_MAX;
                     }
                 }
-
-//                for (int v = 1, p = 3; v < vertices.size() - 1; v++, p *= 3) {
-//                    if ((i / p) % 3 == 0 &&
-//                        !((i / (p * 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v + 1], g, ae)
-//                          || (i / (p / 3)) % 3 == 1 && check_for_edge(vertices[v], vertices[v - 1], g, ae))) {
-//                        bad = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (bad) {
-//                    continue;
-//                }
-//
-//                int ones = 0;
-//                for (int j = i; j > 0; j /= 3) {
-//                    ones += j % 3 == 1;
-//                }
-//
-//                bool x_edge = check_for_edge(vertices[0], label.first, g, ae);
-//                bool y_edge = check_for_edge(vertices[0], label.second, g, ae);
-//                bool z_edge = check_for_edge(vertices[0], vertices[1], g, ae);
-//
-//
-//                if ((i % 3) == 1) {
-//                    if (x_edge && y_edge) {
-//                        val[i * 3][i * 3] = ones;
-//                    }
-//
-//                    if (x_edge) {
-//                        val[i * 3][(i * 3) + 1] = ones + 1;
-//                        val[i * 3][(i * 3) + 2] = ones;
-//                    }
-//
-//                    if (y_edge) {
-//                        val[(i * 3) + 1][i * 3] = ones + 1;
-//                        val[(i * 3) + 2][i * 3] = ones;
-//                    }
-//                }
-//
-//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge)) {
-//                    val[(i * 3) + 2][(i * 3) + 2] = ones;
-//                }
-//
-//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge) {
-//                    val[(i * 3) + 1][(i * 3) + 2] = ones + 1;
-//                }
-//
-//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || y_edge) {
-//                    val[(i * 3) + 2][(i * 3) + 1] = ones + 1;
-//                }
-//
-//                if ((i % 3) > 0 || ((i / 3) % 3 == 1 && z_edge) || x_edge || y_edge) {
-//                    val[(i * 3) + 1][(i * 3) + 1] = ones + 2;
-//                }
             }
         }
     }

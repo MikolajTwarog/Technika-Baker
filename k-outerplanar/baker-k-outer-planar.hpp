@@ -221,7 +221,7 @@ class baker_impl {
         }
     }
 
-    int find_third(int one, int two) {
+    int find_third(int one, int two, std::vector<int>& component) {
         auto& one_edges = embedding[one];
         auto& two_edges = embedding[two];
 
@@ -239,18 +239,93 @@ class baker_impl {
 
         int edge_it = get_edge_it(one, two, embedding);
         int cos = edge_it - one_edges.size();
+        int third;
+        int connecting_e_it = -1;
         for (int i = edge_it - 1; i > cos; i--) {
-            int neighbour = one_edges[i].m_source == one ? one_edges[i].m_target : one_edges[i].m_source;
+            third = one_edges[i].m_source == one ? one_edges[i].m_target : one_edges[i].m_source;
 
-            if (neighbour != one) {
-                return neighbour;
+            if (third != one) {
+                Edge curr_e;
+                for (int j = 0; j < embedding[third].size(); j++) {
+                    curr_e = embedding[third][j];
+                    if (curr_e == one_edges[i]) {
+                        connecting_e_it = j;
+                        break;
+                    }
+                }
+                if (connecting_e_it == -1) {
+                    connecting_e_it = get_edge_it(one_edges[i], third, embedding);
+                }
+                break;
             }
         }
 
-        return -1;
+        int starting_v = third;
+        component.push_back(starting_v);
+
+        Edge current_e;
+        int current_v;
+        bool res = false;
+        level++;
+        auto &edges = embedding[starting_v];
+        for (int i = (connecting_e_it + 1) % edges.size(); i != connecting_e_it;
+             i = (i + 1) % edges.size()) {
+            Edge e = edges[i];
+            int neighbour = e.m_source == starting_v ? e.m_target : e.m_source;
+
+            if (vertex_level[neighbour] == level) {
+                current_e = e;
+                current_v = neighbour;
+                res = true;
+                break;
+            }
+        }
+        if (!res) {
+            return third;
+        }
+
+        while (true) {
+            component.push_back(current_v);
+
+            int temp_v = current_v;
+
+            int current_e_it = get_edge_it(current_e, current_v, embedding);
+            auto &edges2 = embedding[current_v];
+            int i = (current_e_it + 1 + edges2.size()) % edges2.size();
+            res = false;
+            for (; i != current_e_it; i = (i + 1 + edges2.size()) % edges2.size()) {
+                Edge e = edges2[i];
+                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                if (vertex_level[neighbour] == level) {
+                    current_e = e;
+                    current_v = neighbour;
+                    res = true;
+                    break;
+                }
+            }
+
+            if (res == false) {
+                Edge e = edges2[current_e_it];
+                int neighbour = e.m_source == current_v ? e.m_target : e.m_source;
+
+                if (vertex_level[neighbour] == level) {
+                    current_e = e;
+                    current_v = neighbour;
+                }
+            }
+
+            if (temp_v == starting_v && current_v == component[1]) {
+                break;
+            }
+        }
+
+        component.pop_back();
+
+        return third;
     }
 
-    void find_dividing_points(Edge one, Edge two, std::set<int>& dividing_points) {
+    int find_dividing_points(Edge one, Edge two, std::set<int>& dividing_points) {
         int v = one.m_target;
 
         int level = vertex_level[v];
@@ -264,6 +339,7 @@ class baker_impl {
             Edge e = edges[i];
             if (vertex_level[e.m_source] == level - 1 || vertex_level[e.m_target] == level - 1) {
                  dividing_points.insert(vertex_level[e.m_source] == level - 1 ? e.m_source : e.m_target);
+                 return vertex_level[e.m_source] == level - 1 ? e.m_source : e.m_target;
             }
         }
     }
@@ -706,14 +782,22 @@ class baker_impl {
                 check_for_components(face, v_in_c);
                 components.clear();
                 v_to_c.clear();
-                get_component(components, v_to_c, v_in_c);
+                components.emplace_back();
+//                get_component(components, v_to_c, v_in_c);
 
 
                 int v;
                 if (t.label.first != t.label.second) {
-                    v = find_third(t.label.first, t.label.second);
+                    v = find_third(t.label.first, t.label.second, components[0]);
                 } else {
-                    v = find_third(t.label.first, trees[main_bicomp][t.children.back()].label.first);
+                    int w;
+                    for (int c = t.children.size() - 1; c >= 0; c--) {
+                        if (trees[main_bicomp][t.children[c]].label.first != t.label.first) {
+                            w = trees[main_bicomp][t.children[c]].label.first;
+                            break;
+                        }
+                    }
+                    v = find_third(t.label.first, w, components[0]);
                 }
                 t.component_tree = build_tree_with_dividing_points(components[0], v);
                 t.component_tree.enclosing_tree = &trees[main_bicomp];
@@ -753,16 +837,16 @@ class baker_impl {
             t[leaves.back()].RB = f.children.size();
 
             for (int j = 1; j < leaves.size(); j++) {
-                Problem& v = t[leaves[j]];
-                Problem& w = t[leaves[j-1]];
+                Problem &v = t[leaves[j]];
+                Problem &w = t[leaves[j - 1]];
                 Edge one(w.label.first, w.label.second, nullptr);
                 Edge two(v.label.first, v.label.second, nullptr);
 
                 std::set<int> dividing_points;
-                find_dividing_points(one, two, dividing_points);
+                int div = find_dividing_points(one, two, dividing_points);
 
                 for (int i = w.LB; i < y_table.size(); i++) {
-                    if (dividing_points.find(y_table[i]) != dividing_points.end()) {
+                    if (y_table[i] == div) {
                         v.LB = w.RB = i;
                         break;
                     }
@@ -798,11 +882,13 @@ class baker_impl {
             }
 
             t[v].adjust(g, added_edges);
+            return;
         } else if (!t[v].children.empty() && !t[v].component_tree.empty()) {
             auto& ct = t[v].component_tree;
             table(ct, ct.root);
             t[v].contract(ct[ct.root], g, added_edges);
             t[v].adjust(g, added_edges);
+            return;
         } else if (level > 1) {
             std::vector<int> z_table;
             z_table.push_back(t.get_enclosing_face().get_child(0).label.first);
@@ -810,16 +896,18 @@ class baker_impl {
                 z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
 
-            if (z_table.front() == z_table.back()) {
-                z_table.pop_back();
-            }
+//            if (z_table.front() == z_table.back()) {
+//                z_table.pop_back();
+//            }
 
+            Edge& e = embedding[t[v].label.first][get_edge_it(t[v].label.first, t[v].label.second, embedding) - 1];
+            int third = e.m_source == t[v].label.first ?  e.m_target : e.m_source;
             int p = t[v].LB;
             for (int i = t[v].RB; i > t[v].LB; i--) {
                 if (i >= z_table.size()) {
                     i--;
                 }
-                if (edge(t[v].label.first, z_table[i], g).second) {
+                if (z_table[i] == third) {
                     p = i;
                     break;
                 }

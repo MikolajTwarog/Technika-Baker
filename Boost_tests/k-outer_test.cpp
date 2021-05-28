@@ -516,12 +516,23 @@ BOOST_AUTO_TEST_SUITE(kouter)
 
     BOOST_AUTO_TEST_CASE(ds_four) {
         Graph g;
-        make_graph(g, 17, "0 5  0 6  1 6  1 7  2 4  2 7  2 8  3 4  3 7  3 8  4 8  5 6  5 7  5 8  6 7  6 8  7 8");
+        make_graph(g, 14, "0 7  1 6  2 5  2 6  2 8  3 4  3 7  3 8  4 7  4 8  5 6  5 7  5 8  6 8");
         PlanarEmbedding embedding(num_vertices(g));
         std::vector<int> outer_face;
         get_embedding(g, embedding, outer_face);
         int result = baker2<dominating_set>(g, embedding, outer_face);
-        BOOST_CHECK_EQUAL(result, 2);
+        BOOST_CHECK_EQUAL(result, dominating_set_(g));
+    }
+
+//    0 5  0 6  1 5  1 6  2 5  2 6  3 5  3 6  4 5  4 6  5 6
+    BOOST_AUTO_TEST_CASE(ds_four_2) {
+        Graph g;
+        make_graph(g, 13, "0 8  1 5  2 6  2 7  3 7  3 8  4 6  4 7  4 8  5 7  5 8  6 8  7 8");
+        PlanarEmbedding embedding(num_vertices(g));
+        std::vector<int> outer_face;
+        get_embedding(g, embedding, outer_face);
+        int result = baker2<dominating_set>(g, embedding, outer_face);
+        BOOST_CHECK_EQUAL(result, dominating_set_(g));
     }
 
     BOOST_AUTO_TEST_CASE(ds_five_vertices) {
