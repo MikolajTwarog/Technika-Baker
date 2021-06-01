@@ -63,6 +63,8 @@ class bodlaender {
             }
         }
 
+        Graph& sub_g = graph.create_subgraph(vertices.begin(), vertices.end());
+
         std::vector<tr_node> temp;
 
         int num = 1 << vertices.size();
@@ -81,24 +83,38 @@ class bodlaender {
                     for (int ver : con) {
                         r += f[ver];
                     }
-                    temp.back().r_values.push_back(r);
+                    temp.back().r_values.push_back(r > 0);
                 }
-            } else {
+            } else if (problem == ds_lcc) {
                 int r_val = 1;
-                for (auto &con : constraints) {
-                    int r = 0;
-                    for (int ver : con) {
-                        if (tr.nodes[v].find(ver) != tr.nodes[v].end()) {
-                            r += f[ver];
+                for (int g_v : tr.nodes[v]) {
+                    int r = f[g_v];
+                    for (Edge e : embedding[g_v]) {
+                        int nei = g_v == e.m_source ? e.m_target : e.m_source;
+                        if (tr.nodes[v].find(nei) != tr.nodes[v].end()) {
+                            r += f[nei];
                         } else {
                             r = 1;
                             break;
                         }
                     }
-                    if (minimum) {
-                        r_val &= (r > 0);
-                    } else {
-                        r_val &= (r < 2);
+                    r_val &= (r > 0);
+                }
+                temp.back().r_values.push_back(r_val);
+            } else {
+                int r_val = 1;
+                for (int g_v : tr.nodes[v]) {
+                    int l_g_v = sub_g.global_to_local(g_v);
+                    typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
+                    for(boost::tie(ei, ei_end) = out_edges(l_g_v, sub_g); ei != ei_end; ++ei){
+                        int nei = sub_g.local_to_global(l_g_v == ei->m_source ? ei->m_target : ei->m_source);
+                        if (tr.nodes[v].find(nei) != tr.nodes[v].end()) {
+                            if (minimum) {
+                                r_val &= (f[g_v] + f[nei] > 0);
+                            } else {
+                                r_val &= (f[g_v] + f[nei] < 2);
+                            }
+                        }
                     }
                 }
                 temp.back().r_values.push_back(r_val);
@@ -142,10 +158,7 @@ class bodlaender {
                 if (problem == ds_ecc) {
                     for (int i = 0; i < constraints.size(); i++) {
                         auto &con = constraints[i];
-                        int r = f1.r_values[i] + f2.r_values[i];
-                        for (int ver : con) {
-                            r -= f3[ver];
-                        }
+                        int r = f1.r_values[i] | f2.r_values[i];
                         s_values.push_back(r);
                     }
                 } else {
@@ -196,15 +209,7 @@ public:
         get_tree_decomposition(g, emb, outer_face, tr);
         tables.resize(tr.tree.size());
 
-        if (problem == vc || problem == is) {
-            graph_traits<Graph>::edge_iterator ei, ei_end;
-            for (boost::tie(ei, ei_end) = edges(graph); ei != ei_end; ++ei) {
-                constraints.emplace_back();
-                constraints.back().push_back(ei->m_source);
-                constraints.back().push_back(ei->m_target);
-            }
-        }
-        if (problem == ds_ecc || problem == ds_lcc) {
+        if (problem == ds_ecc) {
             for (int v = 0; v < embedding.size(); v++) {
                 constraints.emplace_back();
                 constraints.back().push_back(v);
@@ -214,20 +219,20 @@ public:
                     constraints.back().push_back(w);
                 }
             }
+        }
 
-            if (problem == ds_lcc) {
-                for (auto &node : tr.nodes) {
-                    std::vector<int> to_add;
-                    for (int v : node) {
-                        for (auto &e : embedding[v]) {
-                            int w = v == e.m_source ? e.m_target : e.m_source;
-                            to_add.push_back(w);
-                        }
+        if (problem == ds_lcc) {
+            for (auto &node : tr.nodes) {
+                std::vector<int> to_add;
+                for (int v : node) {
+                    for (auto &e : embedding[v]) {
+                        int w = v == e.m_source ? e.m_target : e.m_source;
+                        to_add.push_back(w);
                     }
+                }
 
-                    for (int v : to_add) {
-                        node.insert(v);
-                    }
+                for (int v : to_add) {
+                    node.insert(v);
                 }
             }
         }

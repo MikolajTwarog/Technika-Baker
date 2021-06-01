@@ -43,16 +43,16 @@ struct file_reader{
             return false;
         }
 
-        std::cout << n << " " << m << std::endl;
+//        std::cout << n << " " << m << std::endl;
 
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
-            std::cout << a << " " << b << "  ";
+//            std::cout << a << " " << b << "  ";
         }
 
-        std::cout << std::endl;
+//        std::cout << std::endl;
 
         return true;
     }
@@ -646,7 +646,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(tr_simple)
     {
         Graph g;
-        make_graph(g, 14, "0 6  0 7  1 6  1 7  2 6  2 7  3 4  3 5  3 7  4 5  4 7  5 6  5 7  6 7");
+        make_graph(g, 11, "0 1  1 2  2 3  3 4  4 5  5 6  6 0  1 3  1 4  1 5  1 6");
 
         PlanarEmbedding embedding(num_vertices(g));
         std::vector<int> outer_face;
