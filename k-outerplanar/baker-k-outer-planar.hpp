@@ -896,9 +896,9 @@ class baker_impl {
                 z_table.push_back(t.enclosing_tree->t[x].label.second);
             }
 
-//            if (z_table.front() == z_table.back()) {
-//                z_table.pop_back();
-//            }
+            if (z_table.front() == z_table.back()) {
+                z_table.pop_back();
+            }
 
             Edge& e = embedding[t[v].label.first][get_edge_it(t[v].label.first, t[v].label.second, embedding) - 1];
             int third = e.m_source == t[v].label.first ?  e.m_target : e.m_source;
