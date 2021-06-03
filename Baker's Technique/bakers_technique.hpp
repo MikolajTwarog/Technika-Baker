@@ -8,8 +8,11 @@
 
 #include <boost/graph/connected_components.hpp>
 #include "../k-outerplanar/baker-k-outer-planar.hpp"
+#include "../tree_decomposition/bodlaender_impl.hpp"
 
-int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& outer_face, int k) {
+enum Algorithm {Baker, Bodlaender};
+
+int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& outer_face, int k, Algorithm alg, Problem p) {
     std::vector<int> vertex_level(num_vertices(g));
     std::vector< std::vector<Edge> > outer_edges;
     int max_level = name_levels(embedding, outer_face, vertex_level, outer_edges);
@@ -153,7 +156,20 @@ int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& out
                     }
                 }
 
-                res += baker2<independent_set>(graph, emb, out_face);
+                if (alg == Baker) {
+                    switch (p) {
+                        case is :
+                            res += baker2<independent_set>(graph, emb, out_face);
+                            break;
+                        case vc :
+                            res += baker2<vertex_cover>(graph, emb, out_face);
+                            break;
+                        default :
+                            res += baker2<dominating_set>(graph, emb, out_face);
+                    }
+                } else {
+                    res += bodlaender(graph, emb, out_face, p);
+                }
             }
         }
     }

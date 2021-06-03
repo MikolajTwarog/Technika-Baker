@@ -2,8 +2,8 @@
 // Created by mikolajtwarog on 2021-05-24.
 //
 
-#ifndef TECHNIKA_BAKER_BODLAENDER_HPP
-#define TECHNIKA_BAKER_BODLAENDER_HPP
+#ifndef TECHNIKA_BAKER_BODLAENDER_IMPL_HPP
+#define TECHNIKA_BAKER_BODLAENDER_IMPL_HPP
 
 #include <vector>
 #include <list>
@@ -31,7 +31,7 @@ using namespace boost;
 
 enum Problem {vc, is, ds_ecc, ds_lcc};
 
-class bodlaender {
+class bodlaender_impl {
 
     struct tr_node{
         dynamic_bitset<> f;
@@ -212,8 +212,8 @@ class bodlaender {
     }
 
 public:
-    bodlaender(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, Problem pr): graph(g), embedding(emb),
-    n(num_vertices(g)), problem(pr) {
+    bodlaender_impl(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, Problem pr): graph(g), embedding(emb),
+                                                                                            n(num_vertices(g)), problem(pr) {
         minimum = pr == vc || pr == ds_ecc || pr == ds_lcc;
         get_tree_decomposition(g, emb, outer_face, tr);
         tables.resize(tr.tree.size());
@@ -280,24 +280,29 @@ public:
 };
 
 int bodlaender_vertex_cover(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, vc);
+    bodlaender_impl bd(g, emb, outer_face, vc);
     return bd.get_result();
 }
 
 int bodlaender_independent_set(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, is);
+    bodlaender_impl bd(g, emb, outer_face, is);
     return bd.get_result();
 }
 
 int bodlaender_dominating_set_lcc(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, ds_lcc);
+    bodlaender_impl bd(g, emb, outer_face, ds_lcc);
     return bd.get_result();
 }
 
 int bodlaender_dominating_set_ecc(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face) {
-    bodlaender bd(g, emb, outer_face, ds_ecc);
+    bodlaender_impl bd(g, emb, outer_face, ds_ecc);
+    return bd.get_result();
+}
+
+int bodlaender(Graph& g, PlanarEmbedding& emb, std::vector<int>& outer_face, Problem p) {
+    bodlaender_impl bd(g, emb, outer_face, p);
     return bd.get_result();
 }
 
 
-#endif //TECHNIKA_BAKER_BODLAENDER_HPP
+#endif //TECHNIKA_BAKER_BODLAENDER_IMPL_HPP
