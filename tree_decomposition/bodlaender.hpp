@@ -55,7 +55,14 @@ class bodlaender {
 
     void calculate_table(int v, int p) {
         std::vector<int>& children = tr.tree[v];
-        std::vector<int> vertices(tr.nodes[v].begin(), tr.nodes[v].end());
+        std::set<int> vertices;
+//        if (p == -1) {
+            vertices = std::set<int>(tr.nodes[v].begin(), tr.nodes[v].end());
+//        } else {
+//            std::set_difference(tr.nodes[v].begin(), tr.nodes[v].end(),
+//                                tr.nodes[p].begin(), tr.nodes[p].end(),
+//                                std::inserter(vertices, vertices.begin()));
+//        }
 
         for (int child : children) {
             if (child != p) {
@@ -71,10 +78,12 @@ class bodlaender {
         for (int x = 0; x < num; x++) {
             temp.emplace_back(n);
             auto& f = temp.back().f;
-            for (int i = 0; i < vertices.size(); i++) {
-                if ((x >> i) & 1) {
-                    f[vertices[i]] = 1;
+            int x_temp = x;
+            for (int g_v : vertices) {
+                if (x_temp & 1) {
+                    f[g_v] = 1;
                 }
+                x_temp >>= 1;
             }
 
             if (problem == ds_ecc) {
@@ -87,11 +96,11 @@ class bodlaender {
                 }
             } else if (problem == ds_lcc) {
                 int r_val = 1;
-                for (int g_v : tr.nodes[v]) {
+                for (int g_v : vertices) {
                     int r = f[g_v];
                     for (Edge e : embedding[g_v]) {
                         int nei = g_v == e.m_source ? e.m_target : e.m_source;
-                        if (tr.nodes[v].find(nei) != tr.nodes[v].end()) {
+                        if (vertices.find(nei) != vertices.end()) {
                             r += f[nei];
                         } else {
                             r = 1;
@@ -103,12 +112,12 @@ class bodlaender {
                 temp.back().r_values.push_back(r_val);
             } else {
                 int r_val = 1;
-                for (int g_v : tr.nodes[v]) {
+                for (int g_v : vertices) {
                     int l_g_v = sub_g.global_to_local(g_v);
                     typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
                     for(boost::tie(ei, ei_end) = out_edges(l_g_v, sub_g); ei != ei_end; ++ei){
                         int nei = sub_g.local_to_global(l_g_v == ei->m_source ? ei->m_target : ei->m_source);
-                        if (tr.nodes[v].find(nei) != tr.nodes[v].end()) {
+                        if (vertices.find(nei) != vertices.end()) {
                             if (minimum) {
                                 r_val &= (f[g_v] + f[nei] > 0);
                             } else {

@@ -346,13 +346,18 @@ BOOST_AUTO_TEST_SUITE(kouter)
 //        BOOST_CHECK_EQUAL(result, expected);
 //    }
 //
-//    BOOST_AUTO_TEST_CASE(technique) {
-//        Graph g = random_graph(500, 700);
-//        std::cout << num_edges(g) << std::endl;
-//        int result = bakers_technique(g, 5);
-//        int expected = baker2<independent_set>(g);
-//        BOOST_CHECK_EQUAL(result, expected);
-//    }
+    BOOST_AUTO_TEST_CASE(technique) {
+//        Graph g = random_graph(100, 200);
+        Graph g;
+        make_graph(g, 14, "0 7  1 6  2 5  2 6  2 8  3 4  3 7  3 8  4 7  4 8  5 6  5 7  5 8  6 8");
+        std::cout << num_edges(g) << std::endl;
+        PlanarEmbedding embedding(num_vertices(g));
+        std::vector<int> outer_face;
+        get_embedding(g, embedding, outer_face);
+        int result = bakers_technique(g, embedding, outer_face, 1);
+//        int expected = baker2<independent_set>(g, embedding, outer_face);
+        BOOST_CHECK_EQUAL(result, 1);
+    }
 
     BOOST_AUTO_TEST_CASE(vc_four_vertices) {
         file_reader f("4vertices");
