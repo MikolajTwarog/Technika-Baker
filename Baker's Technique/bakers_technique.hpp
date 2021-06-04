@@ -16,15 +16,38 @@ int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& out
     std::vector<int> vertex_level(num_vertices(g));
     std::vector< std::vector<Edge> > outer_edges;
     int max_level = name_levels(embedding, outer_face, vertex_level, outer_edges);
-    int num_of_graphs = (max_level / (k + 1)) + 1;
+    int num_of_graphs;
+
+    if (p == is) {
+        num_of_graphs = ((max_level - 1) / (k + 1)) + 1;
+    } else {
+        num_of_graphs = ((max_level - 1) / k) + 1;
+    }
 
     std::vector<std::vector<int> > levels(num_of_graphs);
 
-    for (int i = 0; i < vertex_level.size(); i++) {
-        if (vertex_level[i] % (k + 1) == 0) {
-            continue;
+    if (p == is) {
+        for (int i = 0; i < vertex_level.size(); i++) {
+            if (vertex_level[i] % (k + 1) == 0) {
+                continue;
+            }
+            levels[vertex_level[i] / (k + 1)].push_back(i);
         }
-        levels[vertex_level[i] / (k + 1)].push_back(i);
+    } else {
+        for (int i = 0; i < vertex_level.size(); i++) {
+            if ((vertex_level[i] - 1) % k == 0 && vertex_level[i] > 1) {
+                levels[((vertex_level[i]  - 1) / k) - 1].push_back(i);
+            }
+            levels[(vertex_level[i] - 1) / k].push_back(i);
+        }
+    }
+
+    std::vector< std::vector<int> > level_vertices(num_vertices(g));
+
+    for (int i = 0; i < levels.size(); i++) {
+        for (int j = 0; j < levels[i].size(); j++) {
+            level_vertices[levels[i][j]].push_back(i);
+        }
     }
 
     std::vector< std::map<int, int> > global_to_local(num_of_graphs);
@@ -43,16 +66,22 @@ int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& out
     std::vector< std::map<std::pair<int, int>, Edge> > added_edges(num_of_graphs);
 
     for (int v = 0; v < embedding.size(); v++) {
-        if (vertex_level[v] % (k + 1) == 0) {
+        if (level_vertices[v].empty()) {
             continue;
         }
         auto& edges = embedding[v];
         for (auto& e : edges) {
-            if (vertex_level[e.m_source] % (k + 1) == 0 || vertex_level[e.m_target] % (k + 1) == 0) {
+            if (level_vertices[e.m_source].empty() || level_vertices[e.m_target].empty()) {
                 continue;
             }
-            if (vertex_level[e.m_source] / (k + 1) == vertex_level[e.m_target] / (k + 1)) {
-                int level = vertex_level[e.m_source] / (k + 1);
+
+            std::vector<int> intersection;
+            std::set_intersection(level_vertices[e.m_source].begin(), level_vertices[e.m_source].end(),
+                                  level_vertices[e.m_target].begin(), level_vertices[e.m_target].end(),
+                                  std::back_inserter(intersection));
+
+            for (int level : intersection) {
+//                int level = intersection.front();
                 int local_source = global_to_local[level][e.m_source];
                 int local_target = global_to_local[level][e.m_target];
                 std::pair<int, int> e_pair(std::min(e.m_source, e.m_target), std::max(e.m_source, e.m_target));

@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         PlanarEmbedding embedding(num_vertices(g));
         std::vector<int> outer_face;
         get_embedding(g, embedding, outer_face);
-        int result = bakers_technique(g, embedding, outer_face, 1, Bodlaender, is);
+        int result = bakers_technique(g, embedding, outer_face, 3, Baker, vc);
 //        int expected = baker2<independent_set>(g, embedding, outer_face);
         BOOST_CHECK_EQUAL(result, 1);
     }

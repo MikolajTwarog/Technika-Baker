@@ -212,8 +212,8 @@ class bodlaender_impl {
     }
 
 public:
-    bodlaender_impl(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, Problem pr): graph(g), embedding(emb),
-                                                                                            n(num_vertices(g)), problem(pr) {
+    bodlaender_impl(Graph g, PlanarEmbedding emb, std::vector<int> outer_face, Problem pr):
+    graph(g), embedding(emb), n(num_vertices(g)), problem(pr) {
         minimum = pr == vc || pr == ds_ecc || pr == ds_lcc;
         get_tree_decomposition(g, emb, outer_face, tr);
         tables.resize(tr.tree.size());
