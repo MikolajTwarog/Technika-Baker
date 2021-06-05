@@ -28,6 +28,7 @@ using namespace boost;
 
 struct file_reader{
     std::ifstream file;
+    std::string edges;
 
     file_reader(std::string fn):
         file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/" + fn){}
@@ -43,18 +44,48 @@ struct file_reader{
             return false;
         }
 
-//        std::cout << n << " " << m << std::endl;
+        edges = std::to_string(n) + " " + std::to_string(m) + "\n";
 
         int a, b;
         while (m--) {
             file >> a >> b;
             add_edge(a, b, g);
-//            std::cout << a << " " << b << "  ";
+            edges += std::to_string(a) + " " + std::to_string(b) + "  ";
         }
 
-//        std::cout << std::endl;
+        edges += "\n";
 
         return true;
+    }
+
+    bool next_graph2(Graph& g) {
+        edges.clear();
+        std::string s;
+        std::set <std::pair<int, int> > es;
+        while (getline(file, s)) {
+            if (s.empty()) {
+                break;
+            }
+            else {
+                std::istringstream tmp(s);
+                int a, b;
+                char nic;
+                tmp >> a >> nic >> b;
+                a--; b--;
+                std::pair<int, int> e(std::min(a,b), std::max(a,b));
+                if (a != b && es.find(e) == es.end()) {
+                    add_edge(a, b, g);
+                    es.insert(e);
+                    edges += std::to_string(a) + " " + std::to_string(b) + "  ";
+                }
+            }
+        }
+        edges = std::to_string(num_vertices(g)) + " " + std::to_string(num_edges(g)) + "\n" + edges;
+        return true;
+    }
+
+    std::string get_last_edges(){
+        return edges;
     }
 };
 
@@ -900,6 +931,54 @@ BOOST_AUTO_TEST_SUITE(kouter)
         }
     }
 
+    BOOST_AUTO_TEST_CASE(cos) {
+        file_reader f("performance_test_graphs/4-outer");
+
+        int i = 10;
+        bool res = true;
+        while (i--) {
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            int result = bodlaender_independent_set(g, embedding, outer_face);
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(graph_sorter) {
+        file_reader f("performance_test_graphs/graphs");
+
+        int z = 10000;
+        bool res = true;
+        std::vector<std::ofstream> files(15);
+        for (int i = 1; i < 15; i++) {
+            files[i].open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/" + std::to_string(i) + "-outer",
+                          std::ofstream::out | std::ofstream::app);
+            if (!files[i].is_open()) {
+                return;
+            }
+        }
+        std::vector<int> graphs(10);
+        while (z--) {
+            Graph g;
+            res = f.next_graph2(g);
+            if (num_vertices(g) == 0) {
+                continue;
+            }
+//            std::cout << f.get_last_edges() << std::endl;
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+            std::vector<int> vertex_level(num_vertices(g));
+            std::vector< std::vector<Edge> > aaaa;
+            int level = name_levels(embedding, outer_face, vertex_level, aaaa);
+            files[level] << f.get_last_edges() << "\n";
+        }
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
