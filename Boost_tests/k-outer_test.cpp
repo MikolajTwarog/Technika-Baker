@@ -932,7 +932,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     }
 
     BOOST_AUTO_TEST_CASE(cos) {
-        file_reader f("performance_test_graphs/4-outer");
+        file_reader f("performance_test_graphs/7-outer");
 
         int i = 10;
         bool res = true;
@@ -977,6 +977,30 @@ BOOST_AUTO_TEST_SUITE(kouter)
             std::vector< std::vector<Edge> > aaaa;
             int level = name_levels(embedding, outer_face, vertex_level, aaaa);
             files[level] << f.get_last_edges() << "\n";
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(graph_sorter2) {
+        file_reader f("performance_test_graphs/graphs");
+
+        int z = 2000;
+        bool res = true;
+        std::ofstream file;
+        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/small_graphs",
+                      std::ofstream::out | std::ofstream::app);
+        std::vector< std::vector<std::string> > graphs(4000);
+        while (z--) {
+            Graph g;
+            res = f.next_graph2(g);
+            if (num_vertices(g) == 0) {
+                continue;
+            }
+            graphs[num_vertices(g)].push_back(f.get_last_edges());
+        }
+        for (auto& n : graphs) {
+            for (auto& g : n) {
+                file << g << "\n";
+            }
         }
     }
 
