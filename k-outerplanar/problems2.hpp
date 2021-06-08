@@ -248,7 +248,12 @@ struct independent_set : node
         if (my_tree->enclosing_tree == nullptr)
             return;
 
-        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
+        auto& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
+        int child = LB;
+        if (LB >= children.size()) {
+            child--;
+        }
+        my_tree->enclosing_tree->t[children[child]].get_left_boundary(lb);
     }
 
     void get_right_boundary(std::vector<int>& rb) {
@@ -465,7 +470,12 @@ struct vertex_cover : node
         if (my_tree->enclosing_tree == nullptr)
             return;
 
-        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
+        auto& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
+        int child = LB;
+        if (LB >= children.size()) {
+            child--;
+        }
+        my_tree->enclosing_tree->t[children[child]].get_left_boundary(lb);
     }
 
     void get_right_boundary(std::vector<int>& rb) {
@@ -687,7 +697,12 @@ struct dominating_set : node
         if (my_tree->enclosing_tree == nullptr)
             return;
 
-        my_tree->enclosing_tree->t[my_tree->enclosing_tree->t[my_tree->enclosing_face].children[LB]].get_left_boundary(lb);
+        auto& children = my_tree->enclosing_tree->t[my_tree->enclosing_face].children;
+        int child = LB;
+        if (LB >= children.size()) {
+            child--;
+        }
+        my_tree->enclosing_tree->t[children[child]].get_left_boundary(lb);
     }
 
     void get_right_boundary(std::vector<int>& rb) {

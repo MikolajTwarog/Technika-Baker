@@ -10,7 +10,7 @@
 #include <boost/graph/biconnected_components.hpp>
 
 #include <vector>
-
+#include <chrono>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
 #include "../Baker's Technique/bakers_technique.hpp"
@@ -1003,6 +1003,35 @@ BOOST_AUTO_TEST_SUITE(kouter)
             }
         }
     }
+
+    BOOST_AUTO_TEST_CASE(k_outer_baker_performance) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        for (int i = 1; i < 15; i++) {
+            file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
+            int z=10;
+            while (z--) {
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                auto start = std::chrono::steady_clock::now();
+                baker2<independent_set>(g, embedding, outer_face);
+                auto stop = std::chrono::steady_clock::now();
+                results[i].first += std::chrono::duration<double, std::milli>(stop - start).count();
+                results[i].second++;
+            }
+        }
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_baker_performance");
+        for (int i = 1; i < 15; i++) {
+            file << i << " " << results[i].first / results[i].second << "\n";
+        }
+    }
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
