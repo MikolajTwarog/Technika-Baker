@@ -976,7 +976,8 @@ BOOST_AUTO_TEST_SUITE(kouter)
             std::vector<int> vertex_level(num_vertices(g));
             std::vector< std::vector<Edge> > aaaa;
             int level = name_levels(embedding, outer_face, vertex_level, aaaa);
-            files[level] << f.get_last_edges() << "\n";
+            if (level > 8 || level < 3)
+                files[level] << f.get_last_edges() << "\n";
         }
     }
 
@@ -1027,6 +1028,34 @@ BOOST_AUTO_TEST_SUITE(kouter)
             }
         }
         std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_baker_performance");
+        for (int i = 1; i < 15; i++) {
+            file << i << " " << results[i].first / results[i].second << "\n";
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(k_outer_bodlaender_performance) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        for (int i = 1; i < 15; i++) {
+            file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
+            int z=20;
+            while (z--) {
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                auto start = std::chrono::steady_clock::now();
+                bodlaender_independent_set(g, embedding, outer_face);
+                auto stop = std::chrono::steady_clock::now();
+                results[i].first += std::chrono::duration<double, std::milli>(stop - start).count();
+                results[i].second++;
+            }
+        }
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_bodlaender_performance");
         for (int i = 1; i < 15; i++) {
             file << i << " " << results[i].first / results[i].second << "\n";
         }
