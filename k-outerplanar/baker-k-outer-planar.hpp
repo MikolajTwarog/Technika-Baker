@@ -208,8 +208,8 @@ class baker_impl {
                                                 (curr_e_it_comp + 1),
                                                 new_e);
                 } else {
-                    Edge& e_con = embedding[component[(comp_it - 1 + component.size()) % component.size()]][curr_e_it_comp];
-                    curr_e_it_face = 0;
+                    Edge& e_con = embedding[comp_curr][temp_e_it_comp];
+                    curr_e_it_face = (curr_e_it_face - 1 + embedding[face_curr].size()) % embedding[face_curr].size();
                     for (; curr_e_it_face < embedding[face_curr].size(); curr_e_it_face++) {
                         if (embedding[face_curr][curr_e_it_face] == e_con) {
                             break;
@@ -342,6 +342,8 @@ class baker_impl {
                  return vertex_level[e.m_source] == level - 1 ? e.m_source : e.m_target;
             }
         }
+
+        return -1;
     }
 
     void get_leaves(::tree<Problem>& t, std::vector<int>& leaves, int v) {
