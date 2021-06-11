@@ -987,12 +987,12 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(graph_sorter2) {
         file_reader f("performance_test_graphs/graphs");
 
-        int z = 2000;
+        int z = 100;
         bool res = true;
         std::ofstream file;
-        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/small_graphs",
-                      std::ofstream::out | std::ofstream::app);
-        std::vector< std::vector<std::string> > graphs(4000);
+        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/big_graphs",
+                      std::ofstream::out);
+        std::vector< std::vector<std::string> > graphs(10000);
         while (z--) {
             Graph g;
             res = f.next_graph2(g);
@@ -1011,10 +1011,11 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(k_outer_baker_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
-        for (int i = 1; i < 15; i++) {
+        for (int i = 3; i < 10; i++) {
             file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
             int z=10;
             while (z--) {
+                std::cout << i << " " << z << std::endl;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -1031,7 +1032,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
             }
         }
         std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_baker_performance");
-        for (int i = 1; i < 15; i++) {
+        for (int i = 3; i < 10; i++) {
             file << i << " " << results[i].first / results[i].second << "\n";
         }
     }
@@ -1039,10 +1040,11 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(k_outer_bodlaender_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
-        for (int i = 1; i < 15; i++) {
+        for (int i = 3; i < 10; i++) {
             file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
-            int z=20;
+            int z=10;
             while (z--) {
+                std::cout << i << " " << z << std::endl;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -1059,7 +1061,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
             }
         }
         std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_bodlaender_performance");
-        for (int i = 1; i < 15; i++) {
+        for (int i = 3; i < 10; i++) {
             file << i << " " << results[i].first / results[i].second << "\n";
         }
     }
@@ -1105,6 +1107,60 @@ BOOST_AUTO_TEST_SUITE(kouter)
             bodlaender_independent_set(g, embedding, outer_face);
             auto stop = std::chrono::steady_clock::now();
             file << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(ptas_baker_performance) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/ptas_baker_performance");
+        for (int k = 1; k < 8; k++) {
+            file_reader f("performance_test_graphs/big_graphs");
+            int z = 10;
+            double time = 0;
+            while (z--) {
+                std::cout << k << " " << z << std::endl;
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                auto start = std::chrono::steady_clock::now();
+                bakers_technique(g, embedding, outer_face, k, Baker, is);
+                auto stop = std::chrono::steady_clock::now();
+                time += std::chrono::duration<double, std::milli>(stop - start).count();
+            }
+            file << k << " " << time << "\n";
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE(ptas_bodlaender_performance) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/ptas_bodlaender_performance");
+        for (int k = 1; k < 8; k++) {
+            file_reader f("performance_test_graphs/big_graphs");
+            int z = 10;
+            double time = 0;
+            while (z--) {
+                std::cout << k << " " << z << std::endl;
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                auto start = std::chrono::steady_clock::now();
+                bakers_technique(g, embedding, outer_face, k, Bodlaender, is);
+                auto stop = std::chrono::steady_clock::now();
+                time += std::chrono::duration<double, std::milli>(stop - start).count();
+            }
+            file << k << " " << time << "\n";
         }
     }
 
