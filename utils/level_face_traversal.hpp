@@ -11,27 +11,9 @@
 #include <boost/next_prior.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/properties.hpp>
-//#include "../k-outerplanar/baker-k-outer-planar.hpp"
-
-template < typename edge_t >
-struct edge_comp : public std::binary_function<edge_t, edge_t, bool>
-{
-    bool operator()(const edge_t& a, const edge_t& b) {
-        if (a.m_eproperty != b.m_eproperty) {
-            return a.m_eproperty < b.m_eproperty;
-        }
-        int a_source = std::min(a.m_source, a.m_target);
-        int b_source = std::min(b.m_source, b.m_target);
-        int a_target = std::max(a.m_source, a.m_target);
-        int b_target = std::max(b.m_source, b.m_target);
-        return a_source == b_source ? a_target < b_target : a_source < b_source;
-    }
-};
 
 template < typename Graph, typename Visitor , typename Container>
-inline void level_face_traversal(
-        Container& embedding, Visitor& visitor)
-{
+inline void level_face_traversal(Container& embedding, Visitor& visitor) {
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef typename boost::graph_traits<Graph>::edge_descriptor edge_t;
 
@@ -53,28 +35,12 @@ inline void level_face_traversal(
             edges_cache.push_back(e);
 
             next_edge[e][v] = edges[(i+1)%edges.size()];
-//            for (int j = (i+1)%constraints.size(); j != i; j = (j+1)%constraints.size()) {
-//                edge_t e_j = constraints[j];
-//                next_edge[e][v] = e_j;
-//            }
-
         }
     }
 
     std::vector<vertex_t> vertices_in_edge;
-//    typename boost::graph_traits< Graph >::edge_iterator fi, fi_end;
-
-//    for (boost::tie(fi, fi_end) = constraints(g); fi != fi_end; ++fi) {
-//        edge_t e(*fi);
-//        if (vertex_level[e.m_source] == level
-//            && vertex_level[e.m_target] == level) {
-//            edges_cache.push_back(e);
-//        }
-//    }
 
     for (auto e : edges_cache) {
-//            std::cout << e << "\n";
-
         vertices_in_edge.clear();
         vertices_in_edge.push_back(e.m_source);
         vertices_in_edge.push_back(e.m_target);

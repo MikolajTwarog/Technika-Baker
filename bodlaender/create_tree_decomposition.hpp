@@ -41,7 +41,6 @@ typedef std::vector<cyclic_vector< graph_traits<Graph>::edge_descriptor > > Plan
 typedef graph_traits<Graph>::edge_descriptor Edge;
 #include "../utils/visitors.hpp"
 #include "../utils/level_face_traversal.hpp"
-#include "../utils/find_outer_face.hpp"
 #include "../utils/name_levels.hpp"
 
 struct tree_decomposition{
