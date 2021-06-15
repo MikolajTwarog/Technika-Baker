@@ -24,10 +24,12 @@
 #include <boost/graph/make_maximal_planar.hpp>
 #include <boost/graph/subgraph.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <algorithm>
 #include "create_tree_decomposition.hpp"
 
 using namespace boost;
+namespace mp = multiprecision;
 
 enum Problem {vc, is, ds_ecc, ds_lcc};
 
@@ -35,10 +37,11 @@ class bodlaender_impl {
 
     struct tr_node{
         dynamic_bitset<> f;
+        std::vector<int> f2;
         std::vector<int> r_values;
         int x;
 
-        tr_node(int n): f(n, 0) {}
+        tr_node(int n): f(n, 0), f2(n, -1) {}
         tr_node(int n, int f_num): f(n, f_num) {}
     };
 
@@ -51,18 +54,10 @@ class bodlaender_impl {
     bool minimum;
 
 
-    std::vector< std::vector<int> > constraints;
+    std::vector< std::set<int> > incidence;
 
     void calculate_table(int v, int p) {
         std::vector<int>& children = tr.tree[v];
-        std::set<int> vertices;
-//        if (p == -1) {
-            vertices = std::set<int>(tr.nodes[v].begin(), tr.nodes[v].end());
-//        } else {
-//            std::set_difference(tr.nodes[v].begin(), tr.nodes[v].end(),
-//                                tr.nodes[p].begin(), tr.nodes[p].end(),
-//                                std::inserter(vertices, vertices.begin()));
-//        }
 
         for (int child : children) {
             if (child != p) {
@@ -70,67 +65,107 @@ class bodlaender_impl {
             }
         }
 
-        Graph& sub_g = graph.create_subgraph(vertices.begin(), vertices.end());
 
         std::vector<tr_node> temp;
+        std::set<int> vertices;
+        vertices = std::set<int>(tr.nodes[v].begin(), tr.nodes[v].end());
+        Graph &sub_g = graph.create_subgraph(vertices.begin(), vertices.end());
 
-        int num = 1 << vertices.size();
-        for (int x = 0; x < num; x++) {
-            temp.emplace_back(n);
-            auto& f = temp.back().f;
-            int x_temp = x;
-            for (int g_v : vertices) {
-                if (x_temp & 1) {
-                    f[g_v] = 1;
+        if (problem == ds_ecc) {
+//            for (int g_v : vertices) {
+//                int l_g_v = sub_g.global_to_local(g_v);
+//                typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
+//                for (boost::tie(ei, ei_end) = out_edges(l_g_v, sub_g); ei != ei_end; ++ei) {
+//                    int nei = sub_g.local_to_global(l_g_v == ei->m_source ? ei->m_target : ei->m_source);
+//                    incidence[g_v].insert(nei);
+//                }
+//            }
+
+            mp::cpp_int num = mp::pow(mp::cpp_int(n), vertices.size());
+
+            for (mp::cpp_int x = 0; x < num; x++) {
+                temp.emplace_back(n);
+                auto &f = temp.back().f2;
+                mp::cpp_int x_temp = x;
+                int res = 0;
+                for (int g_v : vertices) {
+                    if (int(x_temp % n) == g_v) {
+                        res++;
+                    }
+                    f[g_v] = int(x_temp % n);
+                    x_temp /= n;
                 }
-                x_temp >>= 1;
+
+                int r_1 = 1, r_2 = 1, r_3 = 1;
+
+                typename graph_traits<Graph>::edge_iterator ei, ei_end;
+                for (boost::tie(ei, ei_end) = edges(sub_g); ei != ei_end; ++ei) {
+                    int v_1 = sub_g.local_to_global(ei->m_source), v_2 = sub_g.local_to_global(ei->m_target);
+                    r_1 &= f[v_1] != v_2 || f[v_2] == v_2;
+                    r_2 &= f[v_2] != v_1 || f[v_1] == v_1;
+                }
+
+                for (int g_v : vertices) {
+                    r_3 &= incidence[g_v].find(f[g_v]) != incidence[g_v].end() || f[g_v] == g_v;
+                }
+
+//                temp.back().r_values.push_back(r_1);
+//                temp.back().r_values.push_back(r_2);
+//                temp.back().r_values.push_back(r_3);
+                temp.back().r_values.push_back(r_1 & r_2 & r_3);
+                temp.back().r_values.push_back(res);
             }
+        } else {
+            int num = 1 << vertices.size();
+            for (int x = 0; x < num; x++) {
+                temp.emplace_back(n);
+                auto &f = temp.back().f;
+                int x_temp = x;
+                for (int g_v : vertices) {
+                    if (x_temp & 1) {
+                        f[g_v] = 1;
+                    }
+                    x_temp >>= 1;
+                }
 
-            if (problem == ds_ecc) {
-                for (auto &con : constraints) {
-                    int r = 0;
-                    for (int ver : con) {
-                        r += f[ver];
-                    }
-                    temp.back().r_values.push_back(r > 0);
-                }
-            } else if (problem == ds_lcc) {
-                int r_val = 1;
-                for (int g_v : vertices) {
-                    int r = f[g_v];
-                    for (Edge e : embedding[g_v]) {
-                        int nei = g_v == e.m_source ? e.m_target : e.m_source;
-                        if (vertices.find(nei) != vertices.end()) {
-                            r += f[nei];
-                        } else {
-                            r = 1;
-                            break;
-                        }
-                    }
-                    r_val &= (r > 0);
-                }
-                temp.back().r_values.push_back(r_val);
-            } else {
-                int r_val = 1;
-                for (int g_v : vertices) {
-                    int l_g_v = sub_g.global_to_local(g_v);
-                    typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
-                    for(boost::tie(ei, ei_end) = out_edges(l_g_v, sub_g); ei != ei_end; ++ei){
-                        int nei = sub_g.local_to_global(l_g_v == ei->m_source ? ei->m_target : ei->m_source);
-                        if (vertices.find(nei) != vertices.end()) {
-                            if (minimum) {
-                                r_val &= (f[g_v] + f[nei] > 0);
+                if (problem == ds_lcc) {
+                    int r_val = 1;
+                    for (int g_v : vertices) {
+                        int r = f[g_v];
+                        for (Edge e : embedding[g_v]) {
+                            int nei = g_v == e.m_source ? e.m_target : e.m_source;
+                            if (vertices.find(nei) != vertices.end()) {
+                                r += f[nei];
                             } else {
-                                r_val &= (f[g_v] + f[nei] < 2);
+                                r = 1;
+                                break;
+                            }
+                        }
+                        r_val &= (r > 0);
+                    }
+                    temp.back().r_values.push_back(r_val);
+                } else {
+                    int r_val = 1;
+                    for (int g_v : vertices) {
+                        int l_g_v = sub_g.global_to_local(g_v);
+                        typename graph_traits<Graph>::out_edge_iterator ei, ei_end;
+                        for (boost::tie(ei, ei_end) = out_edges(l_g_v, sub_g); ei != ei_end; ++ei) {
+                            int nei = sub_g.local_to_global(l_g_v == ei->m_source ? ei->m_target : ei->m_source);
+                            if (vertices.find(nei) != vertices.end()) {
+                                if (minimum) {
+                                    r_val &= (f[g_v] + f[nei] > 0);
+                                } else {
+                                    r_val &= (f[g_v] + f[nei] < 2);
+                                }
                             }
                         }
                     }
+                    temp.back().r_values.push_back(r_val);
                 }
-                temp.back().r_values.push_back(r_val);
-            }
 
-            temp.back().r_values.push_back(f.count());
-            temp.back().x = x;
+                temp.back().r_values.push_back(f.count());
+                temp.back().x = x;
+            }
         }
 
         for (int child : children) {
@@ -138,7 +173,6 @@ class bodlaender_impl {
                 temp = calculate_temp(v, child, temp);
             }
         }
-
         tables[v] = temp;
     }
 
@@ -152,7 +186,7 @@ class bodlaender_impl {
             for (auto& f2 : tables[child]) {
                 bool good = true;
                 for (int ver : intersection) {
-                    if (f1.f[ver] != f2.f[ver]) {
+                    if (f1.f[ver] != f2.f[ver] || f1.f2[ver] != f2.f2[ver]) {
                         good = false;
                         break;
                     }
@@ -162,19 +196,23 @@ class bodlaender_impl {
                     continue;
                 }
 
-                auto f3 = f1.f & f2.f;
                 std::vector<int> s_values;
-                if (problem == ds_ecc) {
-                    for (int i = 0; i < constraints.size(); i++) {
-                        auto &con = constraints[i];
-                        int r = f1.r_values[i] | f2.r_values[i];
-                        s_values.push_back(r);
-                    }
-                } else {
-                    s_values.push_back(f1.r_values[0] & f2.r_values[0]);
+                for (int i = 0; i < f1.r_values.size() - 1; i++) {
+                    s_values.push_back(f1.r_values[i] & f2.r_values[i]);
                 }
 
-                s_values.push_back(f1.r_values.back() + f2.r_values.back() - f3.count());
+                if (problem == ds_ecc) {
+                    int r_m = 0;
+                    for (int i = 0; i < n ; i++) {
+                        if (f1.f2[i] == i && f2.f2[i] == i) {
+                            r_m++;
+                        }
+                    }
+                    s_values.push_back(f1.r_values.back() + f2.r_values.back() - r_m);
+                } else {
+                    auto f3 = f1.f & f2.f;
+                    s_values.push_back(f1.r_values.back() + f2.r_values.back() - f3.count());
+                }
 
                 int f_it = -1;
                 for (int i = 0; i < new_temp.size(); i++) {
@@ -186,7 +224,7 @@ class bodlaender_impl {
                         }
                     }
 
-                    if (good && f1.f == new_temp[i].f) {
+                    if (good && f1.f == new_temp[i].f && (problem != ds_ecc || f1.f2 == new_temp[i].f2)) {
                         f_it = i;
                         break;
                     }
@@ -195,6 +233,7 @@ class bodlaender_impl {
                 if (f_it == -1) {
                     new_temp.emplace_back(n);
                     new_temp.back().f = f1.f;
+                    new_temp.back().f2 = f1.f2;
                     new_temp.back().r_values = s_values;
                     new_temp.back().x = f1.x | f2.x;
                 } else {
@@ -202,6 +241,7 @@ class bodlaender_impl {
                     || (!minimum && new_temp[f_it].r_values.back() < s_values.back())) {
                         new_temp[f_it].r_values.back() = s_values.back();
                         new_temp[f_it].f = f1.f;
+                        new_temp[f_it].f2 = f1.f2;
                         new_temp[f_it].x = f1.x | f2.x;
                     }
                 }
@@ -220,12 +260,11 @@ public:
 
         if (problem == ds_ecc) {
             for (int v = 0; v < embedding.size(); v++) {
-                constraints.emplace_back();
-                constraints.back().push_back(v);
+                incidence.emplace_back();
 
                 for (auto& e : embedding[v]) {
                     int w = v == e.m_source ? e.m_target : e.m_source;
-                    constraints.back().push_back(w);
+                    incidence.back().insert(w);
                 }
             }
         }

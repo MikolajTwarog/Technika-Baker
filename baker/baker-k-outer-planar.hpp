@@ -42,7 +42,7 @@ typedef graph_traits<Graph>::edge_descriptor Edge;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
 #include "../utils/level_face_traversal.hpp"
-#include "problems2.hpp"
+#include "problems.hpp"
 #include "../utils/visitors.hpp"
 #include "../utils/name_levels.hpp"
 
@@ -967,7 +967,7 @@ public:
 };
 
 template <typename Problem>
-int baker2(const Graph& g, PlanarEmbedding embedding, std::vector<int> outer_face) {
+int baker(const Graph& g, PlanarEmbedding embedding, std::vector<int> outer_face) {
     baker_impl < Problem > b(g, embedding, outer_face);
     return b.result();
 }

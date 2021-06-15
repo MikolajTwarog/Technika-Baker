@@ -203,13 +203,13 @@ int bakers_technique(Graph& g, PlanarEmbedding& embedding, std::vector<int>& out
                     if (alg == Baker) {
                         switch (p) {
                             case is :
-                                temp_res += baker2<independent_set>(graph, emb, out_face);
+                                temp_res += baker<independent_set>(graph, emb, out_face);
                                 break;
                             case vc :
-                                temp_res += baker2<vertex_cover>(graph, emb, out_face);
+                                temp_res += baker<vertex_cover>(graph, emb, out_face);
                                 break;
                             default :
-                                temp_res += baker2<dominating_set>(graph, emb, out_face);
+                                temp_res += baker<dominating_set>(graph, emb, out_face);
                         }
                     } else {
                         temp_res += bodlaender(graph, emb, out_face, p);
