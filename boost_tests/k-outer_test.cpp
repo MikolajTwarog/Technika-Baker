@@ -849,14 +849,13 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(performance)
     BOOST_AUTO_TEST_CASE(graph_sorter) {
-        file_reader f("performance_test_graphs/graphs");
+        file_reader f("unprocessed_graphs/same_low_n");
 
         int z = 10000;
         bool res = true;
         std::vector<std::ofstream> files(15);
         for (int i = 1; i < 15; i++) {
-            files[i].open("test_graphs/performance_test_graphs/" + std::to_string(i) + "-outer",
-                          std::ofstream::out | std::ofstream::app);
+            files[i].open("test_graphs/performance_test_graphs/" + std::to_string(i) + "-outer");
             if (!files[i].is_open()) {
                 return;
             }
@@ -880,46 +879,11 @@ BOOST_AUTO_TEST_SUITE(performance)
     }
 
     BOOST_AUTO_TEST_CASE(graph_sorter2) {
-        file_reader f("performance_test_graphs/graphs");
-
+        file_reader f("unprocessed_graphs/big_n");
+        std::ofstream file_small("test_graphs/performance_test_graphs/small_graphs");
+        std::ofstream file_big("test_graphs/performance_test_graphs/big_graphs");
         int z = 100;
         bool res = true;
-        std::ofstream file;
-        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/test_graphs/performance_test_graphs/low_degree",
-                      std::ofstream::out | std::ofstream::app);
-        std::vector< std::vector<std::string> > graphs(10000);
-        while (z--) {
-            Graph g;
-            res = f.next_graph2(g);
-            if (num_vertices(g) == 0) {
-                continue;
-            }
-            PlanarEmbedding embedding(num_vertices(g));
-            std::vector<int> outer_face;
-            get_embedding(g, embedding, outer_face);
-            int degree = 0;
-            for (auto& edges : embedding) {
-                int temp = edges.size();
-                degree = std::max(degree, temp);
-            }
-            if (degree < 30)
-                graphs[degree].push_back(f.get_last_edges());
-        }
-        for (auto& n : graphs) {
-            for (auto& g : n) {
-                file << g << "\n";
-            }
-        }
-    }
-
-    BOOST_AUTO_TEST_CASE(graph_sorter3) {
-        file_reader f("performance_test_graphs/graphs");
-
-        int z = 100;
-        bool res = true;
-        std::ofstream file;
-        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/test_graphs/performance_test_graphs/big_graphs",
-                  std::ofstream::out);
         std::vector< std::vector<std::string> > graphs(10000);
         while (z--) {
             Graph g;
@@ -929,9 +893,16 @@ BOOST_AUTO_TEST_SUITE(performance)
             }
             graphs[num_vertices(g)].push_back(f.get_last_edges());
         }
-        for (auto& n : graphs) {
-            for (auto& g : n) {
-                file << g << "\n";
+        for (int n = 0; n < 250; n++) {
+            auto& gs = graphs[n];
+            for (auto& g : gs) {
+                file_small << g << "\n";
+            }
+        }
+        for (int n = 250; n < 1000; n++) {
+            auto& gs = graphs[n];
+            for (auto& g : gs) {
+                file_big << g << "\n";
             }
         }
     }
