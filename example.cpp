@@ -9,23 +9,9 @@
 
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 
-#include "k-outerplanar/baker-k-outer-planar.hpp"
-#include "k-outerplanar/problems2.hpp"
+#include "bakers_technique/bakers_technique.hpp"
 #include <vector>
 
 int main(int argc, char** argv) {
-    Graph g6(5);
-    add_edge(0,1,g6);
-    add_edge(1,2,g6);
-    add_edge(2,3,g6);
-    add_edge(3, 0, g6);
 
-    add_edge(4, 5, g6);
-    add_edge(5, 6, g6);
-    add_edge(6, 4, g6);
-
-    add_edge(4, 0, g6);
-    add_edge(4, 1, g6);
-    add_edge(5, 2, g6);
-    baker2<independent_set>(g6);
 }
