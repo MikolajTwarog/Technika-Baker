@@ -1,13 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <filesystem>
-#include <unistd.h>
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
-#include <boost/graph/biconnected_components.hpp>
 
 #include <vector>
 #include <chrono>
@@ -30,7 +25,7 @@ struct file_reader{
     std::string edges;
 
     file_reader(std::string fn):
-        file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/" + fn){}
+        file("test_graphs/" + fn){}
 
     bool next_graph(Graph& g) {
         if(!file.is_open()) {
@@ -231,7 +226,7 @@ int dominating_set_(Graph& g) {
     return mn;
 }
 
-BOOST_AUTO_TEST_SUITE(kouter)
+BOOST_AUTO_TEST_SUITE(corectness)
     BOOST_AUTO_TEST_CASE(przyklad) {
         Graph g;
         make_graph(g, 158, "0 1  0 4  1 2  2 5  2 106  2 110  2 4  2 3  3 7  3 22  3 21  3 11  3 8  3 4  4 5  5 6  6 7  7 8  7 105  8 9  8 103  9 10  10 11  10 13  10 14  10 19  10 20  10 97  10 25  10 23  10 103  11 12  13 17  13 14  14 15  14 16  14 17  16 17  17 18  20 101  20 21  21 22  21 25  21 94  21 93  21 91  21 95  21 34  21 37  21 36  21 96  21 100  22 23  23 24  25 26  25 27  25 28  25 89  25 47  25 46  25 41  25 34  25 90  25 93  28 29  28 86  28 30  28 84  28 31  28 87  28 88  29 30  30 83  30 85  30 31  31 82  31 32  32 46  32 33  33 38  33 39  33 40  33 52  33 81  33 34  34 35  34 36  36 37  38 39  40 56  40 55  40 80  40 41  41 43  41 61  41 42  43 65  43 63  43 79  43 62  43 44  44 45  44 64  45 69  45 64  45 78  45 46  46 47  46 51  46 52  46 77  46 56  46 70  47 48  47 49  47 50  52 53  53 54  53 55  53 56  56 57  57 58  57 59  59 60  59 73  59 69  60 61  60 62  62 63  62 64  64 67  64 68  64 69  64 71  64 72  64 76  64 65  65 66  68 69  69 71  69 70  72 73  73 74  73 75  83 84  88 89  90 91  91 92  96 97  96 98  96 99  97 98  100 101  101 102  103 104  106 107  107 108  107 109");
@@ -850,7 +845,9 @@ BOOST_AUTO_TEST_SUITE(kouter)
             BOOST_CHECK_EQUAL(result, expected);
         }
     }
+BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(performance)
     BOOST_AUTO_TEST_CASE(graph_sorter) {
         file_reader f("performance_test_graphs/graphs");
 
@@ -858,7 +855,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         bool res = true;
         std::vector<std::ofstream> files(15);
         for (int i = 1; i < 15; i++) {
-            files[i].open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/" + std::to_string(i) + "-outer",
+            files[i].open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/test_graphs/performance_test_graphs/" + std::to_string(i) + "-outer",
                           std::ofstream::out | std::ofstream::app);
             if (!files[i].is_open()) {
                 return;
@@ -889,7 +886,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         int z = 100;
         bool res = true;
         std::ofstream file;
-        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/low_degree",
+        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/test_graphs/performance_test_graphs/low_degree",
                       std::ofstream::out | std::ofstream::app);
         std::vector< std::vector<std::string> > graphs(10000);
         while (z--) {
@@ -922,7 +919,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         int z = 100;
         bool res = true;
         std::ofstream file;
-        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/test_graphs/performance_test_graphs/big_graphs",
+        file.open("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/test_graphs/performance_test_graphs/big_graphs",
                   std::ofstream::out);
         std::vector< std::vector<std::string> > graphs(10000);
         while (z--) {
@@ -963,7 +960,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
                 results[i].second++;
             }
         }
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_ds_baker_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/k-outer_ds_baker_performance");
         for (int i = 3; i < 10; i++) {
             file << i << " " << results[i].first / results[i].second << "\n";
         }
@@ -992,7 +989,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
                 results[i].second++;
             }
         }
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/k-outer_ds_bodlaender_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/k-outer_ds_bodlaender_performance");
         for (int i = 3; i < 10; i++) {
             file << i << " " << results[i].first / results[i].second << "\n";
         }
@@ -1002,7 +999,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         file_reader f("performance_test_graphs/small_graphs");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/n_ds_baker_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/n_ds_baker_performance");
         int z=200;
         while (z--) {
             std::cout << z << std::endl;
@@ -1025,7 +1022,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         file_reader f("performance_test_graphs/small_graphs");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/n_ds_bodlaender_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/n_ds_bodlaender_performance");
         int z=200;
         while (z--) {
             std::cout << z << std::endl;
@@ -1047,7 +1044,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(ptas_baker_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/ptas_ds_baker_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/ptas_ds_baker_performance");
         for (int k = 1; k < 6; k++) {
             file_reader f("performance_test_graphs/big_graphs");
             int z = 5;
@@ -1074,7 +1071,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(ptas_bodlaender_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/ptas_ds_bodlaender_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/ptas_ds_bodlaender_performance");
         for (int k = 1; k < 6; k++) {
             file_reader f("performance_test_graphs/big_graphs");
             int z = 5;
@@ -1101,7 +1098,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
     BOOST_AUTO_TEST_CASE(ptas_baker_results) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/ptas_ds_baker_results");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/ptas_ds_baker_results");
         for (int k = 1; k < 10; k++) {
             file_reader f("performance_test_graphs/big_graphs");
             int z = 10;
@@ -1126,7 +1123,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         bool res = true;
         std::vector< std::pair<double, int> > results(40);
         file_reader f("performance_test_graphs/low_degree");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/d_ds_baker_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/d_ds_baker_performance");
         int z=100;
         while (z--) {
             std::cout << z << std::endl;
@@ -1160,7 +1157,7 @@ BOOST_AUTO_TEST_SUITE(kouter)
         bool res = true;
         std::vector< std::pair<double, int> > results(40);
         file_reader f("performance_test_graphs/low_degree");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/Boost_tests/results/d_ds_bodlaender_performance");
+        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/d_ds_bodlaender_performance");
         int z=100;
         while (z--) {
             std::cout << z << std::endl;
