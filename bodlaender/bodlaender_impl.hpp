@@ -233,7 +233,9 @@ class bodlaender_impl {
                 if (f_it == -1) {
                     new_temp.emplace_back(n);
                     new_temp.back().f = f1.f;
-                    new_temp.back().f2 = f1.f2;
+                    if (problem == ds_ecc) {
+                        new_temp.back().f2 = f1.f2;
+                    }
                     new_temp.back().r_values = s_values;
                     new_temp.back().x = f1.x | f2.x;
                 } else {
@@ -241,7 +243,9 @@ class bodlaender_impl {
                     || (!minimum && new_temp[f_it].r_values.back() < s_values.back())) {
                         new_temp[f_it].r_values.back() = s_values.back();
                         new_temp[f_it].f = f1.f;
-                        new_temp[f_it].f2 = f1.f2;
+                        if (problem == ds_ecc) {
+                            new_temp[f_it].f2 = f1.f2;
+                        }
                         new_temp[f_it].x = f1.x | f2.x;
                     }
                 }

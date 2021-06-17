@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import numpy
 import sys
 
-
+ARGS = len(sys.argv) - 2
 IN_FILE1 = 'results/' + sys.argv[1]
 IN_FILE2 = 'results/' + sys.argv[2]
-OUT_FILE = 'results/' + sys.argv[3]
-X_AX = sys.argv[4]
+OUT_FILE = 'results/' + sys.argv[-2]
+X_AX = sys.argv[-1]
 Y_AX = 'czas w ms'
 
 def figure_size(figure_size_scale):
@@ -31,23 +31,18 @@ publication_with_latex = {
 plt.style.use('ggplot')
 matplotlib.rcParams.update(publication_with_latex)
 
-T1 = []
-T2 = []
-T3 = []
-T4 = []
-with open(IN_FILE1, "r") as f:
-    for line in f.readlines():
-        T1.append(int(line.split(" ")[0]))
-        T2.append(float(line.split(" ")[1]))
-        
-with open(IN_FILE2, "r") as f:
-    for line in f.readlines():
-        T3.append(int(line.split(" ")[0]))
-        T4.append(float(line.split(" ")[1]))
-
 fig, ax = plt.subplots()
-ax.plot(T3, T4, label="Bodlaender")
-ax.plot(T1, T2, label="Baker")
+
+for i in range(1, ARGS):
+    T1 = []
+    T2 = []
+    with open('results/' + sys.argv[i], "r") as f:
+        name = f.readline()
+        for line in f.readlines():
+            T1.append(int(line.split(" ")[0]))
+            T2.append(float(line.split(" ")[1]))
+    ax.plot(T1, T2, label=name)
+
 ax.legend(loc='upper left', frameon=False)
 ax.set_yscale('log')
 

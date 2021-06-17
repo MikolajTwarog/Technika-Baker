@@ -16,8 +16,6 @@
 #include <boost/graph/subgraph.hpp>
 #include <boost/dynamic_bitset.hpp>
 
-#include "../utils/random_graph.hpp"
-
 using namespace boost;
 
 struct file_reader{
@@ -941,7 +939,9 @@ BOOST_AUTO_TEST_SUITE(performance)
         }
 
         std::ofstream file_baker("results/k-outer_baker_performance");
+        file_baker << "Baker\n";
         std::ofstream file_bodlaender("results/k-outer_bodlaender_performance");
+        file_bodlaender << "Bodlaender\n";
         for (int i = 3; i < 10; i++) {
             if (num_of_graphs[i] > 0) {
                 file_baker << i << " " << results_baker[i] / num_of_graphs[i] << "\n";
@@ -959,8 +959,10 @@ BOOST_AUTO_TEST_SUITE(performance)
         std::vector< std::pair<double, int> > results(15);
         file_reader f("performance_test_graphs/small_graphs");
         std::ofstream file_baker("results/n_baker_performance");
+        file_baker << "Baker\n";
         std::ofstream file_bodlaender("results/n_bodlaender_performance");
-        int z = 400;
+        file_bodlaender << "Bodlaender\n";
+        int z = 250;
         while (z--) {
             std::cout << z << std::endl;
             Graph g;
@@ -992,7 +994,9 @@ BOOST_AUTO_TEST_SUITE(performance)
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file_baker("results/ptas_baker_performance");
+        file_baker << "Baker\n";
         std::ofstream file_bodlaender("results/ptas_bodlaender_performance");
+        file_bodlaender << "Bodlaender\n";
         for (int k = 1; k < 8; k++) {
             file_reader f("performance_test_graphs/big_graphs");
             int z = 10;
@@ -1032,7 +1036,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         std::ofstream file("results/ptas_is_baker_results");
         for (int k = 1; k < 5; k++) {
             file_reader f("performance_test_graphs/big_graphs");
-            int z = 10;
+            int z = 20;
             double result = 0;
             while (z--) {
                 std::cout << k << " " << z << std::endl;
@@ -1052,12 +1056,18 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot2.py results/ptas_ds_baker_results");
     }
 
-    BOOST_AUTO_TEST_CASE(degree_baker_performance) {
+    BOOST_AUTO_TEST_CASE(n_ds_performance) {
         bool res = true;
-        std::vector< std::pair<double, int> > results(40);
-        file_reader f("performance_test_graphs/low_degree");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/d_ds_baker_performance");
-        int z=100;
+        std::vector< std::pair<double, int> > results(15);
+        file_reader f("performance_test_graphs/small_graphs");
+        std::ofstream file_baker("results/n_ds_baker_performance");
+        file_baker << "Baker\n";
+        std::ofstream file_ecc("results/n_ds_ecc_performance");
+        file_ecc << "Bodlaender ECC\n";
+        std::ofstream file_lcc("results/n_ds_lcc_performance");
+        file_lcc << "Bodlaender LCC\n";
+
+        int z = 20;
         while (z--) {
             std::cout << z << std::endl;
             Graph g;
@@ -1068,56 +1078,27 @@ BOOST_AUTO_TEST_SUITE(performance)
             PlanarEmbedding embedding(num_vertices(g));
             std::vector<int> outer_face;
             get_embedding(g, embedding, outer_face);
-            int degree = 0;
-            for (auto& edges : embedding) {
-                int temp = edges.size();
-                degree = std::max(degree, temp);
-            }
+
             auto start = std::chrono::steady_clock::now();
-            baker<dominating_set>(g, embedding, outer_face);
+            baker<independent_set>(g, embedding, outer_face);
             auto stop = std::chrono::steady_clock::now();
-            results[degree].first += std::chrono::duration<double, std::milli>(stop - start).count();
-            results[degree].second++;
-//            file << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
-        }
+            file_baker << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
 
-        for (int i = 1; i < results.size(); i++) {
-            file << i << " " << results[i].first / results[i].second << "\n";
-        }
-    }
+            start = std::chrono::steady_clock::now();
+            bodlaender_dominating_set_ecc(g, embedding, outer_face);
+            stop = std::chrono::steady_clock::now();
+            file_ecc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
 
-    BOOST_AUTO_TEST_CASE(degree_bodlaender_performance) {
-        bool res = true;
-        std::vector< std::pair<double, int> > results(40);
-        file_reader f("performance_test_graphs/low_degree");
-        std::ofstream file("/home/mikolajtwarog/Desktop/licencjat/Technika-Baker/boost_tests/results/d_ds_bodlaender_performance");
-        int z=100;
-        while (z--) {
-            std::cout << z << std::endl;
-            Graph g;
-            res = f.next_graph(g);
-            if (!res) {
-                break;
-            }
-            PlanarEmbedding embedding(num_vertices(g));
-            std::vector<int> outer_face;
-            get_embedding(g, embedding, outer_face);
-            int degree = 0;
-            for (auto& edges : embedding) {
-                int temp = edges.size();
-                degree = std::max(degree, temp);
-            }
-            auto start = std::chrono::steady_clock::now();
+            start = std::chrono::steady_clock::now();
             bodlaender_dominating_set_lcc(g, embedding, outer_face);
-            auto stop = std::chrono::steady_clock::now();
-            results[degree].first += std::chrono::duration<double, std::milli>(stop - start).count();
-            results[degree].second++;
-//            file << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+            stop = std::chrono::steady_clock::now();
+            file_lcc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
         }
+        file_baker.close();
+        file_ecc.close();
+        file_lcc.close();
 
-        for (int i = 1; i < results.size(); i++) {
-            file << i << " " << results[i].first / results[i].second << "\n";
-        }
+        system("python3 ../plot/plot.py n_ds_baker_performance n_ds_ecc_performance n_ds_lcc_performance ds_n.pdf \"ilość wierzchołków\"");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
