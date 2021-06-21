@@ -51,6 +51,9 @@ struct file_reader{
     }
 
     bool next_graph2(Graph& g) {
+        if(!file.is_open()) {
+            return false;
+        }
         edges.clear();
         std::string s;
         std::set <std::pair<int, int> > es;
@@ -873,7 +876,7 @@ BOOST_AUTO_TEST_SUITE(parsers)
             std::vector<int> vertex_level(num_vertices(g));
             std::vector< std::vector<Edge> > aaaa;
             int level = name_levels(embedding, outer_face, vertex_level, aaaa);
-            if (level > 8 || level < 3)
+            if (level < 10)
                 files[level] << f.get_last_edges() << "\n";
         }
     }
@@ -885,21 +888,27 @@ BOOST_AUTO_TEST_SUITE(parsers)
         int z = 100;
         bool res = true;
         std::vector< std::vector<std::string> > graphs(10000);
+        std::vector<int> num;
         while (z--) {
             Graph g;
             res = f.next_graph2(g);
             if (num_vertices(g) == 0) {
                 continue;
             }
+            num.push_back(num_vertices(g));
             graphs[num_vertices(g)].push_back(f.get_last_edges());
         }
-        for (int n = 0; n < 250; n++) {
+
+        std::sort(num.begin(), num.end());
+        int max_size = num[num.size()/2];
+
+        for (int n = 0; n < max_size; n++) {
             auto& gs = graphs[n];
             for (auto& g : gs) {
                 file_small << g << "\n";
             }
         }
-        for (int n = 250; n < 1000; n++) {
+        for (int n = max_size; n < 1000; n++) {
             auto& gs = graphs[n];
             for (auto& g : gs) {
                 file_big << g << "\n";
