@@ -916,12 +916,13 @@ BOOST_AUTO_TEST_SUITE(performance)
         std::vector<double> results_baker(15);
         std::vector<double> results_bodlaender(15);
         std::vector<int> num_of_graphs(15);
+        std::cout << "k: " << std::flush;
         for (int i = 3; i < 10; i++) {
             file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
             int z=10;
-            std::cout << i << " ";
+            std::cout << i << " g: " << std::flush;
             while (z--) {
-                std::cout << z;
+                std::cout << z << std::flush;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -942,10 +943,14 @@ BOOST_AUTO_TEST_SUITE(performance)
                 results_bodlaender[i] += std::chrono::duration<double, std::milli>(stop - start).count();
 
                 num_of_graphs[i]++;
-                std::cout << "\b";
+
+                std::cout << "\b" << std::flush;
             }
-            std::cout << "\b\b";
+
+            std::cout << "\b\b\b\b\b" << std::flush;
         }
+
+        std::cout << "\b\b\b" << std::flush;
 
         std::ofstream file_baker("results/k-outer_baker_performance");
         file_baker << "Baker\n";
@@ -971,9 +976,12 @@ BOOST_AUTO_TEST_SUITE(performance)
         file_baker << "Baker\n";
         std::ofstream file_bodlaender("results/n_bodlaender_performance");
         file_bodlaender << "Bodlaender\n";
+
+        std::cout << "g: " << std::flush;
+
         int z = 250;
         while (z--) {
-            std::cout << z << std::endl;
+            std::cout << z << std::flush;
             Graph g;
             res = f.next_graph(g);
             if (!res) {
@@ -992,7 +1000,13 @@ BOOST_AUTO_TEST_SUITE(performance)
             bodlaender_independent_set(g, embedding, outer_face);
             stop = std::chrono::steady_clock::now();
             file_bodlaender << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+
+            for (int _ = 0; _ < std::to_string(z).size(); _++)
+                std::cout << "\b" << std::flush;
         }
+
+        std::cout << "\b\b\b" << std::flush;
+
         file_baker.close();
         file_bodlaender.close();
 
@@ -1006,12 +1020,15 @@ BOOST_AUTO_TEST_SUITE(performance)
         file_baker << "Baker\n";
         std::ofstream file_bodlaender("results/ptas_bodlaender_performance");
         file_bodlaender << "Bodlaender\n";
-        for (int k = 1; k < 8; k++) {
+        std::cout << "k: " << std::flush;
+        for (int k = 1; k < 10; k++) {
+            std::cout << k << " g: " << std::flush;
+
             file_reader f("performance_test_graphs/big_graphs");
             int z = 10;
             double time_baker = 0, time_bodlaender = 0;
             while (z--) {
-                std::cout << k << " " << z << std::endl;
+                std::cout << z << std::flush;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -1029,10 +1046,17 @@ BOOST_AUTO_TEST_SUITE(performance)
                 bakers_technique(g, embedding, outer_face, k, Bodlaender, is);
                 stop = std::chrono::steady_clock::now();
                 time_bodlaender += std::chrono::duration<double, std::milli>(stop - start).count();
+
+                std::cout << "\b" << std::flush;
             }
             file_baker << k << " " << time_baker << "\n";
             file_bodlaender << k << " " << time_bodlaender << "\n";
+
+            std::cout << "\b\b\b\b\b" << std::flush;
         }
+
+        std::cout << "\b\b\b" << std::flush;
+
         file_baker.close();
         file_bodlaender.close();
 
@@ -1043,12 +1067,17 @@ BOOST_AUTO_TEST_SUITE(performance)
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file("results/ptas_is_baker_results");
+
+        std::cout << "k: " << std::flush;
+
         for (int k = 1; k < 10; k++) {
+            std::cout << k << " g: " << std::flush;
+
             file_reader f("performance_test_graphs/big_graphs");
             int z = 10;
             double result = 0;
             while (z--) {
-                std::cout << k << " " << z << std::endl;
+                std::cout << z << std::flush;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -1058,9 +1087,16 @@ BOOST_AUTO_TEST_SUITE(performance)
                 std::vector<int> outer_face;
                 get_embedding(g, embedding, outer_face);
                 result += bakers_technique(g, embedding, outer_face, k, Baker, is);
+
+                std::cout << "\b" << std::flush;
             }
             file << k << " " << result << "\n";
+
+            std::cout << "\b\b\b\b\b" << std::flush;
         }
+
+        std::cout << "\b\b\b" << std::flush;
+
         file.close();
 
         system("python3 ../plot/plot2.py results/ptas_ds_baker_results");
@@ -1079,9 +1115,11 @@ BOOST_AUTO_TEST_SUITE(performance)
         std::ofstream file_lcc("results/n_ds_lcc_performance");
         file_lcc << "Bodlaender LCC\n";
 
+        std::cout << "g: " << std::flush;
+
         int z = 200;
         while (z--) {
-            std::cout << z << std::endl;
+            std::cout << z << std::flush;
             Graph g;
             res = f.next_graph(g);
             if (!res) {
@@ -1096,7 +1134,6 @@ BOOST_AUTO_TEST_SUITE(performance)
             auto stop = std::chrono::steady_clock::now();
             results_baker[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
             results_baker[num_vertices(g)].second++;
-//            file_baker << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
 
             if (z > 180) {
                 start = std::chrono::steady_clock::now();
@@ -1104,18 +1141,21 @@ BOOST_AUTO_TEST_SUITE(performance)
                 stop = std::chrono::steady_clock::now();
                 results_bod_ecc[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
                 results_bod_ecc[num_vertices(g)].second++;
-//                file_ecc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count()
-//                         << "\n";
 
                 start = std::chrono::steady_clock::now();
                 bodlaender_dominating_set_lcc(g, embedding, outer_face);
                 stop = std::chrono::steady_clock::now();
                 results_bod_lcc[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
                 results_bod_lcc[num_vertices(g)].second++;
-//                file_lcc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count()
-//                         << "\n";
+
             }
+
+            for (int _ = 0; _ < std::to_string(z).size(); _++)
+                std::cout << "\b" << std::flush;
         }
+
+        std::cout << "\b\b\b" << std::flush;
+
         for (int i = 0; i < 400; i++) {
             if (results_baker[i].second > 0) {
                 file_baker << i << " " << results_baker[i].first / results_baker[i].second << "\n";
