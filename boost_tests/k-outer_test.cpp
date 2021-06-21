@@ -845,7 +845,9 @@ BOOST_AUTO_TEST_SUITE(corectness)
     }
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(performance)
+
+
+BOOST_AUTO_TEST_SUITE(parsers)
     BOOST_AUTO_TEST_CASE(graph_sorter) {
         file_reader f("unprocessed_graphs/same_low_n");
 
@@ -877,7 +879,7 @@ BOOST_AUTO_TEST_SUITE(performance)
     }
 
     BOOST_AUTO_TEST_CASE(graph_sorter2) {
-        file_reader f("unprocessed_graphs/big_n");
+        file_reader f("unprocessed_graphs/different_n");
         std::ofstream file_small("test_graphs/performance_test_graphs/small_graphs");
         std::ofstream file_big("test_graphs/performance_test_graphs/big_graphs");
         int z = 100;
@@ -904,7 +906,11 @@ BOOST_AUTO_TEST_SUITE(performance)
             }
         }
     }
+BOOST_AUTO_TEST_SUITE_END()
 
+
+
+BOOST_AUTO_TEST_SUITE(performance)
     BOOST_AUTO_TEST_CASE(k_outer_performance) {
         bool res = true;
         std::vector<double> results_baker(15);
@@ -1034,9 +1040,9 @@ BOOST_AUTO_TEST_SUITE(performance)
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file("results/ptas_is_baker_results");
-        for (int k = 1; k < 5; k++) {
+        for (int k = 1; k < 10; k++) {
             file_reader f("performance_test_graphs/big_graphs");
-            int z = 20;
+            int z = 10;
             double result = 0;
             while (z--) {
                 std::cout << k << " " << z << std::endl;
@@ -1052,13 +1058,16 @@ BOOST_AUTO_TEST_SUITE(performance)
             }
             file << k << " " << result << "\n";
         }
+        file.close();
 
         system("python3 ../plot/plot2.py results/ptas_ds_baker_results");
     }
 
     BOOST_AUTO_TEST_CASE(n_ds_performance) {
         bool res = true;
-        std::vector< std::pair<double, int> > results(15);
+        std::vector< std::pair<double, int> > results_baker(400);
+        std::vector< std::pair<double, int> > results_bod_ecc(400);
+        std::vector< std::pair<double, int> > results_bod_lcc(400);
         file_reader f("performance_test_graphs/small_graphs");
         std::ofstream file_baker("results/n_ds_baker_performance");
         file_baker << "Baker\n";
@@ -1067,7 +1076,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         std::ofstream file_lcc("results/n_ds_lcc_performance");
         file_lcc << "Bodlaender LCC\n";
 
-        int z = 20;
+        int z = 200;
         while (z--) {
             std::cout << z << std::endl;
             Graph g;
@@ -1082,18 +1091,47 @@ BOOST_AUTO_TEST_SUITE(performance)
             auto start = std::chrono::steady_clock::now();
             baker<independent_set>(g, embedding, outer_face);
             auto stop = std::chrono::steady_clock::now();
-            file_baker << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+            results_baker[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
+            results_baker[num_vertices(g)].second++;
+//            file_baker << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
 
-            start = std::chrono::steady_clock::now();
-            bodlaender_dominating_set_ecc(g, embedding, outer_face);
-            stop = std::chrono::steady_clock::now();
-            file_ecc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+            if (z > 180) {
+                start = std::chrono::steady_clock::now();
+                bodlaender_dominating_set_ecc(g, embedding, outer_face);
+                stop = std::chrono::steady_clock::now();
+                results_bod_ecc[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
+                results_bod_ecc[num_vertices(g)].second++;
+//                file_ecc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count()
+//                         << "\n";
 
-            start = std::chrono::steady_clock::now();
-            bodlaender_dominating_set_lcc(g, embedding, outer_face);
-            stop = std::chrono::steady_clock::now();
-            file_lcc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+                start = std::chrono::steady_clock::now();
+                bodlaender_dominating_set_lcc(g, embedding, outer_face);
+                stop = std::chrono::steady_clock::now();
+                results_bod_lcc[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
+                results_bod_lcc[num_vertices(g)].second++;
+//                file_lcc << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count()
+//                         << "\n";
+            }
         }
+        for (int i = 0; i < 400; i++) {
+            if (results_baker[i].second > 0) {
+                file_baker << i << " " << results_baker[i].first / results_baker[i].second << "\n";
+            }
+        }
+
+        for (int i = 0; i < 400; i++) {
+            if (results_bod_ecc[i].second > 0) {
+                file_ecc << i << " " << results_bod_ecc[i].first / results_bod_ecc[i].second << "\n";
+            }
+        }
+
+        for (int i = 0; i < 400; i++) {
+            if (results_bod_lcc[i].second > 0) {
+                file_lcc << i << " " << results_bod_lcc[i].first / results_bod_lcc[i].second << "\n";
+            }
+        }
+
+
         file_baker.close();
         file_ecc.close();
         file_lcc.close();

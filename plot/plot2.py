@@ -1,12 +1,15 @@
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy
 import sys
 
 
-OUT_FILE = 'is_ptas_res.pdf'
+OUT_FILE = 'results/is_ptas_res.pdf'
 X_AX = 'k'
 Y_AX = 'rozmiar zbioru niezależnego'
+
+colors = ['#329FBB', '#D1431F', '#8AC272']
 
 def figure_size(figure_size_scale):
     inches_per_pt = 1.0 / 72.27 # Convert pt to inch
@@ -42,10 +45,11 @@ with open(IN_FILE1, "r") as f:
         T4.append((float(line.split(" ")[1]) * (int(line.split(" ")[0]) + 1)) / int(line.split(" ")[0]))
 
 fig, ax = plt.subplots()
-ax.bar(T3, T4, label="maksymalne rozwiązanie optymalne")
-ax.bar(T1, T2, label="rozwiązanie techniki Baker")
+l1 = ax.bar(T3, T4, label="maksymalne rozwiązanie optymalne", hatch="/////", edgecolor='lightblue', color=colors[0])
+l2 = ax.bar(T1, T2, label="rozwiązanie techniki Baker", color=colors[1])
 # ax.fill_between(T1, T2, T4, color='lightblue')
-ax.legend(loc='lower right', frameon=False)
+legend = [Patch(edgecolor='lightblue', label='Color Patch'), Patch()]
+ax.legend((l1, l2), ("maksymalne rozwiązanie optymalne", "rozwiązanie techniki Baker"), loc='lower right', frameon=True)
 
 plt.ylabel(Y_AX)
 plt.xlabel(X_AX)

@@ -1,5 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
 import numpy
 import sys
 
@@ -9,6 +10,9 @@ IN_FILE2 = 'results/' + sys.argv[2]
 OUT_FILE = 'results/' + sys.argv[-2]
 X_AX = sys.argv[-1]
 Y_AX = 'czas w ms'
+
+colors = ['#329FBB', '#D1431F', '#8AC272']
+linestyles = ['-', '--', '-.', ':']
 
 def figure_size(figure_size_scale):
     inches_per_pt = 1.0 / 72.27 # Convert pt to inch
@@ -32,6 +36,7 @@ plt.style.use('ggplot')
 matplotlib.rcParams.update(publication_with_latex)
 
 fig, ax = plt.subplots()
+big = False
 
 for i in range(1, ARGS):
     T1 = []
@@ -41,9 +46,19 @@ for i in range(1, ARGS):
         for line in f.readlines():
             T1.append(int(line.split(" ")[0]))
             T2.append(float(line.split(" ")[1]))
-    ax.plot(T1, T2, label=name)
+    if (len(T1) > 15):
+        T3 = numpy.polyfit(T1, T2, 1)
+        p = numpy.poly1d(T3)
+        xp = numpy.linspace(0, T1[-1], 100)
+        ax.plot(xp, p(xp), label=name, color=colors[i-1], linestyle=linestyles[i-1])
+        ax.scatter(T1, T2, color=colors[i-1], alpha=0.3, s=5)
+        big = True
+    else:
+        ax.plot(T1, T2, label=name, color=colors[i-1], linestyle=linestyles[i-1])
 
-ax.legend(loc='upper left', frameon=False)
+if big:
+    ax.set_ylim(bottom=1)
+ax.legend(loc='lower right', frameon=True)
 ax.set_yscale('log')
 
 plt.ylabel(Y_AX)
