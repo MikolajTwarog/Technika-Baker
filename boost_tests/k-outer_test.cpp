@@ -1099,7 +1099,7 @@ BOOST_AUTO_TEST_SUITE(performance)
 
         file.close();
 
-        system("python3 ../plot/plot2.py results/ptas_ds_baker_results");
+        system("python3 ../plot/plot2.py results/ptas_is_baker_results");
     }
 
     BOOST_AUTO_TEST_CASE(n_ds_performance) {
