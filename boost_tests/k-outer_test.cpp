@@ -919,8 +919,9 @@ BOOST_AUTO_TEST_SUITE(performance)
         for (int i = 3; i < 10; i++) {
             file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
             int z=10;
+            std::cout << i << " ";
             while (z--) {
-                std::cout << i << " " << z << std::endl;
+                std::cout << z;
                 Graph g;
                 res = f.next_graph(g);
                 if (!res) {
@@ -941,7 +942,9 @@ BOOST_AUTO_TEST_SUITE(performance)
                 results_bodlaender[i] += std::chrono::duration<double, std::milli>(stop - start).count();
 
                 num_of_graphs[i]++;
+                std::cout << "\b";
             }
+            std::cout << "\b\b";
         }
 
         std::ofstream file_baker("results/k-outer_baker_performance");
