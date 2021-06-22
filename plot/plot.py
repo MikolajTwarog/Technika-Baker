@@ -46,7 +46,7 @@ for i in range(1, ARGS):
         for line in f.readlines():
             T1.append(int(line.split(" ")[0]))
             T2.append(float(line.split(" ")[1]))
-    if (len(T1) > 15):
+    if (T1[-1] > 10):
         T3 = numpy.polyfit(T1, T2, 1)
         p = numpy.poly1d(T3)
         xp = numpy.linspace(0, T1[-1], 100)

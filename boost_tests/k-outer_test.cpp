@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         file_baker.close();
         file_bodlaender.close();
 
-        system("python3 ../plot/plot.py n_baker_performance n_bodlaender_performance is_n.pdf \"ilość wierzchołków\"");
+        system("python3 ../plot/plot.py n_baker_performance n_bodlaender_performance is_n.pdf \"liczba wierzchołków\"");
     }
 
     BOOST_AUTO_TEST_CASE(ptas_performance) {
@@ -1188,7 +1188,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         file_ecc.close();
         file_lcc.close();
 
-        system("python3 ../plot/plot.py n_ds_baker_performance n_ds_ecc_performance n_ds_lcc_performance ds_n.pdf \"ilość wierzchołków\"");
+        system("python3 ../plot/plot.py n_ds_baker_performance n_ds_ecc_performance n_ds_lcc_performance ds_n.pdf \"liczba wierzchołków\"");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
