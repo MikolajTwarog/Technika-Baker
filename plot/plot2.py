@@ -5,7 +5,8 @@ import numpy
 import sys
 
 
-OUT_FILE = 'results/is_ptas_res.pdf'
+OUT_FILE = 'results/' + sys.argv[3]
+MAX = sys.argv[2] == "max"
 X_AX = 'k'
 Y_AX = 'rozmiar zbioru niezależnego'
 
@@ -42,14 +43,22 @@ with open(IN_FILE1, "r") as f:
         T1.append(int(line.split(" ")[0]))
         T2.append(float(line.split(" ")[1]))
         T3.append(int(line.split(" ")[0]))
-        T4.append((float(line.split(" ")[1]) * (int(line.split(" ")[0]) + 1)) / int(line.split(" ")[0]))
+        if MAX:
+            T4.append((float(line.split(" ")[1]) * (int(line.split(" ")[0]) + 1)) / int(line.split(" ")[0]))
+        else:
+            T4.append((float(line.split(" ")[1]) * int(line.split(" ")[0])) / (int(line.split(" ")[0]) + 1))
 
 fig, ax = plt.subplots()
-l1 = ax.bar(T3, T4, label="maksymalne rozwiązanie optymalne", hatch="/////", edgecolor='lightblue', color=colors[0])
-l2 = ax.bar(T1, T2, label="rozwiązanie techniki Baker", color=colors[1])
-# ax.fill_between(T1, T2, T4, color='lightblue')
-legend = [Patch(edgecolor='lightblue', label='Color Patch'), Patch()]
-ax.legend((l1, l2), ("maksymalne rozwiązanie optymalne", "rozwiązanie techniki Baker"), loc='lower right', frameon=True)
+if MAX:
+    l1 = ax.bar(T3, T4, label="maksymalne rozwiązanie optymalne", hatch="/////", edgecolor='lightblue', color=colors[0])
+    l2 = ax.bar(T1, T2, label="rozwiązanie techniki Baker", color=colors[1])
+    label2 = "maksymalne rozwiązanie optymalne"
+else:
+    l2 = ax.bar(T1, T2, label="rozwiązanie techniki Baker", color=colors[1])
+    l1 = ax.bar(T3, T4, label="minimalne rozwiązanie optymalne", hatch="/////", edgecolor='lightblue', color=colors[0])
+    label2 = "minimalne rozwiązanie optymalne"
+
+ax.legend((l1, l2), (label2, "rozwiązanie techniki Baker"), loc='lower right', frameon=True)
 
 plt.ylabel(Y_AX)
 plt.xlabel(X_AX)

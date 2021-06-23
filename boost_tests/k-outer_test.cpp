@@ -1072,45 +1072,6 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot.py ptas_baker_performance ptas_bodlaender_performance is_ptas.pdf \"k\"");
     }
 
-    BOOST_AUTO_TEST_CASE(ptas_baker_results) {
-        bool res = true;
-        std::vector< std::pair<double, int> > results(15);
-        std::ofstream file("results/ptas_is_baker_results");
-
-        std::cout << "k: " << std::flush;
-
-        for (int k = 1; k < 10; k++) {
-            std::cout << k << " g: " << std::flush;
-
-            file_reader f("performance_test_graphs/big_graphs");
-            int z = 10;
-            double result = 0;
-            while (z--) {
-                std::cout << z << std::flush;
-                Graph g;
-                res = f.next_graph(g);
-                if (!res) {
-                    break;
-                }
-                PlanarEmbedding embedding(num_vertices(g));
-                std::vector<int> outer_face;
-                get_embedding(g, embedding, outer_face);
-                result += bakers_technique(g, embedding, outer_face, k, Baker, is);
-
-                std::cout << "\b" << std::flush;
-            }
-            file << k << " " << result << "\n";
-
-            std::cout << "\b\b\b\b\b" << std::flush;
-        }
-
-        std::cout << "\b\b\b" << std::flush;
-
-        file.close();
-
-        system("python3 ../plot/plot2.py results/ptas_is_baker_results");
-    }
-
     BOOST_AUTO_TEST_CASE(n_ds_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results_baker(400);
@@ -1126,7 +1087,7 @@ BOOST_AUTO_TEST_SUITE(performance)
 
         std::cout << "g: " << std::flush;
 
-        int z = 200;
+        int z = 120;
         while (z--) {
             std::cout << z << std::flush;
             Graph g;
@@ -1139,12 +1100,12 @@ BOOST_AUTO_TEST_SUITE(performance)
             get_embedding(g, embedding, outer_face);
 
             auto start = std::chrono::steady_clock::now();
-            baker<independent_set>(g, embedding, outer_face);
+            baker<dominating_set>(g, embedding, outer_face);
             auto stop = std::chrono::steady_clock::now();
             results_baker[num_vertices(g)].first += std::chrono::duration<double, std::milli>(stop - start).count();
             results_baker[num_vertices(g)].second++;
 
-            if (z > 180) {
+            if (z > 100) {
                 start = std::chrono::steady_clock::now();
                 bodlaender_dominating_set_ecc(g, embedding, outer_face);
                 stop = std::chrono::steady_clock::now();
@@ -1189,6 +1150,188 @@ BOOST_AUTO_TEST_SUITE(performance)
         file_lcc.close();
 
         system("python3 ../plot/plot.py n_ds_baker_performance n_ds_ecc_performance n_ds_lcc_performance ds_n.pdf \"liczba wierzchołków\"");
+    }
+
+    BOOST_AUTO_TEST_CASE(k_outer_baker_performance) {
+        bool res = true;
+        std::vector<double> results_baker_is(15);
+        std::vector<double> results_baker_ds(15);
+        std::vector<int> num_of_graphs(15);
+        std::cout << "k: " << std::flush;
+        for (int i = 3; i < 10; i++) {
+            file_reader f("performance_test_graphs/" + std::to_string(i) + "-outer");
+            int z=5;
+            std::cout << i << " g: " << std::flush;
+            while (z--) {
+                std::cout << z << std::flush;
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+
+                auto start = std::chrono::steady_clock::now();
+                baker<independent_set>(g, embedding, outer_face);
+                auto stop = std::chrono::steady_clock::now();
+                results_baker_is[i] += std::chrono::duration<double, std::milli>(stop - start).count();
+
+                if (i < 7) {
+                    start = std::chrono::steady_clock::now();
+                    baker<dominating_set>(g, embedding, outer_face);
+                    stop = std::chrono::steady_clock::now();
+                    results_baker_ds[i] += std::chrono::duration<double, std::milli>(stop - start).count();
+                }
+
+                num_of_graphs[i]++;
+
+                std::cout << "\b" << std::flush;
+            }
+
+            std::cout << "\b\b\b\b\b" << std::flush;
+        }
+
+        std::cout << "\b\b\b" << std::flush;
+
+        std::ofstream file_baker_is("results/k-outer_baker_performance");
+        file_baker_is << "zbiór niezależny\n";
+        std::ofstream file_baker_ds("results/k-outer_ds_baker_performance");
+        file_baker_ds << "zbiór dominujący\n";
+        for (int i = 3; i < 10; i++) {
+            if (num_of_graphs[i] > 0) {
+                file_baker_is << i << " " << results_baker_is[i] / num_of_graphs[i] << "\n";
+                file_baker_ds << i << " " << results_baker_ds[i] / num_of_graphs[i] << "\n";
+            }
+        }
+        file_baker_is.close();
+        file_baker_ds.close();
+
+        system("python3 ../plot/plot.py k-outer_baker_performance k-outer_ds_baker_performance is_ds_k.pdf \"zewnętrzna planarność\"");
+    }
+
+    BOOST_AUTO_TEST_CASE(n_baker_performance) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        file_reader f("performance_test_graphs/small_graphs");
+        std::ofstream file_baker_is("results/n_baker_performance");
+        file_baker_is << "zbiór niezależny\n";
+        std::ofstream file_baker_ds("results/n_ds_baker_performance");
+        file_baker_ds << "zbiór dominujący\n";
+
+        std::cout << "g: " << std::flush;
+
+        int z = 200;
+        while (z--) {
+            std::cout << z << std::flush;
+            Graph g;
+            res = f.next_graph(g);
+            if (!res) {
+                break;
+            }
+            PlanarEmbedding embedding(num_vertices(g));
+            std::vector<int> outer_face;
+            get_embedding(g, embedding, outer_face);
+
+            auto start = std::chrono::steady_clock::now();
+            baker<independent_set>(g, embedding, outer_face);
+            auto stop = std::chrono::steady_clock::now();
+            file_baker_is << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+
+            start = std::chrono::steady_clock::now();
+            baker<dominating_set>(g, embedding, outer_face);
+            stop = std::chrono::steady_clock::now();
+            file_baker_ds << num_vertices(g) << " " << std::chrono::duration<double, std::milli>(stop - start).count() << "\n";
+
+            for (int _ = 0; _ < std::to_string(z).size(); _++)
+                std::cout << "\b" << std::flush;
+        }
+
+        std::cout << "\b\b\b" << std::flush;
+
+        file_baker_is.close();
+        file_baker_ds.close();
+
+        system("python3 ../plot/plot.py n_baker_performance n_ds_baker_performance is_ds_n.pdf \"liczba wierzchołków\"");
+    }
+
+    BOOST_AUTO_TEST_CASE(ptas_baker_results) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        std::ofstream file("results/ptas_is_baker_results");
+
+        std::cout << "k: " << std::flush;
+
+        for (int k = 1; k < 10; k++) {
+            std::cout << k << " g: " << std::flush;
+
+            file_reader f("performance_test_graphs/big_graphs");
+            int z = 10;
+            double result = 0;
+            while (z--) {
+                std::cout << z << std::flush;
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                result += bakers_technique(g, embedding, outer_face, k, Baker, is);
+
+                std::cout << "\b" << std::flush;
+            }
+            file << k << " " << result << "\n";
+
+            std::cout << "\b\b\b\b\b" << std::flush;
+        }
+
+        std::cout << "\b\b\b" << std::flush;
+
+        file.close();
+
+        system("python3 ../plot/plot2.py results/ptas_is_baker_results max is_ptas_res_pdf");
+    }
+
+    BOOST_AUTO_TEST_CASE(ptas_vc_baker_results) {
+        bool res = true;
+        std::vector< std::pair<double, int> > results(15);
+        std::ofstream file("results/ptas_vc_baker_results");
+
+        std::cout << "k: " << std::flush;
+
+        for (int k = 1; k < 10; k++) {
+            std::cout << k << " g: " << std::flush;
+
+            file_reader f("performance_test_graphs/big_graphs");
+            int z = 10;
+            double result = 0;
+            while (z--) {
+                std::cout << z << std::flush;
+                Graph g;
+                res = f.next_graph(g);
+                if (!res) {
+                    break;
+                }
+                PlanarEmbedding embedding(num_vertices(g));
+                std::vector<int> outer_face;
+                get_embedding(g, embedding, outer_face);
+                result += bakers_technique(g, embedding, outer_face, k, Baker, vc);
+
+                std::cout << "\b" << std::flush;
+            }
+            file << k << " " << result << "\n";
+
+            std::cout << "\b\b\b\b\b" << std::flush;
+        }
+
+        std::cout << "\b\b\b" << std::flush;
+
+        file.close();
+
+        system("python3 ../plot/plot2.py results/ptas_vc_baker_results min vc_ptas_res.pdf");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
