@@ -1,0 +1,20 @@
+\begin{algorithm}[H]
+    \caption{\texttt{calculate\_temp($v,c,temp$)}}
+    \SetAlgoLined
+    $next\_temp \gets temp$\;
+    \For{$(f,r_0,\dots,r_{m+1})$ z $temp$}{
+        \For{$(f',r_0',\dots,r_{m+1}')$ z $table[c]$}{
+            \If{$f|_{N_c(X_v)\cap N_c(X_c)} = f'|_{N_c(X_v)\cap N_c(X_c)}$}{
+                \For{$i=0,1,\dots m$}{
+                    $s_i \gets r_i \bigoplus r_i'$\;
+                }
+                \If{istnieje takie $t$, że $(f,s_0,\dots,s_m,t)\in next\_temp$ i $s_m < t$} {
+                    wymień $(f,s_0,\dots,s_{m-1},t)$ na $(f,s_0,\dots,s_{m-1},s_m)$ w $next\_temp$\;
+                } \Else {
+                    dołóż $(f,s_0,\dots,s_{m-1},s_m)$ do $next\_temp$\;
+                }
+            }
+        }
+    }
+    $temp \gets next\_temp$\;
+\end{algorithm}

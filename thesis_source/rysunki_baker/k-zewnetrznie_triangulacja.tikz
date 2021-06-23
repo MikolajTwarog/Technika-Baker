@@ -1,0 +1,110 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-0.75,xscale=0.75]
+%uncomment if require: \path (0,980); %set diagram left start at 0, and has height of 980
+
+
+% Text Node
+\draw (405,873) node [anchor=north west][inner sep=0.75pt]   [align=left] {3};
+% Text Node
+\draw (195,723) node [anchor=north west][inner sep=0.75pt]   [align=left] {4};
+% Text Node
+\draw (272,474) node [anchor=north west][inner sep=0.75pt]   [align=left] {0};
+% Text Node
+\draw (531,475) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
+% Text Node
+\draw (615,723) node [anchor=north west][inner sep=0.75pt]   [align=left] {2};
+% Text Node
+\draw (421,540) node [anchor=north west][inner sep=0.75pt]   [align=left] {8};
+% Text Node
+\draw (468,552) node [anchor=north west][inner sep=0.75pt]   [align=left] {9};
+% Text Node
+\draw (515,607) node [anchor=north west][inner sep=0.75pt]   [align=left] {10};
+% Text Node
+\draw (325,568) node [anchor=north west][inner sep=0.75pt]   [align=left] {7};
+% Text Node
+\draw (504,733) node [anchor=north west][inner sep=0.75pt]   [align=left] {5};
+% Text Node
+\draw (270,708) node [anchor=north west][inner sep=0.75pt]   [align=left] {6};
+% Text Node
+\draw (424,692) node [anchor=north west][inner sep=0.75pt]   [align=left] {12};
+% Text Node
+\draw (320,691) node [anchor=north west][inner sep=0.75pt]   [align=left] {13};
+% Text Node
+\draw (338,640) node [anchor=north west][inner sep=0.75pt]   [align=left] {11};
+% Connection
+\draw    (286,482.53) -- (528,483.47) ;
+% Connection
+\draw    (540.73,496) -- (616.27,719) ;
+% Connection
+\draw    (612,737.57) -- (419,875.43) ;
+% Connection
+\draw    (402,875.43) -- (209,737.57) ;
+% Connection
+\draw    (418,544.73) -- (286,486.27) ;
+% Connection
+\draw    (435,543.48) -- (528,488.52) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (435,545.27) .. controls (581.43,556.87) and (497.43,565.86) .. (617.1,719) ;
+% Connection
+\draw    (512,609.37) -- (478.27,573) ;
+% Connection
+\draw    (465,563.49) -- (435,555.83) ;
+% Connection
+\draw    (209,731.78) -- (501,741.22) ;
+% Connection
+\draw    (419,869.48) -- (501,753.52) ;
+% Connection
+\draw    (284,717.41) -- (501,740.59) ;
+% Connection
+\draw    (501,733.66) -- (339,584.34) ;
+% Connection
+\draw    (446,707.24) -- (501,736.91) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (534.84,628) -- (612,721.23) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (482,559.48) .. controls (549.29,590.49) and (529.79,624.99) .. (615.97,719) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (473.31,573) .. controls (469.58,577.34) and (515.81,629.62) .. (612,729.85) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (286,491.99) -- (501,732.01) ;
+% Connection
+\draw    (432.46,561) -- (612,730.36) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (612,732.27) -- (518,740.73) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (339,586.73) -- (423.12,688) ;
+% Connection
+\draw    (482,562.31) -- (519.73,603) ;
+% Connection
+\draw    (465,553.17) -- (435,545.51) ;
+% Connection
+\draw    (342,699.62) -- (421,700.38) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (421,701.77) -- (284,715.64) ;
+% Connection
+\draw    (612,730.62) .. controls (625.33,748.37) and (516.67,667.86) .. (286,489.09) ;
+% Connection
+\draw    (273.63,495) -- (204.37,719) ;
+% Connection
+\draw    (284.55,495) -- (323.45,564) ;
+% Connection
+\draw    (325.59,589) -- (280.41,704) ;
+% Connection
+\draw    (342.71,661) -- (333.79,687) ;
+% Connection
+\draw    (359,655.71) -- (421,692.99) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (335,659.91) -- (284,708.42) ;
+% Connection
+\draw    (344.14,636) -- (333.36,589) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (317,703.44) -- (284,713.82) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (267,718.2) -- (209,729.8) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (322,586.63) -- (209,721.37) ;
+
+\end{tikzpicture}

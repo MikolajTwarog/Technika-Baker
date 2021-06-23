@@ -1,0 +1,30 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-0.5,xscale=0.5]
+%uncomment if require: \path (0,524); %set diagram left start at 0, and has height of 524
+
+%Shape: Circle [id:dp869385809432774] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (284,246) .. controls (284,210.1) and (313.1,181) .. (349,181) .. controls (384.9,181) and (414,210.1) .. (414,246) .. controls (414,281.9) and (384.9,311) .. (349,311) .. controls (313.1,311) and (284,281.9) .. (284,246) -- cycle ;
+%Shape: Circle [id:dp7806306199801649] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (224,246) .. controls (224,176.96) and (279.96,121) .. (349,121) .. controls (418.04,121) and (474,176.96) .. (474,246) .. controls (474,315.04) and (418.04,371) .. (349,371) .. controls (279.96,371) and (224,315.04) .. (224,246) -- cycle ;
+%Shape: Circle [id:dp8233384841609706] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ] (234,246) .. controls (234,182.49) and (285.49,131) .. (349,131) .. controls (412.51,131) and (464,182.49) .. (464,246) .. controls (464,309.51) and (412.51,361) .. (349,361) .. controls (285.49,361) and (234,309.51) .. (234,246) -- cycle ;
+%Shape: Circle [id:dp7720434445464976] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ] (264,246) .. controls (264,199.06) and (302.06,161) .. (349,161) .. controls (395.94,161) and (434,199.06) .. (434,246) .. controls (434,292.94) and (395.94,331) .. (349,331) .. controls (302.06,331) and (264,292.94) .. (264,246) -- cycle ;
+%Shape: Circle [id:dp2429224445128133] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (244,246) .. controls (244,188.01) and (291.01,141) .. (349,141) .. controls (406.99,141) and (454,188.01) .. (454,246) .. controls (454,303.99) and (406.99,351) .. (349,351) .. controls (291.01,351) and (244,303.99) .. (244,246) -- cycle ;
+%Shape: Circle [id:dp4627265398772462] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (274,246) .. controls (274,204.58) and (307.58,171) .. (349,171) .. controls (390.42,171) and (424,204.58) .. (424,246) .. controls (424,287.42) and (390.42,321) .. (349,321) .. controls (307.58,321) and (274,287.42) .. (274,246) -- cycle ;
+%Shape: Circle [id:dp6645706754143013] 
+\draw   (254,246) .. controls (254,193.53) and (296.53,151) .. (349,151) .. controls (401.47,151) and (444,193.53) .. (444,246) .. controls (444,298.47) and (401.47,341) .. (349,341) .. controls (296.53,341) and (254,298.47) .. (254,246) -- cycle ;
+%Shape: Circle [id:dp3197701636389194] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (294,246) .. controls (294,215.62) and (318.62,191) .. (349,191) .. controls (379.38,191) and (404,215.62) .. (404,246) .. controls (404,276.38) and (379.38,301) .. (349,301) .. controls (318.62,301) and (294,276.38) .. (294,246) -- cycle ;
+%Shape: Circle [id:dp16559336408879632] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ] (304,246) .. controls (304,221.15) and (324.15,201) .. (349,201) .. controls (373.85,201) and (394,221.15) .. (394,246) .. controls (394,270.85) and (373.85,291) .. (349,291) .. controls (324.15,291) and (304,270.85) .. (304,246) -- cycle ;
+
+
+
+
+\end{tikzpicture}

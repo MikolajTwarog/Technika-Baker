@@ -1,0 +1,106 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+
+% Text Node
+\draw (48,192) node [anchor=north west][inner sep=0.75pt]   [align=left] {3};
+% Text Node
+\draw (198,191) node [anchor=north west][inner sep=0.75pt]   [align=left] {2};
+% Text Node
+\draw (48,41) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{\textcolor[rgb]{0.82,0.01,0.11}{0}}};
+% Text Node
+\draw (198,42) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{\textcolor[rgb]{0.82,0.01,0.11}{1}}};
+% Text Node
+\draw (123,84) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{\textcolor[rgb]{0.82,0.01,0.11}{4}}};
+% Text Node
+\draw (123,170) node [anchor=north west][inner sep=0.75pt]   [align=left] {6};
+% Text Node
+\draw (109,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {7};
+% Text Node
+\draw (137,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {5};
+% Text Node
+\draw (266,191) node [anchor=north west][inner sep=0.75pt]   [align=left] {3};
+% Text Node
+\draw (416,190) node [anchor=north west][inner sep=0.75pt]   [align=left] {2};
+% Text Node
+\draw (266,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{\textcolor[rgb]{0.82,0.01,0.11}{0}}};
+% Text Node
+\draw (416,41) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
+% Text Node
+\draw (341,83) node [anchor=north west][inner sep=0.75pt]   [align=left] {4};
+% Text Node
+\draw (341,169) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{\textcolor[rgb]{0.82,0.01,0.11}{6}}};
+% Text Node
+\draw (327,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {7};
+% Text Node
+\draw (355,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {5};
+% Connection
+\draw    (62,49.56) -- (195,50.44) ;
+% Connection
+\draw    (203.5,63) -- (203.5,187) ;
+% Connection
+\draw    (195,199.56) -- (62,200.44) ;
+% Connection
+\draw    (53.5,188) -- (53.5,62) ;
+% Connection
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (195,55.26) -- (137,87.74) ;
+% Connection
+\draw    (196.18,63) -- (135.82,166) ;
+% Connection
+\draw    (60.77,62) -- (121.23,166) ;
+% Connection
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (62,54.37) -- (120,87.63) ;
+% Connection
+\draw    (132.99,105) -- (138.01,119) ;
+% Connection
+\draw    (118.99,119) -- (124.01,105) ;
+% Connection
+\draw    (138.78,144) -- (132.22,166) ;
+% Connection
+\draw    (118.22,144) -- (124.78,166) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (195,61.79) -- (151,120.21) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (137,180.88) -- (195,197.12) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (120,180.99) -- (62,198.01) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (62,60.93) -- (106,120.07) ;
+% Connection
+\draw    (280,48.56) -- (413,49.44) ;
+% Connection
+\draw    (421.5,62) -- (421.5,186) ;
+% Connection
+\draw    (413,198.56) -- (280,199.44) ;
+% Connection
+\draw    (271.5,187) -- (271.5,61) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (413,54.26) -- (355,86.74) ;
+% Connection
+\draw    (414.18,62) -- (353.82,165) ;
+% Connection
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (278.77,61) -- (339.23,165) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (280,53.37) -- (338,86.63) ;
+% Connection
+\draw    (350.99,104) -- (356.01,118) ;
+% Connection
+\draw    (336.99,118) -- (342.01,104) ;
+% Connection
+\draw    (356.78,143) -- (350.22,165) ;
+% Connection
+\draw    (336.22,143) -- (342.78,165) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (413,60.79) -- (369,119.21) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (355,179.88) -- (413,196.12) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (338,179.99) -- (280,197.01) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (280,59.93) -- (324,119.07) ;
+
+\end{tikzpicture}

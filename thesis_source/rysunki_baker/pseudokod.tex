@@ -1,0 +1,40 @@
+\begin{algorithm}[H]
+    \caption{\texttt{table($v$)}}
+    \SetAlgoLined
+    $(x, y) \gets$ nazwa $v$\;
+    $i \gets$ poziom $v$\;
+    \If{$v$ odpowiada ścianie, która nie zawiera w sobie żadnego komponentu} {
+        $u \gets$ najbardziej lewe dziecko $v$\;
+        $tab \gets$ \texttt{table($u$)}\;
+        \For{dziecko $c$ z dzieci $v$} {
+            $tab \gets$ \texttt{merge($tab$, table($c$))}\;
+        }
+        \Return \texttt{adjust($tab$)}\;
+    }
+    \If{$v$ odpowiada ścianie zawierającej komponent $C$} {
+        $root \gets$ korzeń drzewa odpowiadającego $C$\;
+        \Return \texttt{adjust(contract(table($root$)))}\;
+    }
+    \If{$v$ jest liściem pierwszego poziomu} {
+        \Return tablica dla krawędzi $(x,y)$\;
+    }
+    $f \gets$ węzeł ściany zawierającej komponent odpowiadający drzewu do którego należy $v$\;
+    ${u_0, \dots, u_{m-1}} \gets$ dzieci $f$\;
+    ${z_0, \dots, z_m} \gets$ nazwy dzieci $f$\;
+    $p \gets$ takie $r$, że $(x, z_r)$ i $(y, z_r)$ są krawędziami w grafie\;
+    $tab \gets$ \texttt{create($v$, $p$)}\;
+    
+    $j \gets p-1$\;
+    \While{$j \ge LB[v]$}{
+        $tab \gets$ \texttt{merge(extend($x$, table($u_j$)), $tab$)}\;
+        $j \gets j - 1$
+    }
+    
+    $j \gets p$\;
+    \While{$j < RB[v]$}{
+        $tab \gets$ \texttt{merge($tab$, extend($y$, table($u_j$)))}\;
+        $j \gets j+1$\;
+    }
+    
+    \Return $tab$\;
+\end{algorithm}

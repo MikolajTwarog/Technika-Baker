@@ -1,0 +1,77 @@
+\begin{tikzpicture}[main/.style = {draw, circle}, scale=0.5] 
+%% vertex labels
+\node (0) at (-0.24, 3.08) {0};
+\node (1) at (0.38, 1.18) {1};
+\node (2) at (2, 0) {2};
+\node (3) at (4, 0) {3};
+\node (4) at (5.62, 1.18) {4};
+\node (5) at (6.24, 3.08) {5};
+\node (6) at (5.62, 4.98) {6};
+\node (7) at (4, 6.16) {7};
+\node (8) at (2, 6.16) {8};
+\node (9) at (0.38, 4.98) {9};
+
+%%% edges
+\draw[thick] (0) -- (1) -- (2) -- (3) -- (4) -- (5) -- (6) -- (7) -- (8) -- (9) -- (0);
+\draw[thick] (3) -- (6) -- (9) -- (3) -- (5);
+
+\end{tikzpicture}
+\hspace{1cm}
+\begin{tikzpicture}[main/.style = {draw, circle}, scale=0.5] 
+
+%% vertex labels
+\node (0) at (-0.24, 3.08) {0};
+\node (1) at (0.38, 1.18) {1};
+\node (2) at (2, 0) {2};
+\node (3) at (4, 0) {3};
+\node (4) at (5.62, 1.18) {4};
+\node (5) at (6.24, 3.08) {5};
+\node (6) at (5.62, 4.98) {6};
+\node (7) at (4, 6.16) {7};
+\node (8) at (2, 6.16) {8};
+\node (9) at (0.38, 4.98) {9};
+
+\draw[fill=black] (1.36, 1.89) circle (2pt);
+\draw[fill=black] (3, 5.57) circle (2pt);
+\draw[fill=black] (5.37, 1.36) circle (2pt);
+\draw[fill=black] (5.62, 3.18) circle (2pt);
+\draw[fill=black] (3.46, 3.41) circle (2pt);
+
+\draw[fill=black] (1.19, 0.59) circle (2pt);
+\draw[fill=black] (3, 0) circle (2pt);
+\draw[fill=black] (0.07, 2.13) circle (2pt);
+\draw[fill=black] (0.07, 4.03) circle (2pt);
+
+\draw[fill=black] (1.19, 5.57) circle (2pt);
+\draw[fill=black] (3, 6.16) circle (2pt);
+\draw[fill=black] (4.81, 5.57) circle (2pt);
+
+\draw[fill=black] (5.93, 4.03) circle (2pt);
+
+\draw[fill=black] (5.93, 2.13) circle (2pt);
+\draw[fill=black] (4.81, 0.59) circle (2pt);
+
+%%% edges
+\draw[thick] (0) -- (1) -- (2) -- (3) -- (4) -- (5) -- (6) -- (7) -- (8) -- (9) -- (0);
+\draw[thick] (3) -- (6) -- (9) -- (3) -- (5);
+
+\draw[dashed] (1.36, 1.89) -- (1.19, 0.59);
+\draw[dashed] (1.36, 1.89) -- (3, 0);
+\draw[dashed] (1.36, 1.89) -- (0.07, 4.03);
+\draw[dashed] (1.36, 1.89) -- (0.07, 2.13);
+\draw[dashed] (1.36, 1.89) -- (3.46, 3.41);
+
+\draw[dashed] (3.46, 3.41) -- (5.62, 3.18);
+\draw[dashed] (3.46, 3.41) -- (3, 5.57);
+
+\draw[dashed] (3, 5.57) -- (3, 6.16);
+\draw[dashed] (3, 5.57) -- (1.19, 5.57);
+\draw[dashed] (3, 5.57) -- (4.81, 5.57);
+
+\draw[dashed] (5.62, 3.18) -- (5.37, 1.36);
+\draw[dashed] (5.62, 3.18) -- (5.93, 4.03);
+
+\draw[dashed] (5.37, 1.36) -- (5.93, 2.13);
+\draw[dashed] (5.37, 1.36) -- (4.81, 0.59);
+
+\end{tikzpicture}

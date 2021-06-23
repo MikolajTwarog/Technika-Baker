@@ -1,0 +1,84 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,426); %set diagram left start at 0, and has height of 426
+
+
+% Text Node
+\draw (322.5,164) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (192,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (324.5,96) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (145,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (230,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (419,126) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (231.5,265) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (457,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (288,226) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (356,226) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (324,286) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (419,263) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (92,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (41,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (526,188) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (599,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (599,243) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (92,241) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Text Node
+\draw (145,131) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle \circ $};
+% Connection
+\draw    (248,128.11) -- (321.5,107.89) ;
+% Connection
+\draw    (434.47,148) -- (456.53,184) ;
+% Connection
+\draw    (457.91,210) -- (433.09,259) ;
+% Connection
+\draw    (416,274.54) -- (342,292.46) ;
+% Connection
+\draw    (321,292.62) -- (249.5,276.38) ;
+% Connection
+\draw    (232.33,261) -- (206.17,210) ;
+% Connection
+\draw    (302.73,222) -- (322.77,186) ;
+% Connection
+\draw    (337.02,186) -- (356.48,222) ;
+% Connection
+\draw    (330.38,160) -- (331.62,118) ;
+% Connection
+\draw    (285,242.25) -- (249.5,266.75) ;
+% Connection
+\draw    (189,197) -- (163,197) ;
+% Connection
+\draw    (110,197) -- (142,197) ;
+% Connection
+\draw    (59,197) -- (89,197) ;
+% Connection
+\draw    (475,197) -- (523,197) ;
+% Connection
+\draw    (606.5,144) -- (606.5,239) ;
+% Connection
+\draw    (596,244.09) -- (544,204.91) ;
+% Connection
+\draw    (152.5,153) -- (152.5,184) ;
+% Connection
+\draw    (99.5,210) -- (99.5,237) ;
+
+\end{tikzpicture}

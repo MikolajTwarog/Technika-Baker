@@ -1,0 +1,18 @@
+\begin{algorithm}[H]
+    \caption{\texttt{calculate\_table($v,p$)}}
+    \SetAlgoLined
+    \For{dziecko $child$ z dzieci $v$} {
+        \texttt{calculate\_table($child, v$)}\;
+    }
+    $temp \gets$ pusta tablica\;
+    \For{funkcja $f$ ze wszystkich funkcji $N_c(X_v)\rightarrow \{0,1\}$}{
+        \For{$i=0,1,\dots m$}{
+            $r_i \gets \sigma(f, X_v \setminus X_p)$\;
+        }
+        $r_{m+1} \gets |\{v\colon f(v)=k\}|$\;
+        dołóż $(f,r_0,\dots,r_m,r_{m+1})$ do $table[v]$\;
+    }
+    \For{dziecko $child$ z dzieci $v$}{
+        \texttt{calculate\_temp($v,child,table[v]$)}\;
+    }
+\end{algorithm}

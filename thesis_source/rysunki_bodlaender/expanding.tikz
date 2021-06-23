@@ -1,0 +1,132 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+
+% Text Node
+\draw (121,153) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v$};
+% Text Node
+\draw (168,153.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (121,82) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (168,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (101,222) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (71,211) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (71,153.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (168,211) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (71,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (111,222) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (121,221) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (131,221) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (141,221) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (71,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{1}$};
+% Text Node
+\draw (91,82) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{2}$};
+% Text Node
+\draw (140,82) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{3}$};
+% Text Node
+\draw (160,122) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{4}$};
+% Text Node
+\draw (71,180) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{0}$};
+% Text Node
+\draw (160,180) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{5}$};
+% Text Node
+\draw (275,153) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{0}$};
+% Text Node
+\draw (319.33,153) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{1}$};
+% Text Node
+\draw (521,152) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{d}{}_{- 3}$};
+% Text Node
+\draw (458,152) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle v_{d}{}_{- 4}$};
+% Text Node
+\draw (362,153.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (391.67,153.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (421,153.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (245,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (245,211) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (578,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (578,211) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (321.5,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (471.5,92) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+% Text Node
+\draw (288,112) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{i+2}$};
+% Text Node
+\draw (241,153) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{i+1}$};
+% Text Node
+\draw (574,153) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{i-1}$};
+% Text Node
+\draw (407.17,197.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{i}$};
+% Text Node
+\draw (508,115) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle f_{i-2}$};
+% Connection
+\draw    (126.5,149) -- (126.5,103) ;
+% Connection
+\draw    (135,150.88) -- (165,111.62) ;
+% Connection
+\draw    (135,162) -- (165,162) ;
+% Connection
+\draw    (135,172.4) -- (165,209.1) ;
+% Connection
+\draw    (122.7,175) -- (110.15,218) ;
+% Connection
+\draw    (118,171.78) -- (85,209.73) ;
+% Connection
+\draw    (118,162) -- (85,162) ;
+% Connection
+\draw    (118,151.54) -- (85,110.96) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (124.6,175) -- (118.32,218) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (126.5,175) -- (126.5,217) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (128.43,175) -- (134.65,217) ;
+% Connection
+\draw    (130.35,175) -- (142.8,217) ;
+% Connection
+\draw    (518,162) -- (499,162) ;
+% Connection
+\draw    (296,162) -- (316.33,162) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (455,162) -- (435,162) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (418,162) -- (405.67,162) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (388.67,162) -- (376,162) ;
+% Connection
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (359,162) -- (340.33,162) ;
+% Connection
+\draw    (276.43,175) -- (257.78,207) ;
+% Connection
+\draw    (276.92,149) -- (257.31,113) ;
+% Connection
+\draw    (549.9,148) -- (575,112.52) ;
+% Connection
+\draw    (550.59,176) -- (575,208.26) ;
+% Connection
+\draw    (328.05,149) -- (327.27,113) ;
+% Connection
+\draw    (477,148) -- (477,113) ;
+
+\end{tikzpicture}

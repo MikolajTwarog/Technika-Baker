@@ -1,0 +1,96 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,598); %set diagram left start at 0, and has height of 598
+
+
+% Text Node
+\draw (100.35,216.68) node [anchor=north west][inner sep=0.75pt]   [align=left] {6};
+% Text Node
+\draw (137.07,127.85) node [anchor=north west][inner sep=0.75pt]   [align=left] {7};
+% Text Node
+\draw (226.5,91.72) node [anchor=north west][inner sep=0.75pt]   [align=left] {0};
+% Text Node
+\draw (317.71,127.25) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
+% Text Node
+\draw (352.65,215.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {2};
+% Text Node
+\draw (137.07,305.52) node [anchor=north west][inner sep=0.75pt]   [align=left] {5};
+% Text Node
+\draw (225.32,341.65) node [anchor=north west][inner sep=0.75pt]   [align=left] {4};
+% Text Node
+\draw (318.89,304.34) node [anchor=north west][inner sep=0.75pt]   [align=left] {3};
+% Text Node
+\draw (157.35,162.79) node [anchor=north west][inner sep=0.75pt]   [align=left] {10};
+% Text Node
+\draw (183.86,204.84) node [anchor=north west][inner sep=0.75pt]   [align=left] {9};
+% Text Node
+\draw (197.48,154.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {8};
+% Text Node
+\draw (265.14,240.97) node [anchor=north west][inner sep=0.75pt]   [align=left] {13};
+% Text Node
+\draw (301.76,193.73) node [anchor=north west][inner sep=0.75pt]   [align=left] {12};
+% Text Node
+\draw (251.72,172.27) node [anchor=north west][inner sep=0.75pt]   [align=left] {11};
+% Text Node
+\draw (175.71,287.76) node [anchor=north west][inner sep=0.75pt]   [align=left] {16};
+% Text Node
+\draw (229.65,240.37) node [anchor=north west][inner sep=0.75pt]   [align=left] {15};
+% Text Node
+\draw (189.93,249.85) node [anchor=north west][inner sep=0.75pt]   [align=left] {14};
+% Connection
+\draw    (137.4,148.85) -- (111.02,212.68) ;
+% Connection
+\draw    (111.02,237.68) -- (137.4,301.52) ;
+% Connection
+\draw    (151.07,317.5) -- (222.32,346.67) ;
+% Connection
+\draw    (239.32,346.76) -- (315.89,316.23) ;
+% Connection
+\draw    (329.14,300.34) -- (353.4,236.5) ;
+% Connection
+\draw    (353.2,211.5) -- (328.16,148.25) ;
+% Connection
+\draw    (314.71,132.44) -- (240.5,103.53) ;
+% Connection
+\draw    (223.5,103.65) -- (151.07,132.91) ;
+% Connection
+\draw    (194.48,164.95) -- (179.35,168.42) ;
+% Connection
+\draw    (173.54,183.79) -- (182.67,200.84) ;
+% Connection
+\draw    (192.74,200.84) -- (199.6,175.5) ;
+% Connection
+\draw    (263.26,193.27) -- (272.11,236.97) ;
+% Connection
+\draw    (284.33,236.97) -- (301.57,214.73) ;
+% Connection
+\draw    (298.76,196.92) -- (272.72,185.86) ;
+% Connection
+\draw    (194.74,270.85) -- (189.9,283.76) ;
+% Connection
+\draw    (197.71,285.27) -- (226.65,259.85) ;
+% Connection
+\draw    (226.65,251.85) -- (211.93,255.37) ;
+% Connection
+\draw    (158.17,158.79) -- (151.07,148.58) ;
+% Connection
+\draw    (256.27,168.27) -- (236.46,112.72) ;
+% Connection
+\draw    (284.46,261.97) -- (315.89,302.01) ;
+% Connection
+\draw    (287.14,245.65) -- (349.65,226.59) ;
+% Connection
+\draw    (229.43,112.72) -- (202,245.85) ;
+% Connection
+\draw    (172.71,301.46) -- (151.07,310.48) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (209.3,245.85) -- (250.85,193.27) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (262.14,256.01) -- (197.71,289.72) ;
+% Connection
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (183.38,283.76) -- (168.69,183.79) ;
+
+\end{tikzpicture}

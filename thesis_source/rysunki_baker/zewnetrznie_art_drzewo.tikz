@@ -1,0 +1,29 @@
+\begin{tikzpicture}[scale=0.8, node distance={15mm}]
+\node (1) {(1, 1)};
+\node (5) [below of=1] {(9, 3)};
+\node (7) [left of=5] {(0, 9)};
+\node (6) [left of=7] {(1, 0)};
+\node (8) [right of=5] {(3, 2)};
+\node (9) [right of=8] {(2, 1)};
+\node (4) [below left of=7] {(9, 6)};
+\node (3) [below right of=8] {(6, 3)};
+\node (15) [below of=4] {(8, 7)};
+\node (14) [left of=15] {(9, 8)};
+\node (13) [right of=15] {(7, 6)};
+\node (nic) [below of=3] {};
+\node (12) [left of=nic] {(6, 5)};
+\node (2) [right of=nic] {(5, 3)};
+\node (10) [below of=2] {(4, 3)};
+\node (11) [left of=10] {(5, 4)};
+\node (16) [right of=10] {(3, 3)};
+\node (17) [below left of=16] {(3, 10)};
+\node (18) [below right of=16] {(11, 3)};
+
+\draw (1) -- (6); \draw (1) -- (7); \draw (1) -- (5); \draw (1) -- (8); \draw (1) -- (9);
+\draw (5) -- (4); \draw (5) -- (3);
+\draw (4) -- (14); \draw (4) -- (15); \draw (4) -- (13);
+\draw (3) -- (12); \draw (3) -- (2);
+\draw (2) -- (11); \draw (2) -- (10); \draw (2) -- (16);
+\draw (16) -- (17); \draw (16) -- (18);
+
+\end{tikzpicture}

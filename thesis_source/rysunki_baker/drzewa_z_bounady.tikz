@@ -1,0 +1,102 @@
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,552); %set diagram left start at 0, and has height of 552
+
+
+% Text Node
+\draw (162,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {(7, 7)};
+% Text Node
+\draw (483,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {(8, 8)};
+% Text Node
+\draw (379,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(8, 9)};
+% Text Node
+\draw (483,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(9, 9)};
+% Text Node
+\draw (579,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(9, 8)};
+% Text Node
+\draw (429,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {(9, 10)};
+% Text Node
+\draw (529,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {(10, 9)};
+% Text Node
+\draw (62,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(7, 5)};
+% Text Node
+\draw (162,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(5, 6)};
+% Text Node
+\draw (262,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {(6, 7)};
+% Text Node
+\draw (126,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (226,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{4}};
+% Text Node
+\draw (126,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (226,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{3}};
+% Text Node
+\draw (44,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (308,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{4}};
+% Text Node
+\draw (442,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (546,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (496,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (396,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (592,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (625,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (546,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (442,219) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (361,278) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (155,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {(11, 11)};
+% Text Node
+\draw (54,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {(11, 12)};
+% Text Node
+\draw (254,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {(13, 11)};
+% Text Node
+\draw (153.5,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {(12, 13)};
+% Text Node
+\draw (44,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (126,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (226,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{2}};
+% Text Node
+\draw (308,397) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{3}};
+% Text Node
+\draw (126,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{0}};
+% Text Node
+\draw (226,338) node [anchor=north west][inner sep=0.75pt]   [align=left] {\textbf{3}};
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (419,274.3) -- (480,239.7) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (501.5,274) -- (501.5,240) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (577.16,274) -- (521.84,240) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (541.08,334) -- (511.92,299) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (461.92,334) -- (491.08,299) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (101.69,274) -- (159.31,240) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (180.5,274) -- (180.5,240) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (259.31,274) -- (201.69,240) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (259.31,393) -- (201.69,359) ;
+% Connection
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ]   (101.69,393) -- (159.31,359) ;
+% Connection
+\draw    (180.5,393) -- (180.5,359) ;
+
+\end{tikzpicture}
