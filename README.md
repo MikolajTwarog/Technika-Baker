@@ -2,7 +2,7 @@
 
 ## Building project
 ```
-$ cd Techinka-Baker
+$ cd Technika-Baker
 $ cmake CMakeLists.txt
 $ make
 ```
