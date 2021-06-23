@@ -920,7 +920,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE(performance)
-    BOOST_AUTO_TEST_CASE(k_outer_performance) {
+    BOOST_AUTO_TEST_CASE(kouter_is_performance) {
         bool res = true;
         std::vector<double> results_baker(15);
         std::vector<double> results_bodlaender(15);
@@ -977,7 +977,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot.py k-outer_baker_performance k-outer_bodlaender_performance is_k.pdf \"zewnętrzna planarność\"");
     }
 
-    BOOST_AUTO_TEST_CASE(n_performance) {
+    BOOST_AUTO_TEST_CASE(n_is_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         file_reader f("performance_test_graphs/small_graphs");
@@ -1022,7 +1022,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot.py n_baker_performance n_bodlaender_performance is_n.pdf \"liczba wierzchołków\"");
     }
 
-    BOOST_AUTO_TEST_CASE(ptas_performance) {
+    BOOST_AUTO_TEST_CASE(ptas_is_performance) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file_baker("results/ptas_baker_performance");
@@ -1152,7 +1152,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot.py n_ds_baker_performance n_ds_ecc_performance n_ds_lcc_performance ds_n.pdf \"liczba wierzchołków\"");
     }
 
-    BOOST_AUTO_TEST_CASE(k_outer_baker_performance) {
+    BOOST_AUTO_TEST_CASE(kouter_baker_performance) {
         bool res = true;
         std::vector<double> results_baker_is(15);
         std::vector<double> results_baker_ds(15);
@@ -1256,7 +1256,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot.py n_baker_performance n_ds_baker_performance is_ds_n.pdf \"liczba wierzchołków\"");
     }
 
-    BOOST_AUTO_TEST_CASE(ptas_baker_results) {
+    BOOST_AUTO_TEST_CASE(ptas_is_results) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file("results/ptas_is_baker_results");
@@ -1295,7 +1295,7 @@ BOOST_AUTO_TEST_SUITE(performance)
         system("python3 ../plot/plot2.py results/ptas_is_baker_results max is_ptas_res_pdf");
     }
 
-    BOOST_AUTO_TEST_CASE(ptas_vc_baker_results) {
+    BOOST_AUTO_TEST_CASE(ptas_vc_results) {
         bool res = true;
         std::vector< std::pair<double, int> > results(15);
         std::ofstream file("results/ptas_vc_baker_results");
